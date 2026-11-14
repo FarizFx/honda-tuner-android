@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Honda Tuner</string>
+    <string name="usb_subtitle">K-Line · USB OTG</string>
+    <string name="connect">Hubungkan</string>
+    <string name="disconnect">Putus</string>
+    <string name="cancel">Batal</string>
+    <string name="refresh">Cari USB</string>
+    <string name="live_tab">Live data</string>
+    <string name="dtc_tab">DTC</string>
+    <string name="pause_live">Jeda live</string>
+    <string name="start_live">Mulai live</string>
+    <string name="detect_again">Deteksi ulang</string>
+    <string name="read_dtc">Baca DTC</string>
+    <string name="adapter_missing">Adaptor FT232R belum ditemukan</string>
+    <string name="sensor_empty">Sensor muncul setelah ECU terhubung.</string>
+    <string name="rpm_history">RPM · 50 sampel terakhir</string>
+    <string name="dtc_current">DTC saat ini</string>
+    <string name="dtc_stored">DTC tersimpan</string>
+    <string name="dtc_unread">Belum dibaca dari ECU.</string>
+    <string name="dtc_empty">Tidak ada kode yang dilaporkan ECU.</string>
+    <string name="usb_help">Gunakan adaptor FT232R/FT232RL K-Line, kabel OTG, dan kontak motor ON.</string>
+</resources>

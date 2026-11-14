@@ -1,0 +1,24 @@
+{
+  "reference": "Existing independent Honda Tuner source; no original native binary was modified or loaded.",
+  "reference_sha256": {
+    "core/commands.py": "168c176da89e239be28829503289fd05fd6ee93e5330e2a1193553cb3b78de3d",
+    "core/diagnostics.py": "b1ebf98f48d235325451d92ad63081d29ac53c049ea20e853193fd12c07a6405",
+    "core/live.py": "fef20b82104e3df38e0de5db2397cc2a6747a6d4f4317d970e9b08a0e156069a",
+    "core/session.py": "010398a18787be6119bfd83e4d81eb1d560313f7cfe4ef171120fa73a137a596",
+    "core/protocol.py": "f2573bdcd0993fb2f8b59abfc3545dcd2beb5c564e4d934acbb4b2e034d36e19",
+    "core/ftdi_source.py": "f13446cd19b4e4faf1957c8e7665c425fc083255f74b135cd4ab3268396d6675",
+    "ui/live.py": "1a5692ef9d88c2c04b443d1505d814793b12690934253454e1c984077329b236",
+    "data/ecudb.json": "48a0dd989c435b6073cbbcf604275fdaa8d4a5a16e9501fcb4b8f1f7b44ef556"
+  },
+  "generated_sha256": {
+    "app/src/main/java/id/hondatuner/core/SensorSchemas.java": "8ce227c14f88a5ab06957501bd93b2fedb37d17d9dddec3c409f185058639c30",
+    "app/src/main/java/id/hondatuner/core/DtcDescriptions.java": "f17ce28e15a64d46b3e2dc9b7128c2687b58d15ef0712e242d2717d7c7ae133c",
+    "app/src/main/assets/ecu_catalog.tsv": "be3a797196048fe650f79a2a1ba8ed645b4b2cc94a75427346673f4d2a148354",
+    "tests/reference_vectors.json": "25e5f820d5205e974436db27346961d274431bab241a6181d8879d2b5c0c049f"
+  },
+  "schema_variants": 13,
+  "decoder_vectors": 312,
+  "catalog_rows": 278,
+  "physical_android_usb_or_ecu_validation": false,
+  "new_rea_evidence_claimed": false
+}

@@ -1,0 +1,40 @@
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
+OK Honda diagnostic, table, wake and DTC command bytes
+OK fragmented current-request echo and reply
+OK echo-only response cannot become an ECU acknowledgement
+OK wrong echo, header, length and checksum are rejected
+OK one-way wake sends once and drains trailing input
+OK cancel during receive stops before another command
+OK reply received after the deadline is discarded
+OK cold handshake and optional identity without another pulse
+OK warm ECU and missing identity keep normal diagnostics usable
+OK failed diagnostic connection cannot read sensors
+OK live reply selects the returned schema
+OK discovery fallbacks stay inside the correct sensor group
+OK polling reuses successful requests and marks missing sensors unread
+OK changed sensor schema is discarded
+OK raw bytes and unnamed bits stay out of automatic sensors
+OK DTC slots, continuation and truncation
+OK current and stored DTC pages including an empty valid group
+OK stale DTC command/page rejected and endless pages bounded
+OK FT232R 10400-baud encoding
+OK FTDI status bytes removed from every USB packet
+OK truncated USB status and UART errors rejected
+OK real scheduled live loop updates RPM, throttle and battery
+OK Stop discards a late in-flight sample and queued polling
+OK three failed samples stop acquisition without stale values
+OK slow live samples never overlap
+OK app controller connects and starts live automatically
+OK DTC pauses serialized live work and resumes afterward
+OK pause revokes queued UI callbacks and resume starts fresh
+OK disconnect during USB opening closes the late handle
+OK disconnect during live receive discards the old session sample
+OK failed DTC never becomes an empty successful report
+OK diagnostic connection without supported sensors can still read DTC
+OK failed rediscovery revokes the previous sensor profile
+PASS: 33 core regression tests
+
+PASS: 312 reference decoder vectors, 5616 field values

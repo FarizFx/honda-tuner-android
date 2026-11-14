@@ -1,0 +1,104 @@
+name: Build Android APK
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - 'app/**'
+      - 'tools/**'
+      - 'tests/**'
+      - '*.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/build-android.yml'
+      - 'honda_tuner_android/**'
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'tools/**'
+      - 'tests/**'
+      - '*.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/build-android.yml'
+      - 'honda_tuner_android/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Locate Android project
+        id: project
+        shell: bash
+        run: |
+          if [ -f app/build.gradle ]; then
+            android_project_dir=.
+          elif [ -f honda_tuner_android/app/build.gradle ]; then
+            android_project_dir=honda_tuner_android
+          else
+            echo 'Android project was not found.' >&2
+            exit 1
+          fi
+          echo "dir=$android_project_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Verify project and test the protocol workers
+        shell: bash
+        run: |
+          python3 "${{ steps.project.outputs.dir }}/tools/verify_project.py"
+          python3 "${{ steps.project.outputs.dir }}/tools/test_core.py" --java-home "$JAVA_HOME"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 build packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compile and sign debug APK
+        run: gradle -p "${{ steps.project.outputs.dir }}" --no-daemon --console=plain :app:assembleDebug
+
+      - name: Verify and package APK
+        shell: bash
+        run: |
+          python3 "${{ steps.project.outputs.dir }}/tools/package_apk.py" \
+            --apk "${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/app-debug.apk" \
+            --sdk "$ANDROID_HOME" --java-home "$JAVA_HOME"
+
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HondaTuner-Android-debug
+          path: |
+            ${{ steps.project.outputs.dir }}/dist/HondaTuner-Android-debug.apk
+            ${{ steps.project.outputs.dir }}/dist/HondaTuner-Android-debug.apk.sha256
+            ${{ steps.project.outputs.dir }}/evidence/apk_verification.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HondaTuner-Android-verification
+          path: ${{ steps.project.outputs.dir }}/evidence/
+          if-no-files-found: warn
+          retention-days: 14
