@@ -94,6 +94,8 @@ jobs:
       - name: Set up Android SDK
         if: runner.os != 'Windows'
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
       - name: Set up Android SDK on Windows
         if: runner.os == 'Windows'
