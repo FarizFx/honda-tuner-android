@@ -1,96 +1,103 @@
 {
-  "checked_at_utc": "2026-11-15T21:11:24Z",
-  "stage": "source_verified_waiting_push",
-  "repository_full_name": "FarizFx/honda-tuner-android",
-  "repository_url": "https://github.com/FarizFx/honda-tuner-android",
-  "source_pushed": false,
-  "source_commit": null,
+  "result": "passed",
+  "source_commit": "c7717c0a9c822185c27e7a8b6e577907c54651d0",
+  "github_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502",
+  "release_id": 446373786,
+  "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-bdf09c01006f3fb014b6",
+  "release_tag": "android-debug-43762436502-1",
+  "release_assets_verified": [
+    {
+      "name": "apk_verification.json",
+      "bytes": 2589,
+      "sha256": "68322cc9862356805e8b253af4e888d482ca37e2fe9c2419038bb05248e2718c"
+    },
+    {
+      "name": "core_tests.txt",
+      "bytes": 4600,
+      "sha256": "540389ef3aaabe2ae2e7166d65364b786ae577ef66dce51f7b116f7de904f7d4"
+    },
+    {
+      "name": "core_verification.json",
+      "bytes": 3088,
+      "sha256": "9e6ffcfda295327b1597d094862be8295952c998d0a6d15cc6b0f34acb5d49f8"
+    },
+    {
+      "name": "HondaTuner-Android-debug.apk",
+      "bytes": 100246,
+      "sha256": "b02bffd7fbebb90029b16ba62d3a26a9f0bed0d7fa4f95c384625c84cb272348"
+    },
+    {
+      "name": "HondaTuner-Android-debug.apk.sha256",
+      "bytes": 95,
+      "sha256": "effbb54b27806dca0d3cbc260adf831065c6da9d98d1fa2ed87fdcc723890de5"
+    },
+    {
+      "name": "project_verification.json",
+      "bytes": 4545,
+      "sha256": "771e080a0c80cf7247547e5247c5b2c68ca46fd10dc79bc1577da5c9e4e57f78"
+    },
+    {
+      "name": "reference_provenance.json",
+      "bytes": 1963,
+      "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4"
+    }
+  ],
+  "apk_sha256": "b02bffd7fbebb90029b16ba62d3a26a9f0bed0d7fa4f95c384625c84cb272348",
+  "apk_bytes": 100246,
   "version_name": "1.1.1-debug",
   "version_code": 3,
-  "github_actions_run": null,
-  "github_actions_conclusion": null,
-  "apk_built": false,
-  "apk_downloaded": false,
-  "laptop_used_for_build": false,
+  "ci_source_files_verified": 39,
+  "core_regression_tests": 76,
+  "reference_decoder_vectors": 312,
+  "reference_field_values": 5616,
+  "android_sdk_compilation": true,
+  "android_lint_errors": 0,
+  "android_lint_warnings": 35,
+  "downloaded_zip_crc_verified": true,
+  "signer_sha256": "3e754a6e53eea394bb69c62aa4faea575316a2105c88f04f4b8da49c21dbff20",
+  "previous_signer_sha256": "f348ce46260b58314a30b2029e238759758041648f9f6c1556f5fed7e453527a",
+  "same_signer_as_previous": false,
   "physical_ecu_success_verified": false,
+  "checked_at_utc": "2026-11-15T21:38:03Z",
+  "stage": "verified_apk_downloaded_physical_scan_failed",
+  "repository_full_name": "FarizFx/honda-tuner-android",
+  "repository_url": "https://github.com/FarizFx/honda-tuner-android",
+  "source_pushed": true,
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502",
+  "github_actions_conclusion": "success",
+  "runner_name": "1",
+  "runner_id": 28,
+  "runner_os": "Linux",
+  "apk_built": true,
+  "apk_downloaded": true,
+  "apk_relative_path": "dist/HondaTuner-Android-debug.apk",
+  "laptop_used_for_build": false,
+  "downloaded_apk_hash_matches_sidecar_and_report": true,
+  "ci_source_hashes_match_checkout": true,
+  "release_is_draft": true,
+  "release_is_prerelease": true,
+  "uninstall_previous_app_required": true,
   "previous_delivery_preserved": "dist/baseline-1.1.0/github_delivery.json",
-  "previous_verified_delivery": {
-    "checked_at_utc": "2026-11-15T15:39:10Z",
-    "stage": "verified_apk_downloaded",
-    "owner": "FarizFx",
-    "repository_full_name": "FarizFx/honda-tuner-android",
-    "repository_url": "https://github.com/FarizFx/honda-tuner-android",
-    "repository_visibility": "public",
-    "github_repository_created": true,
-    "source_pushed": true,
-    "source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6",
-    "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722",
-    "github_actions_conclusion": "success",
-    "runner_name": "KC",
-    "runner_id": 27,
-    "runner_os": "Linux",
-    "laptop_used_for_final_build": false,
-    "apk_built": true,
-    "apk_downloaded": true,
-    "apk_relative_path": "dist/HondaTuner-Android-debug.apk",
-    "apk_sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8",
-    "apk_bytes": 97142,
-    "downloaded_apk_hash_matches_sidecar_and_report": true,
-    "downloaded_zip_crc_verified": true,
-    "release_tag": "android-debug-43730532722-1",
-    "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1",
-    "release_is_draft": true,
-    "release_is_prerelease": true,
-    "release_assets_verified": [
-      {
-        "name": "apk_verification.json",
-        "bytes": 2588,
-        "sha256": "8315cfc78f73107d2729b268f12cc13a2341e85fe5d8c2fb64966de5b064f8d3"
-      },
-      {
-        "name": "core_tests.txt",
-        "bytes": 3378,
-        "sha256": "93cd38e76f7f51afea00f8d47403cd5653b81a1f6dff2556d26ca2dc0a994463"
-      },
-      {
-        "name": "core_verification.json",
-        "bytes": 2839,
-        "sha256": "fbc2797d41ec980de456b418bcb39af6034b86dc4b8f4e61d618f2f215e81ae2"
-      },
-      {
-        "name": "HondaTuner-Android-debug.apk",
-        "bytes": 97142,
-        "sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8"
-      },
-      {
-        "name": "HondaTuner-Android-debug.apk.sha256",
-        "bytes": 95,
-        "sha256": "b874129a13a395fa287a8471dd1905a8120f6c56d0a029bdeb2b2ccffdd33078"
-      },
-      {
-        "name": "project_verification.json",
-        "bytes": 4419,
-        "sha256": "c4239681e2a9a79138415f135f74d868dcdf55cd4684977637cd71c71354d44f"
-      },
-      {
-        "name": "reference_provenance.json",
-        "bytes": 1963,
-        "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4"
-      }
-    ],
-    "physical_android_usb_or_ecu_test": false,
-    "result": "passed",
-    "release_id": 446160544,
-    "ci_source_hashes_match_checkout": true,
-    "signer_sha256": "f348ce46260b58314a30b2029e238759758041648f9f6c1556f5fed7e453527a",
-    "baseline_signer_sha256": "f950d93b5f8afcf06e1b75d4aacfc290ca77341ebbb390fdfabb80ce3f30ae51",
-    "same_signer_as_baseline": false,
-    "version_code": 2,
-    "version_name": "1.1.0-debug",
-    "laptop_used_for_build": false,
-    "previous_delivery_preserved": "dist/baseline-1.0.0/github_delivery.json",
-    "uninstall_previous_app_required": true,
-    "private_app_data_removed_by_uninstall": true,
-    "physical_ecu_success_verified": false
+  "physical_android_usb_or_ecu_test": true,
+  "physical_test": {
+    "version": "1.1.1-debug",
+    "usb_detected": true,
+    "ecu_scan_succeeded": false,
+    "ecu_vendor": "Shindengen",
+    "adapter": "FT232RL",
+    "android_api": 37,
+    "phone_model": "Xiaomi 2311DRK48G",
+    "same_setup_works_in_hondaeculite_on_pc": true,
+    "low_pin": "FC",
+    "high_pin": "FF",
+    "wake_lsr": "0x62",
+    "wake_rx": "Repeated FF/FC GPIO samples remain after returning to UART",
+    "entry_tx": "72 05 00 F0 99",
+    "entry_usb_rx": "01 60 60 00 00 E0 10",
+    "entry_uart_rx": "60 00 00 E0 10",
+    "entry_attempts_failed": 6,
+    "physical_trace_sha256": "e9a00ec718b5121bef8ba33c19b25757cc8cc87ea266ecfa636675cc6fa0090e",
+    "power_description_from_user": "K-Line board has 12 V and GND; FTDI is connected with GND/VCC/RX/TX and set to 5 V. Exact power routing unknown.",
+    "electrical_cause": "Unproven; no waveform measurement"
   }
 }

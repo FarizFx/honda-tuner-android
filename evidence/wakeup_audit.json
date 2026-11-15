@@ -13,7 +13,10 @@
     "exact_motor_and_ecu_code": "unknown",
     "requested_scan_scope": "Honda K-Line Keihin and Shindengen without requiring a catalog ID",
     "wake_tx": "FE 04 FF FF",
-    "wake_rx_examples": ["01 60 FC", "01 68 FC 00"],
+    "wake_rx_examples": [
+      "01 60 FC",
+      "01 68 FC 00"
+    ],
     "entry_tx": "72 05 00 F0 99",
     "entry_rx_example": "01 68 60 00",
     "line_status_0x68_has_framing_error": true
@@ -47,9 +50,11 @@
     "reference_decoder_vectors": 312,
     "reference_field_values": 5616,
     "offline_java_and_project_checks": "passed",
-    "android_sdk_compilation": false,
-    "android_lint_for_new_source": "pending server build",
-    "physical_android_usb_or_ecu_test_of_fix": false
+    "android_sdk_compilation": true,
+    "android_lint_for_new_source": "passed: 0 errors, 35 warnings",
+    "physical_android_usb_or_ecu_test_of_fix": true,
+    "physical_scan_succeeded": false,
+    "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502"
   },
   "reference_evidence": {
     "kind": "Reused original-extension scripted FTDI observation and ordinary shell/source inspection; no new REA Evidence claimed",
@@ -64,7 +69,27 @@
   "remaining_unknowns": [
     "Physical cause of FE being observed as FC is not proven by the trace or scripted fixtures.",
     "FTDI pin/status reports do not measure K-Line voltage or timing at the ECU connector.",
-    "Physical operation on the user's Shindengen and on every Keihin/Honda K-Line model requires device retesting.",
-    "An installable 1.1.1-debug APK requires the authorized Linux server runner to be online and CI to pass."
-  ]
+    "Physical operation on the user's Shindengen and on every Keihin/Honda K-Line model requires device retesting."
+  ],
+  "latest_physical_test": {
+    "version": "1.1.1-debug",
+    "usb_detected": true,
+    "ecu_scan_succeeded": false,
+    "ecu_vendor": "Shindengen",
+    "adapter": "FT232RL",
+    "android_api": 37,
+    "phone_model": "Xiaomi 2311DRK48G",
+    "same_setup_works_in_hondaeculite_on_pc": true,
+    "low_pin": "FC",
+    "high_pin": "FF",
+    "wake_lsr": "0x62",
+    "wake_rx": "Repeated FF/FC GPIO samples remain after returning to UART",
+    "entry_tx": "72 05 00 F0 99",
+    "entry_usb_rx": "01 60 60 00 00 E0 10",
+    "entry_uart_rx": "60 00 00 E0 10",
+    "entry_attempts_failed": 6,
+    "physical_trace_sha256": "e9a00ec718b5121bef8ba33c19b25757cc8cc87ea266ecfa636675cc6fa0090e",
+    "power_description_from_user": "K-Line board has 12 V and GND; FTDI is connected with GND/VCC/RX/TX and set to 5 V. Exact power routing unknown.",
+    "electrical_cause": "Unproven; no waveform measurement"
+  }
 }

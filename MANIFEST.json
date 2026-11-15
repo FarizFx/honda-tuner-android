@@ -21,12 +21,12 @@
       "bytes": 799
     },
     "README.md": {
-      "sha256": "4f3f8cec0afa29ccfdf117180684107fddb5b49a90e526e331e149eb816dc5d2",
-      "bytes": 8379
+      "sha256": "b2d77c15cbe51027876e51624b96faf5466f8c66adcebb8076324d69be89ee14",
+      "bytes": 8056
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "169c74388cdd1228d62ab302400834e98a0b2f86ea2e6fb7744af7b4ba389725",
-      "bytes": 2778
+      "sha256": "7cba62ca4105b13803e89f97744180b8b642806fd3596004d6669002bc1768c0",
+      "bytes": 2578
     },
     "app/build.gradle": {
       "sha256": "8895f5f3c52a649c2a7df3bee0eafcb91c36c99a31fe55f5943029b3f554b587",
@@ -136,29 +136,37 @@
       "sha256": "c3c0cf04da0fc239f391c774554d97d890018ab6e37e87cc62f6070d0c8c9909",
       "bytes": 73
     },
+    "dist/HondaTuner-Android-debug.apk": {
+      "sha256": "b02bffd7fbebb90029b16ba62d3a26a9f0bed0d7fa4f95c384625c84cb272348",
+      "bytes": 100246
+    },
+    "dist/HondaTuner-Android-debug.apk.sha256": {
+      "sha256": "effbb54b27806dca0d3cbc260adf831065c6da9d98d1fa2ed87fdcc723890de5",
+      "bytes": 95
+    },
     "evidence/apk_verification.json": {
-      "sha256": "8315cfc78f73107d2729b268f12cc13a2341e85fe5d8c2fb64966de5b064f8d3",
-      "bytes": 2588
+      "sha256": "68322cc9862356805e8b253af4e888d482ca37e2fe9c2419038bb05248e2718c",
+      "bytes": 2589
     },
     "evidence/build_status.json": {
-      "sha256": "faa387333ab44c3e54506925ef40fe7ee093b22ea2c7efceed60fa1f7bd8d116",
-      "bytes": 1960
+      "sha256": "5419839f661ea26c617e5e2b0e1aa651ff6bf3b68bcff3e368dec41c27614baf",
+      "bytes": 2400
     },
     "evidence/connection_debug_audit.json": {
       "sha256": "c366d6f6f20f6c4cc735336fbf073a9d646accbf4d7f38458e26fc1f297b273e",
       "bytes": 1443
     },
     "evidence/core_tests.txt": {
-      "sha256": "c1203a050cc180ae9004bad3ce722ba9efe303aff448b7fb94595c6d2afb2214",
-      "bytes": 4868
+      "sha256": "540389ef3aaabe2ae2e7166d65364b786ae577ef66dce51f7b116f7de904f7d4",
+      "bytes": 4600
     },
     "evidence/core_verification.json": {
-      "sha256": "c216978d6d3e8cc48e444e48dab33820b48785a084f75bb61ae91f51ae8da797",
-      "bytes": 3059
+      "sha256": "9e6ffcfda295327b1597d094862be8295952c998d0a6d15cc6b0f34acb5d49f8",
+      "bytes": 3088
     },
     "evidence/github_delivery.json": {
-      "sha256": "1fb7f9db4c1403d6bb238cbd8a982792f7cc4cee949f4baa648664403b68ed4d",
-      "bytes": 3756
+      "sha256": "222902a0a79bc70f21b4af48efca487e49056137ed3a223e8fedb4991e53f212",
+      "bytes": 4021
     },
     "evidence/project_verification.json": {
       "sha256": "771e080a0c80cf7247547e5247c5b2c68ca46fd10dc79bc1577da5c9e4e57f78",
@@ -169,8 +177,8 @@
       "bytes": 1963
     },
     "evidence/wakeup_audit.json": {
-      "sha256": "025cc8a86b5afe44d697efe0b8a1794aea4622bf8e36c31482710d2d84149f02",
-      "bytes": 4288
+      "sha256": "7b08c27662e33b73a3f2bd7fceb832eb250300f8983eb5e5595e02f3b6561418",
+      "bytes": 5237
     },
     "gradle.properties": {
       "sha256": "3cacd22aa6686499e91f96d801d5557a9c0b81ab1872f81285ee395f2539f630",
@@ -225,12 +233,12 @@
       "bytes": 5232
     }
   },
-  "scope": "Current 1.1.1 source inventory; SDK build pending; retained apk_verification.json describes 1.1.0",
-  "android_sdk_compilation": false,
-  "apk_included": false,
+  "scope": "Verified 1.1.1 delivery; physical scan failed",
+  "android_sdk_compilation": true,
+  "apk_included": true,
   "version_name": "1.1.1-debug",
-  "github_actions_run": null,
-  "pushed_source_commit": null,
-  "built_source_commit": null,
-  "previous_built_source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6"
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502",
+  "pushed_source_commit": "c7717c0a9c822185c27e7a8b6e577907c54651d0",
+  "built_source_commit": "c7717c0a9c822185c27e7a8b6e577907c54651d0",
+  "physical_ecu_success_verified": false
 }

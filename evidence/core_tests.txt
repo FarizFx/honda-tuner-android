@@ -1,7 +1,3 @@
-warning: [options] source value 8 is obsolete and will be removed in a future release
-warning: [options] target value 8 is obsolete and will be removed in a future release
-warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
-3 warnings
 OK Honda diagnostic, table, wake and DTC command bytes
 OK fragmented current-request echo and reply
 OK echo-only response cannot become an ECU acknowledgement
