@@ -33,10 +33,10 @@
     "tools/sync_reference.py": "409cceb2c9ba6dfb8777e8e4eb9eb96df3463aa74b40f073d5f47bc04df5ac58",
     "tools/test_core.py": "d1364f4090957b73b29b53cfb508273afd0ac390a6574916fe574c71f734c017",
     "tools/toolchain.py": "65d9efeaba8a892e2a42b1ebc0a56b4d4f2c92c3dbeec7746a6502307cbff71f",
-    "tools/verify_project.py": "52e09de15aa7da18a1cd456c51301594b3d017436b140454cb473190b3562cca",
+    "tools/verify_project.py": "0fc2ac3eede1297a620eb138ff334c8d2a609e91bcac1e03e60eeb7dc982bb7f",
     "app/src/main/AndroidManifest.xml": "fd39faead10d5f70d79816dfa0021eea36b83eeb4accbe32c406b12d0904973a",
     "app/src/main/assets/ecu_catalog.tsv": "be3a797196048fe650f79a2a1ba8ed645b4b2cc94a75427346673f4d2a148354",
-    ".github/workflows/build-android.yml": "4c991d5dd97947201f28dca1da00085aa39ba5c3a0403eb9c226b5e38776c1eb",
+    ".github/workflows/build-android.yml": "3608cd9e2c84f329834ed6d56d858a84ba9909d05a06732becb73b393f99ef95",
     "app/build.gradle": "087aa373a84f66343c7428d2332a5126708fd5381b7b26d7a8c183491394157b",
     "build.gradle": "c3c0cf04da0fc239f391c774554d97d890018ab6e37e87cc62f6070d0c8c9909",
     "settings.gradle": "004b56d50b80bebfca0b8d8e6f723143bac17d898502bd09325eac9f575a1a4c"

@@ -1,8 +1,8 @@
 {
   "files": {
     ".github/workflows/build-android.yml": {
-      "sha256": "4c991d5dd97947201f28dca1da00085aa39ba5c3a0403eb9c226b5e38776c1eb",
-      "bytes": 3093
+      "sha256": "3608cd9e2c84f329834ed6d56d858a84ba9909d05a06732becb73b393f99ef95",
+      "bytes": 7471
     },
     ".gitignore": {
       "sha256": "80a70a2babf1673b68a2f1aeb51bcd98d88be6cd922c1eb9c5d8fb88bc9430c4",
@@ -101,19 +101,19 @@
       "bytes": 73
     },
     "evidence/build_status.json": {
-      "sha256": "52bea93f9fef2dcd121d272f47c7507fe0fe4d0b84f7221e5d44f6bf9e6e3f01",
-      "bytes": 1468
+      "sha256": "4103018c406aa3a4a5431a14b1578ed60a626358b8e0f76d45745772168acb8e",
+      "bytes": 1495
     },
     "evidence/core_tests.txt": {
       "sha256": "4ae93909f31fdb3eb18c0a1af95a0ed99677a1c9151201ed57f0366efffa47c0",
       "bytes": 2211
     },
     "evidence/core_verification.json": {
-      "sha256": "77c9fd6258c3e3666b8e97022bf045ce0cd6462adec2882cae22c07f283a240f",
+      "sha256": "023d5bee1bec8da63577281bba590f62f9dcf10298e98a7f66e3042bb58706e5",
       "bytes": 2446
     },
     "evidence/project_verification.json": {
-      "sha256": "d5168318cd8ded5825f92d7367c25717a3109a4b9815a1e3bc417a98d2a56ad7",
+      "sha256": "05a686dbc723078e714e1e40c1823ee61a8cc38827993e2d1b0090c971b64290",
       "bytes": 3971
     },
     "evidence/reference_provenance.json": {
@@ -129,12 +129,12 @@
       "bytes": 799
     },
     "README.md": {
-      "sha256": "fd33d575529481c7004d45aa52e8ac620548a31cab202781ac81c07d8737a715",
-      "bytes": 5528
+      "sha256": "1fff12c30097fa4f0b750bed9ae58f61a6928e88b97c571b34b2c3d104ea1082",
+      "bytes": 6334
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "84461bf3fbbfefb09172d06d365cd3f56aa4911784ff3ea16ab747430526a239",
-      "bytes": 4672
+      "sha256": "37c6079f9c551c6bc19989f4ab86c00339fbbc0064039c9e756e08e7216b4cd7",
+      "bytes": 4748
     },
     "settings.gradle": {
       "sha256": "004b56d50b80bebfca0b8d8e6f723143bac17d898502bd09325eac9f575a1a4c",
@@ -173,8 +173,12 @@
       "bytes": 2313
     },
     "tools/verify_project.py": {
-      "sha256": "52e09de15aa7da18a1cd456c51301594b3d017436b140454cb473190b3562cca",
-      "bytes": 4863
+      "sha256": "0fc2ac3eede1297a620eb138ff334c8d2a609e91bcac1e03e60eeb7dc982bb7f",
+      "bytes": 5218
+    },
+    ".github/workflows/android.yml": {
+      "sha256": "0f2ef1e458b8d3caf445da0e793bfe70def773955225e2595c6b348cf1939e76",
+      "bytes": 667
     }
   },
   "android_sdk_compilation": false,

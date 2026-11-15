@@ -6,7 +6,7 @@
   "core_regression_tests": 33,
   "reference_decoder_vectors": 312,
   "reference_field_values": 5616,
-  "elapsed_seconds": 2.636,
+  "elapsed_seconds": 4.016,
   "source_sha256": {
     "app/src/main/java/id/hondatuner/core/ByteChannel.java": "0d686869e58303a73ab9c8f9ca30d050d36a82a7e4b2381c9c5464ea87d14e9c",
     "app/src/main/java/id/hondatuner/core/CancelSignal.java": "2128bf532f7f5e29707e25db18eb6febe364f12be600c89c7ae55ca1d9f1a057",

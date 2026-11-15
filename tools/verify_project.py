@@ -46,18 +46,20 @@ def main():
     workflow_path = ROOT / ".github/workflows/build-android.yml"
     workflow_text = workflow_path.read_text(encoding="utf-8")
     assert "\t" not in workflow_text
-    for required in ("workflow_dispatch:", "java-version: '17'", "gradle-version: '8.9'", ':app:assembleDebug', "package_apk.py", "HondaTuner-Android-debug", "contents: read"):
+    for required in ("workflow_dispatch:", "java-version: '17'", "gradle-version: '8.9'", ':app:assembleDebug', "verify_project.py", "test_core.py", "package_apk.py", "HondaTuner-Android-debug", "contents: read"):
         assert required in workflow_text, "Workflow step missing: " + required
     yaml_parsed = False
     try:
         import yaml
-    except ImportError:
-        pass
+    except ImportError as error:
+        raise RuntimeError("Workflow validation requires PyYAML. Install it with: python -m pip install PyYAML==6.0.2") from error
     else:
         workflow = yaml.safe_load(workflow_text)
         assert "workflow_dispatch" in workflow["on"]
-        assert workflow["jobs"]["android"]["runs-on"] == "ubuntu-24.04"
-        assert len(workflow["jobs"]["android"]["steps"]) == 11
+        android_job = workflow["jobs"]["android"]
+        runner = android_job.get("runs-on")
+        assert isinstance(runner, (str, list, dict)) and runner, "Android runner selection is missing or invalid"
+        assert isinstance(android_job.get("steps"), list) and android_job["steps"], "Android build steps are missing"
         yaml_parsed = True
     catalog_lines = (source / "assets/ecu_catalog.tsv").read_text(encoding="utf-8").splitlines()
     for line in catalog_lines:

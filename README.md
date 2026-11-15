@@ -43,23 +43,34 @@ Untuk menjalankan build manual, buka [Actions](https://github.com/FarizFx/honda-
 pilih **Build Android APK → Run workflow**, lalu pilih branch **main**.
 Perubahan README saja tidak memicu build otomatis.
 
-Workflow memasang
-Java 17, Gradle 8.9, Android platform 35 dan build-tools 35.0.0; menjalankan
+Input `runner` memilih label runner; nilai default adalah `self-hosted`.
+Runner dengan label itu harus online. Workflow memakai Python 3.12 dan perintah
+yang dapat dijalankan pada Windows maupun Linux. **Android CI** adalah pintasan
+manual ke workflow utama.
+
+Workflow memasang Python/PyYAML, Java 17, Gradle 8.9, Android platform 35 dan
+build-tools 35.0.0; menjalankan
 verifikasi source dan tes protokol; lalu menjalankan `:app:assembleDebug`.
 APK yang berhasil dibuat harus lulus pemeriksaan tanda tangan, metadata dan
-integritas ZIP sebelum menjadi artifact **HondaTuner-Android-debug**.
+integritas ZIP sebelum disimpan sebagai **HondaTuner-Android-debug.apk**.
 
-Setelah run sukses, buka run tersebut, unduh artifact **HondaTuner-Android-debug**
-di bagian **Artifacts**, lalu ekstrak ZIP-nya. Isinya:
+Pada branch `main`, hasil build disimpan sebagai **draft release**. Setelah run
+sukses, buka tautan draft release di ringkasan job atau halaman **Releases** repo.
+Pemilik repo dapat mengunduh berkas berikut:
 
-- `dist/HondaTuner-Android-debug.apk`
-- `dist/HondaTuner-Android-debug.apk.sha256`
-- `evidence/apk_verification.json`
+- `HondaTuner-Android-debug.apk`
+- `HondaTuner-Android-debug.apk.sha256`
+- `apk_verification.json`
+- laporan tes core, pemeriksaan proyek, dan asal fixture
 
 Bandingkan SHA-256 APK dengan sidecar dan laporan verifikasi.
-Artifact **HondaTuner-Android-verification** berisi hasil tes dan pemeriksaan.
-Workflow menetapkan retensi artifact 14 hari. APK memakai tanda tangan debug
-dari runner untuk pengujian pemasangan.
+APK memakai tanda tangan debug dari runner untuk pengujian pemasangan.
+Draft release menyediakan file hasil build ketika kuota Actions artifact penuh.
+
+Input `upload_actions_artifacts` dapat diaktifkan untuk menambahkan artifact
+**HondaTuner-Android-debug** dan **HondaTuner-Android-verification** di Actions
+dengan retensi 14 hari. Nilai defaultnya `false`; aktifkan saat kuota penyimpanan
+Actions tersedia.
 
 Folder `dist/` diabaikan Git; APK dan arsip source di folder itu tidak disertakan
 dalam repo. Status build terbaru tersedia di Actions. Catatan lokal ada di
@@ -85,9 +96,11 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 ## Tes core tanpa SDK
 
-Tes protokol tidak membutuhkan SDK Android atau ECU:
+Tes protokol tidak membutuhkan SDK Android atau ECU. Pemeriksaan workflow
+membutuhkan PyYAML:
 
 ```sh
+python -m pip install PyYAML==6.0.2
 python tools/verify_project.py
 python tools/test_core.py --java-home /path/to/jdk
 ```
