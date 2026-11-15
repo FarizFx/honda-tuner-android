@@ -1,22 +1,31 @@
 {
-    "date":  "2026-11-15",
-    "version_name":  "1.1.0-debug",
-    "user_report":  "Previous APK detects USB but ECU scan fails with no visible debug log.",
-    "physical_cause_confirmed":  false,
-    "fixes":  [
-                  "Optional exact adapter echo with strict ECU framing",
-                  "Ignore FTDI error flags only in data-free status packets",
-                  "Explicitly disable flow control and settle HIGH before UART",
-                  "Cancellable full scan retries and visible connection stages",
-                  "Preserve USB permission result across transient foreground exit",
-                  "Discard failed candidates after a successful table fallback",
-                  "Close unowned USB channels on transport-construction failure",
-                  "Visible and privately persisted error trace",
-                  "Complete discovered-sensor UI, real-time graph, statistics and CSV"
-              ],
-    "regressions":  57,
-    "reference_vectors":  312,
-    "reference_field_values":  5616,
-    "android_sdk_compilation":  false,
-    "device_retest_required":  true
+  "date": "2026-11-15",
+  "version_name": "1.1.0-debug",
+  "user_report": "Previous APK detects USB but ECU scan fails with no visible debug log.",
+  "physical_cause_confirmed": false,
+  "fixes": [
+    "Optional exact adapter echo with strict ECU framing",
+    "Ignore FTDI error flags only in data-free status packets",
+    "Explicitly disable flow control and settle HIGH before UART",
+    "Cancellable full scan retries and visible connection stages",
+    "Preserve USB permission result across transient foreground exit",
+    "Discard failed candidates after a successful table fallback",
+    "Close unowned USB channels on transport-construction failure",
+    "Visible and privately persisted error trace",
+    "Complete discovered-sensor UI, real-time graph, statistics and CSV"
+  ],
+  "regressions": 57,
+  "reference_vectors": 312,
+  "reference_field_values": 5616,
+  "android_sdk_compilation": true,
+  "device_retest_required": true,
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722",
+  "source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6",
+  "android_lint_errors": 0,
+  "android_lint_warnings": 35,
+  "actions_build_fixes": [
+    "API 26 theme no longer uses the API 27 navigation-bar attribute",
+    "API 26 registerReceiver flags overload with guarded API 33 not-exported state",
+    "All error/fatal lint findings are reported directly in Actions without suppression"
+  ]
 }

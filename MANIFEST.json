@@ -121,16 +121,16 @@
       "bytes": 73
     },
     "evidence/build_status.json": {
-      "sha256": "e5c1d5e705317d8b81cf523d04bb586c3c0656fbf00f2ff6bb55cca403d20ee2",
-      "bytes": 1721
+      "sha256": "3f38d55a7e15e2972ce3b886c1a28197769a152a1d365947f5b8e580d4aee5b6",
+      "bytes": 2660
     },
     "evidence/core_tests.txt": {
-      "sha256": "2f9e154ef9adeed1a2aa3b4d4cae71b4c7ab386686fd9b316cf96b4862833090",
-      "bytes": 3646
+      "sha256": "93cd38e76f7f51afea00f8d47403cd5653b81a1f6dff2556d26ca2dc0a994463",
+      "bytes": 3378
     },
     "evidence/core_verification.json": {
-      "sha256": "3aa2bf63604c974dcbe807b181f750320fb8b5d205cefd68b86c5e08c9b5b8ef",
-      "bytes": 2810
+      "sha256": "fbc2797d41ec980de456b418bcb39af6034b86dc4b8f4e61d618f2f215e81ae2",
+      "bytes": 2839
     },
     "evidence/project_verification.json": {
       "sha256": "c4239681e2a9a79138415f135f74d868dcdf55cd4684977637cd71c71354d44f",
@@ -149,12 +149,12 @@
       "bytes": 799
     },
     "README.md": {
-      "sha256": "7881e04cedf6c6398d295cd387fa25e5ef7db0387139dd03e1b1894389555a10",
-      "bytes": 6620
+      "sha256": "8cd6aad1879c0cd22c179517167c3c7fe0e0efa72b6e36d237f58527add4e6d9",
+      "bytes": 7417
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "dab456b29aaabdf3bd783517948122cba109c8b410f723b5621a2d2db16d066f",
-      "bytes": 5762
+      "sha256": "18ab15f0bc4dfab2d180c76acef2d304f26592f736847ff0a4df2ecee210ea58",
+      "bytes": 6305
     },
     "settings.gradle": {
       "sha256": "004b56d50b80bebfca0b8d8e6f723143bac17d898502bd09325eac9f575a1a4c",
@@ -201,7 +201,9 @@
       "bytes": 5232
     }
   },
-  "android_sdk_compilation": false,
+  "android_sdk_compilation": true,
   "apk_included": false,
-  "scope": "Current source inventory; APK verification is recorded separately"
+  "scope": "Current source inventory; APK verification is recorded separately",
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722",
+  "built_source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6"
 }

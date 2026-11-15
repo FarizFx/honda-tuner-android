@@ -3,12 +3,20 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.0-debug:** source lulus **57 tes regresi JVM**, **312 vektor dekoder** dan
-**5.616 nilai field**. Build APK pembaruan sedang disiapkan di server KillerCoda.
+**v1.1.0-debug:** APK sudah dibangun di server Linux **KC** pada
+[run 43730532722](https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722).
+Build, lint (**0 error**), signature dan ZIP lulus; **57 tes regresi JVM**,
+**312 vektor dekoder** dan **5.616 nilai field** juga lulus.
 Pada APK 1.0.0, pengguna berhasil mendeteksi USB, tetapi scan ECU belum berhasil
 dan log debug belum tersedia di UI. Pembaruan ini memperbaiki penanganan echo,
 status FTDI, retry dan izin USB serta menambahkan trace yang bisa disalin.
 Komunikasi ECU masih perlu diuji ulang pada HP.
+
+APK tersedia di [draft release untuk pemilik repo](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1)
+dan `dist/HondaTuner-Android-debug.apk` pada folder proyek lokal.
+Sertifikat debug runner KC berbeda dari APK 1.0.0: simpan data yang dibutuhkan,
+uninstall versi lama, lalu instal APK baru. Uninstall menghapus data privat aplikasi.
+Versi **1.1.0-debug** tampil di bagian atas aplikasi.
 
 ## Hubungkan
 
@@ -82,10 +90,12 @@ Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tun
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
 Runner default `self-hosted` harus online. Build pengguna memakai server Linux
-**KillerCoda**. Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
+**KC (runner ID 27)**. Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
 kemudian memeriksa signature, versi/manifest dan ZIP.
+Step **Report Android lint findings** selalu menampilkan semua error/fatal dari
+laporan lint XML. Error lint tetap menggagalkan build dan pengiriman APK.
 
 Hasil main menjadi **draft prerelease** untuk pemilik repo, berisi APK
 `HondaTuner-Android-debug.apk`, sidecar SHA-256, `apk_verification.json`,
@@ -118,6 +128,7 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
+APK terbaru dibangun dari source `9913287bb961ceb45131950b7ef0c437805d2da6`.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

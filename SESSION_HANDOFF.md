@@ -7,7 +7,7 @@ version remain unknown. Do not claim ECU success before the user's retest.
 
 Repo: https://github.com/FarizFx/honda-tuner-android (public).
 Checkout: `honda_tuner_android/build/github-repo` in the workspace.
-Mirror: `honda_tuner_android`. Synchronize the verified update after delivery.
+Mirror: `honda_tuner_android`. Verified source, APK and reports are synchronized.
 Never reset from or overwrite the historical source ZIP.
 Run `git` / `gh` directly in the terminal; never wrap Git in Python.
 Changes, push, server build and delivery are authorized. No delegation requested.
@@ -16,8 +16,8 @@ Changes, push, server build and delivery are authorized. No delegation requested
 
 **Never register/run this laptop as a self-hosted runner or install CI toolchains
 on it without explicit permission.** Builds use the user's KillerCoda Linux server.
-Runner ID 26, name KillerCoda, labels self-hosted/Linux/X64, is now **offline**.
-Preserve its registration and credentials.
+Successful update used runner ID **27**, name **KC**, labels self-hosted/Linux/X64.
+Old runner ID 26, KillerCoda, is offline. Preserve registrations and credentials.
 The pre-existing JDK `D:\Tools\jre25\jdk-25.0.4.1+1` may run offline core tests.
 Existing Python: `C:\Users\Fariz\AppData\Local\Programs\Python\Python312\python.exe`.
 Do not install an SDK or compile APKs on this laptop.
@@ -26,21 +26,31 @@ deletion was auto-review rejected. Do not recreate it.
 
 ## Current update
 
-Version 1.1.0-debug / code 2. Local core passed 57 regressions, 312 vectors and
-5,616 field values. Structural/XML/YAML and source MANIFEST checks passed.
-Source is pushed to main at `09585aaedb8c6047511b8f859c5c521d542a37d1`
+Version 1.1.0-debug / code 2. Server core passed 57 regressions, 312 vectors and
+5,616 field values. Structural/XML/YAML, SDK compilation, lint and APK checks passed.
+Built source is pushed to main at `9913287bb961ceb45131950b7ef0c437805d2da6`
 (implementation commit `d2d5867c55e0468cfe65ae8287d2654ec521976a`).
-Build `43723698241` is queued for the offline server:
-https://github.com/FarizFx/honda-tuner-android/actions/runs/43723698241
-Earlier run `43723005470` was automatically cancelled by the newer source push.
-An asynchronous question asks whether the user will restart KillerCoda or prefers
-GitHub-hosted Ubuntu for this build. No answer has arrived yet. Keep that choice
-pending; do not switch build hosts based on elapsed time.
-The development mirror is synchronized: 53 tracked files verified by SHA-256;
-31 previous files are backed up under ignored build/mirror-backup-*.
+Build `43730532722` succeeded on KC:
+https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722
+Run `43723698241` failed with two lint errors: API 27 windowLightNavigationBar in
+the API 26 theme and an unflagged legacy registerReceiver call. Commit `f90d638`
+removed the redundant theme item and exposed all fatal lint findings in Actions.
+Run `43730129943` exposed the remaining receiver error; commit `9913287` switched
+to the API 26 flags overload with guarded API 33 RECEIVER_NOT_EXPORTED. No lint
+suppression or minSdk increase. Final lint: 0 errors, 35 nonfatal warnings
+(28 SetTextI18n, 5 UnusedResources, 1 DrawAllocation, 1 DataExtractionRules).
+The development mirror is synchronized: 54 tracked files verified by SHA-256;
+previous files are backed up under ignored build/mirror-backup-*.
 The obsolete mirror RpmGraph.java was backed up and removed.
-New Android UI still requires actual SDK compilation and lint. No updated APK
-has been produced. Existing `dist/HondaTuner-Android-debug.apk` is still 1.0.0.
+All seven draft-release assets match their GitHub sizes/digests. APK also matches
+the CI report and SHA sidecar, and its downloaded ZIP CRC passed.
+`dist/HondaTuner-Android-debug.apk` is now 1.1.0-debug, 97,142 bytes; SHA-256:
+`79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8`.
+Tag `android-debug-43730532722-1`; draft release (owner access):
+https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1
+Signer SHA-256: `f348ce46260b58314a30b2029e238759758041648f9f6c1556f5fed7e453527a`.
+This differs from baseline. Save needed data, uninstall the old app, then install
+the new APK; uninstall removes private app data. No APK was installed by this task.
 Text exports and verification reports now use LF consistently across hosts.
 
 - AUTO accepts exact TX echo plus valid ECU reply or direct valid reply. Strict
@@ -68,16 +78,12 @@ remain raw. Support stays at FT232R 0403:6001 / bcdDevice 0600 / one UART.
 Wake is LOW 70 ms, HIGH settling 130 ms; 10400 baud 8N1.
 Logged host timing is not proof of physical pin timing.
 
-## Remaining delivery
+## Remaining device validation
 
-Source and reports are already pushed. Wait for the server to return or the host
-preference answer. If GitHub-hosted Ubuntu is explicitly selected, dispatch
-`gh workflow run build-android.yml --repo FarizFx/honda-tuner-android --ref main -f runner=ubuntu-latest`.
-Monitor the selected job, fix compile/lint failures, then download seven
-draft-release assets and verify sizes/digests/ZIP/metadata.
-Compare signer fingerprint with baseline; mention reinstall only if changed.
-Update README/evidence/handoffs, synchronize the verified APK/reports and deliver with
-Debug → Salin log / Simpan .txt instructions.
+Build and delivery are complete. Ask the user to retest Hubungkan on the phone
+using 1.1.0-debug. If ECU scan still fails, Debug opens automatically; use
+Salin log / Simpan .txt for the trace. Device model, ECU, adapter and Android
+version are still unknown. Physical ECU success remains unverified.
 
 ## Baseline
 
