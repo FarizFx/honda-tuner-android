@@ -1,8 +1,8 @@
 {
   "files": {
     ".github/workflows/build-android.yml": {
-      "sha256": "3608cd9e2c84f329834ed6d56d858a84ba9909d05a06732becb73b393f99ef95",
-      "bytes": 7471
+      "sha256": "9c979ab726873cd579696f6a17ebd434d4c45fb5749e4f8acdb13628cc1b7647",
+      "bytes": 9572
     },
     ".gitignore": {
       "sha256": "80a70a2babf1673b68a2f1aeb51bcd98d88be6cd922c1eb9c5d8fb88bc9430c4",
@@ -113,7 +113,7 @@
       "bytes": 2446
     },
     "evidence/project_verification.json": {
-      "sha256": "05a686dbc723078e714e1e40c1823ee61a8cc38827993e2d1b0090c971b64290",
+      "sha256": "00caa41298d32987c83fed951c0553b54c73e5443d1de66a6cf464f269d5f003",
       "bytes": 3971
     },
     "evidence/reference_provenance.json": {
