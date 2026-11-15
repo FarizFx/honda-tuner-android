@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import subprocess
 import sys
 import time
@@ -37,7 +38,33 @@ def main():
     source_list.write_text(argfile(sources), encoding="utf-8", newline="\n")
     began = time.time()
     compile_output = run([java_bin(home, "javac"), "--release", "8", "-encoding", "UTF-8", "-Xlint:all", "-d", str(classes), "@" + str(source_list)], timeout=60)
-    suite = run([java_bin(home, "java"), "-ea", "-cp", str(classes), "id.hondatuner.core.CoreTest"], timeout=30)
+    suite_results = {}
+    for name in ("CoreTest", "TransportTest", "ControllerHealthTest"):
+        suite_results[name] = run([java_bin(home, "java"), "-ea", "-cp", str(classes), "id.hondatuner.core." + name], timeout=45)
+    suite = "".join(suite_results.values())
+    suite_counts = {name: int(re.search(r"^PASS: (\d+) .*regression tests$", result, re.M).group(1))
+                    for name, result in suite_results.items()}
+    lite_path = ROOT / "tests/lite_transport_fixtures.json"
+    lite_cases = json.loads(lite_path.read_text(encoding="utf-8"))["cases"]
+    fixture_input = "".join("\t".join((case["name"], case["echo_mode"], str(case["target"]), case["payload_hex"],
+                                     str(case["timeout_ms"]), str(case["tx_completion_ms"]),
+                                     ";".join(str(piece["at_ms"]) + ":" + piece["hex"] for piece in case["rx_schedule"]))) + "\n"
+                            for case in lite_cases)
+    fixture_raw = run([java_bin(home, "java"), "-ea", "-cp", str(classes), "id.hondatuner.core.TransportTest", "--fixtures"], input=fixture_input, timeout=30)
+    fixture_results = [json.loads(line) for line in fixture_raw.splitlines()]
+    if len(fixture_results) != len(lite_cases):
+        raise AssertionError("Lite transport fixture count mismatch")
+    for case, result in zip(lite_cases, fixture_results):
+        expected = case["expect"]
+        if (result["name"] != case["name"] or result["success"] != expected["success"] or
+                result["writes"] != expected["writes"] or result["tx_hex"] != case["tx_hex"] or
+                result["elapsed_ms"] < expected["min_elapsed_ms"] or
+                (expected["success"] and result["payload_hex"] != expected["payload_hex"])):
+            raise AssertionError("Lite transport fixture %s: expected %r, got %r" % (case["name"], expected, result))
+    fixture_text = "".join("OK Lite fixture %s (%s, %d TX, %d ms)\n" %
+                           (result["name"], "valid" if result["success"] else "rejected", result["writes"], result["elapsed_ms"])
+                           for result in fixture_results)
+    total_tests = sum(suite_counts.values()) + len(lite_cases)
     vectors = json.loads((ROOT / "tests/reference_vectors.json").read_text(encoding="utf-8"))
     requests = "".join("%d\t%s\n" % (vector["table"], vector["body"]) for vector in vectors)
     raw = run([java_bin(home, "java"), "-cp", str(classes), "id.hondatuner.core.DecodeCli"], input=requests, timeout=30)
@@ -60,10 +87,12 @@ def main():
             compared += 1
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    (evidence / "core_tests.txt").write_text(compile_output + suite + "\nPASS: %d reference decoder vectors, %d field values\n" % (len(vectors), compared), encoding="utf-8", newline="\n")
+    (evidence / "core_tests.txt").write_text(compile_output + suite + fixture_text + "\nPASS: %d total regression tests\nPASS: %d reference decoder vectors, %d field values\n" % (total_tests, len(vectors), compared), encoding="utf-8", newline="\n")
     report = {
         "result": "passed", "java_home": str(home), "java_version": run([java_bin(home, "java"), "-version"], timeout=10).strip(),
-        "java_release": 8, "core_regression_tests": int(suite.split("PASS: ")[1].split()[0]),
+        "java_release": 8, "core_regression_tests": total_tests, "regression_suites": suite_counts,
+        "lite_transport_fixtures": len(lite_cases), "lite_transport_fixture_results": fixture_results,
+        "lite_transport_fixture_sha256": hashlib.sha256(lite_path.read_bytes()).hexdigest(),
         "reference_decoder_vectors": len(vectors), "reference_field_values": compared,
         "elapsed_seconds": round(time.time() - began, 3),
         "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
@@ -72,6 +101,8 @@ def main():
     }
     (evidence / "core_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(suite, end="")
+    print(fixture_text, end="")
+    print("PASS: %d total regression tests" % total_tests)
     print("PASS: %d reference decoder vectors; %d field values" % (len(vectors), compared))
 
 

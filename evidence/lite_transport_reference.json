@@ -1,0 +1,1046 @@
+{
+  "schema_version": 1,
+  "producer": "Recovered ordinary Python/native runtime probe outputs from the preceding Codex session",
+  "target": "HondaECU Lite Kline Edition v3.5.99.30",
+  "scope": "Shipped Windows native CPython 3.9 modules executed with a memory FTDI replacement; no physical USB/adaptor/ECU observation",
+  "source_session": {
+    "path": "C:\\Users\\Fariz\\.codex\\sessions\\2026\\11\\16\\rollout-2026-11-16T03-46-14-01a1e0f5-e6ec-7423-ba5c-9aab12082db6.jsonl",
+    "sha256": "7314a24c37ce1be8c46887a8d1083292a0a257e3c625ad0961c6e669e2be64e1"
+  },
+  "native_artifacts": [
+    {
+      "path": "HondaECU Lite Kline Edition v3.5.99.30/eculib/honda.cp39-win32.pyd",
+      "size_bytes": 527360,
+      "sha256": "710b0cdeee868dfe5ff8432e3af7a9659a373265d8f5386ec0b54e7da814a08b"
+    },
+    {
+      "path": "HondaECU Lite Kline Edition v3.5.99.30/eculib/base.cp39-win32.pyd",
+      "size_bytes": 36864,
+      "sha256": "1d2452013ae4e15422a08742779e68eaebd5b8da67bade1bf178d18b46794c72"
+    },
+    {
+      "path": "HondaECU Lite Kline Edition v3.5.99.30/eculib/misc.cp39-win32.pyd",
+      "size_bytes": 20992,
+      "sha256": "4507a8a95cbf76bc6c7d78e5e0434aef163ce0000a1faf88d238ea346a0dda93"
+    }
+  ],
+  "original_archive": {
+    "path": "HondaECU Lite Kline Edition v3.5.99.30.zip",
+    "sha256": "baa3f1b25d18276fd5fe67baeb57f290d1c759e6ec26b6a8f700e189d024460f",
+    "honda_member": "HondaECU Lite Kline Edition v3.5.99.30/eculib/honda.cp39-win32.pyd",
+    "honda_member_sha256": "710b0cdeee868dfe5ff8432e3af7a9659a373265d8f5386ec0b54e7da814a08b"
+  },
+  "native_probes": [
+    {
+      "id": "lite_echo_4",
+      "start_call_id": "call_gf7f3FVgGzu0DcsoBEiqDmOG",
+      "result_call_id": "call_gf7f3FVgGzu0DcsoBEiqDmOG",
+      "started_at_utc": "2026-11-15T22:12:40.176Z",
+      "reported_at_utc": "2026-11-15T22:12:43.336Z",
+      "command": "@'\nimport json\nimport subprocess\nfrom pathlib import Path\nruntime = Path('D:/Tools/py39/python.exe')\nif not runtime.is_file():\n    runtime = Path('honda_tuner/runtime/python.exe').resolve()\nif not runtime.is_file():\n    raise SystemExit('Existing CPython 3.9 win32 runtime unavailable; no installation attempted')\nworker = r'''\nimport sys, json, time, hashlib\nfrom pathlib import Path\nfrom unittest.mock import patch\ncase = json.loads(sys.argv[1])\noriginal = Path('HondaECU Lite Kline Edition v3.5.99.30').resolve()\nexpected = {'eculib/honda.cp39-win32.pyd':'710b0cdeee868dfe5ff8432e3af7a9659a373265d8f5386ec0b54e7da814a08b', 'eculib/base.cp39-win32.pyd':'1d2452013ae4e15422a08742779e68eaebd5b8da67bade1bf178d18b46794c72'}\nfor relative, digest in expected.items():\n    assert hashlib.sha256((original/relative).read_bytes()).hexdigest() == digest\nsys.path.insert(0, str(original))\nimport ftd2xx, ftd2xx.ftd2xx\nclass MemoryFTDI:\n    def __init__(self):\n        self.rx=bytearray(); self.due=None; self.reply=b''; self.events=[]; self.started=0; self.polls=0; self.empty_reads=0\n    def pump(self):\n        self.polls+=1\n        if self.polls > 30000:\n            raise RuntimeError('Probe polling bound exceeded')\n        if self.due is not None and time.perf_counter() >= self.due:\n            self.rx.extend(self.reply); self.due=None\n    def write(self, data):\n        self.started=time.perf_counter()\n        self.events.append(['write', bytes(data).hex(), 0])\n        self.rx.extend(bytes.fromhex(case['echo']))\n        self.reply=bytes.fromhex(case['reply'])\n        self.due=self.started+case['delay_ms']/1000\n        self.pump()\n        return len(data)\n    def read(self, count):\n        self.pump()\n        data=bytes(self.rx[:count]); del self.rx[:count]\n        if data:\n            self.events.append(['read',count,data.hex(),round((time.perf_counter()-self.started)*1000,1)])\n        else:\n            self.empty_reads+=1\n        return data\n    def getQueueStatus(self):\n        self.pump(); return len(self.rx)\n    def __getattr__(self, name):\n        def call(*args, **kwargs):\n            if name=='purge': self.rx.clear()\n            if name=='setLatencyTimer': self.events.append([name, list(args)])\n        return call\nhandle=MemoryFTDI()\ndef no_hardware(*args, **kwargs):\n    raise AssertionError('Hardware discovery or open prohibited in this probe')\nwith patch.object(ftd2xx,'openEx',return_value=handle), patch.object(ftd2xx.ftd2xx,'openEx',return_value=handle), patch.object(ftd2xx,'open',side_effect=no_hardware), patch.object(ftd2xx,'createDeviceInfoList',side_effect=no_hardware):\n    import eculib.honda as honda\n    ecu=honda.HondaECU(b'MEMORY_ONLY')\n    ecu.timeout=0.08\n    ecu.retries=1\n    handle.events.clear()\n    began=time.perf_counter()\n    try:\n        value=ecu.send_command([0x72],[0,0xf0])\n        def clean(v):\n            if isinstance(v,(bytes,bytearray)): return bytes(v).hex()\n            if isinstance(v,(list,tuple)): return [clean(x) for x in v]\n            return v\n        result=clean(value)\n    except Exception as exc:\n        result={'error':repr(exc)}\n    elapsed=(time.perf_counter()-began)*1000\n    ecu.shutdown()\nprint(json.dumps({'case':case, 'result':result, 'events':handle.events[:30], 'elapsed_ms':round(elapsed,1), 'empty_reads':handle.empty_reads, 'scope':'Pinned original native engine; scripted FTDI; no physical hardware'}))\n'''\ncases = [\n    {'name':'valid_echo_immediate_ack','echo':'720500f099','reply':'020400fa','delay_ms':0},\n    {'name':'damaged_echo_immediate_ack','echo':'600000e010','reply':'020400fa','delay_ms':0},\n    {'name':'damaged_echo_delayed_ack','echo':'600000e010','reply':'020400fa','delay_ms':20},\n    {'name':'damaged_echo_without_ack','echo':'600000e010','reply':'','delay_ms':0},\n]\nfor case in cases:\n    try:\n        completed = subprocess.run([str(runtime), '-B', '-X', 'utf8', '-c', worker, json.dumps(case)], capture_output=True, text=True, encoding='utf-8', timeout=8, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))\n        print(completed.stdout.strip() if completed.returncode == 0 else json.dumps({'case':case['name'],'returncode':completed.returncode,'error':completed.stderr[-1800:]}))\n    except subprocess.TimeoutExpired:\n        print(json.dumps({'case':case['name'],'result':'inconclusive; bounded worker timed out'}))\n'@ | & 'C:/Users/Fariz/AppData/Local/Programs/Python/Python312/python.exe' -B -X utf8 -",
+      "command_sha256": "e604bb2af5c63647b8f71535e8fe970e19f93f1cd141dc8eeeeb18c721b84114",
+      "original_case_specs": [
+        {
+          "name": "valid_echo_immediate_ack",
+          "echo": "720500f099",
+          "reply": "020400fa",
+          "delay_ms": 0
+        },
+        {
+          "name": "damaged_echo_immediate_ack",
+          "echo": "600000e010",
+          "reply": "020400fa",
+          "delay_ms": 0
+        },
+        {
+          "name": "damaged_echo_delayed_ack",
+          "echo": "600000e010",
+          "reply": "020400fa",
+          "delay_ms": 20
+        },
+        {
+          "name": "damaged_echo_without_ack",
+          "echo": "600000e010",
+          "reply": "",
+          "delay_ms": 0
+        }
+      ],
+      "original_observations": [
+        {
+          "case": {
+            "name": "valid_echo_immediate_ack",
+            "echo": "720500f099",
+            "reply": "020400fa",
+            "delay_ms": 0
+          },
+          "result": [
+            true,
+            [
+              "02",
+              4,
+              "00",
+              1
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              9,
+              "720500f099020400fa",
+              2.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 5.2,
+          "empty_reads": 1,
+          "scope": "Pinned original native engine; scripted FTDI; no physical hardware"
+        },
+        {
+          "case": {
+            "name": "damaged_echo_immediate_ack",
+            "echo": "600000e010",
+            "reply": "020400fa",
+            "delay_ms": 0
+          },
+          "result": [
+            true,
+            [
+              "02",
+              4,
+              "00",
+              1
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              9,
+              "600000e010020400fa",
+              3.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 6.1,
+          "empty_reads": 1,
+          "scope": "Pinned original native engine; scripted FTDI; no physical hardware"
+        },
+        {
+          "case": {
+            "name": "damaged_echo_delayed_ack",
+            "echo": "600000e010",
+            "reply": "020400fa",
+            "delay_ms": 20
+          },
+          "result": [
+            true,
+            [
+              "02",
+              4,
+              "00",
+              1
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "600000e010",
+              2.0
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              20.1
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 23.4,
+          "empty_reads": 18,
+          "scope": "Pinned original native engine; scripted FTDI; no physical hardware"
+        },
+        {
+          "case": {
+            "name": "damaged_echo_without_ack",
+            "echo": "600000e010",
+            "reply": "",
+            "delay_ms": 0
+          },
+          "result": [
+            false,
+            null
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "600000e010",
+              2.0
+            ],
+            [
+              "write",
+              "720500f099",
+              0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "600000e010",
+              2.0
+            ]
+          ],
+          "elapsed_ms": 166.9,
+          "empty_reads": 146,
+          "scope": "Pinned original native engine; scripted FTDI; no physical hardware"
+        }
+      ],
+      "artifact_digests_asserted_before_import": true
+    },
+    {
+      "id": "lite_contract_14",
+      "start_call_id": "call_81A7ptTUWAFZe9p3x9GCf38u",
+      "result_call_id": "call_a3LJHsTRhFZVPMue2qK8QQSL",
+      "started_at_utc": "2026-11-15T22:21:45.734Z",
+      "reported_at_utc": "2026-11-15T22:22:28.256Z",
+      "command": "@'\nimport json, subprocess\nworker = r'''\nimport json, sys, time, hashlib\nfrom pathlib import Path\nfrom unittest.mock import patch\nc=json.loads(sys.argv[1]); original=Path('HondaECU Lite Kline Edition v3.5.99.30').resolve()\nassert hashlib.sha256((original/'eculib/honda.cp39-win32.pyd').read_bytes()).hexdigest()=='710b0cdeee868dfe5ff8432e3af7a9659a373265d8f5386ec0b54e7da814a08b'\nassert hashlib.sha256((original/'eculib/base.cp39-win32.pyd').read_bytes()).hexdigest()=='1d2452013ae4e15422a08742779e68eaebd5b8da67bade1bf178d18b46794c72'\nsys.path.insert(0,str(original)); import ftd2xx, ftd2xx.ftd2xx\nclass Memory:\n    def __init__(self): self.rx=bytearray(); self.pending=[]; self.events=[]; self.polls=0; self.empty=0; self.t0=0; self.index=0\n    def pump(self):\n        self.polls+=1\n        if self.polls>40000: raise RuntimeError('Bounded polling limit reached')\n        now=time.perf_counter()\n        while self.pending and self.pending[0][0]<=now:\n            _,data=self.pending.pop(0); self.rx.extend(data)\n    def write(self,data):\n        tx=bytes(data); now=time.perf_counter()\n        if not self.t0: self.t0=now\n        spec=c['steps'][min(self.index,len(c['steps'])-1)]; self.index+=1\n        self.events.append(['write',tx.hex(),round((now-self.t0)*1000,1)])\n        echo=bytes.fromhex(spec.get('echo',tx.hex()))\n        reply=bytes.fromhex(spec.get('reply',''))\n        self.rx.extend(echo)\n        delay=spec.get('delay_ms',0); spacing=spec.get('fragment_ms',0)\n        if spacing:\n            self.pending.extend((now+(delay+i*spacing)/1000,bytes([b])) for i,b in enumerate(reply))\n        elif reply:\n            self.pending.append((now+delay/1000,reply))\n        self.pending.sort(key=lambda x:x[0]); self.pump()\n        return len(tx)\n    def read(self,count):\n        self.pump(); data=bytes(self.rx[:count]); del self.rx[:count]\n        if data: self.events.append(['read',count,data.hex(),round((time.perf_counter()-self.t0)*1000,1)])\n        else: self.empty+=1\n        return data\n    def getQueueStatus(self): self.pump(); return len(self.rx)\n    def __getattr__(self,name):\n        def call(*args,**kwargs):\n            if name=='purge': self.rx.clear(); self.pending=[]\n            if name=='setLatencyTimer': self.events.append([name,list(args)])\n        return call\nm=Memory()\ndef forbidden(*args,**kwargs): raise AssertionError('Physical hardware access prohibited')\nwith patch.object(ftd2xx,'openEx',return_value=m), patch.object(ftd2xx.ftd2xx,'openEx',return_value=m), patch.object(ftd2xx,'open',side_effect=forbidden), patch.object(ftd2xx,'createDeviceInfoList',side_effect=forbidden):\n    from eculib.honda import HondaECU\n    e=HondaECU(b'MEMORY'); e.timeout=0.08; e.retries=0\n    m.events=[]\n    results=[]; began=time.perf_counter()\n    for step in c['steps']:\n        try: results.append(e.send_command(step.get('target',[0x72]),step.get('payload',[0,0xf0]),noreturn=step.get('noreturn',False)))\n        except Exception as exc: results.append({'error':repr(exc)})\n    elapsed=(time.perf_counter()-began)*1000\n    e.shutdown()\ndef clean(v):\n    if isinstance(v,(bytes,bytearray)): return bytes(v).hex()\n    if isinstance(v,(tuple,list)): return [clean(x) for x in v]\n    if isinstance(v,dict): return {k:clean(x) for k,x in v.items()}\n    return v\nprint(json.dumps({'name':c['name'],'results':clean(results),'events':m.events[:25],'elapsed_ms':round(elapsed,1),'empty_reads':m.empty,'scope':'Original Lite Kline native engine; scripted UART; no hardware'}))\n'''\ncases=[\n {'name':'normal_echo_delayed_ack','steps':[{'reply':'020400fa','delay_ms':20}]},\n {'name':'damaged_echo_delayed_ack','steps':[{'echo':'600000e010','reply':'020400fa','delay_ms':20}]},\n {'name':'header_like_damaged_echo_delayed_ack','steps':[{'echo':'020000e010','reply':'020400fa','delay_ms':20}]},\n {'name':'normal_echo_fragmented_reply','steps':[{'reply':'020400fa','delay_ms':20,'fragment_ms':3}]},\n {'name':'no_echo_delayed_reply','steps':[{'echo':'','reply':'020400fa','delay_ms':20}]},\n {'name':'short_echo_followed_by_reply','steps':[{'echo':'600000e0','reply':'020400fa','delay_ms':20}]},\n {'name':'invalid_checksum','steps':[{'reply':'020400fb','delay_ms':20}]},\n {'name':'wrong_reply_header_valid_checksum','steps':[{'reply':'030400f9','delay_ms':20}]},\n {'name':'valid_reply_with_trailing_noise','steps':[{'reply':'020400fa55','delay_ms':20}]},\n {'name':'two_valid_replies','steps':[{'reply':'020400fa020400fa','delay_ms':20}]},\n {'name':'reply_after_timeout','steps':[{'reply':'020400fa','delay_ms':95}]},\n {'name':'normal_fe_then_entry','steps':[{'target':[0xfe],'payload':[0xff],'noreturn':True},{'reply':'020400fa','delay_ms':20}]},\n {'name':'damaged_fe_then_entry','steps':[{'target':[0xfe],'payload':[0xff],'echo':'fc00fefe','noreturn':True},{'reply':'020400fa','delay_ms':20}]},\n {'name':'absent_fe_echo_then_entry','steps':[{'target':[0xfe],'payload':[0xff],'echo':'','noreturn':True},{'reply':'020400fa','delay_ms':20}]},\n]\nfor c in cases:\n    try:\n        p=subprocess.run(['D:/Tools/py39/python.exe','-B','-X','utf8','-c',worker,json.dumps(c)],capture_output=True,text=True,encoding='utf-8',timeout=5,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))\n        print(p.stdout.strip() if p.returncode==0 else json.dumps({'name':c['name'],'returncode':p.returncode,'stderr':p.stderr[-1200:]}))\n    except subprocess.TimeoutExpired:\n        print(json.dumps({'name':c['name'],'result':'inconclusive; isolated worker timed out and was terminated'}))\n'@ | & 'C:/Users/Fariz/AppData/Local/Programs/Python/Python312/python.exe' -B -X utf8 -",
+      "command_sha256": "50f0d565f6beea227d27f46d61b00517eeabd83fe22315170430166333955aeb",
+      "original_case_specs": [
+        {
+          "name": "normal_echo_delayed_ack",
+          "steps": [
+            {
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "damaged_echo_delayed_ack",
+          "steps": [
+            {
+              "echo": "600000e010",
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "header_like_damaged_echo_delayed_ack",
+          "steps": [
+            {
+              "echo": "020000e010",
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "normal_echo_fragmented_reply",
+          "steps": [
+            {
+              "reply": "020400fa",
+              "delay_ms": 20,
+              "fragment_ms": 3
+            }
+          ]
+        },
+        {
+          "name": "no_echo_delayed_reply",
+          "steps": [
+            {
+              "echo": "",
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "short_echo_followed_by_reply",
+          "steps": [
+            {
+              "echo": "600000e0",
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "invalid_checksum",
+          "steps": [
+            {
+              "reply": "020400fb",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "wrong_reply_header_valid_checksum",
+          "steps": [
+            {
+              "reply": "030400f9",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "valid_reply_with_trailing_noise",
+          "steps": [
+            {
+              "reply": "020400fa55",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "two_valid_replies",
+          "steps": [
+            {
+              "reply": "020400fa020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "reply_after_timeout",
+          "steps": [
+            {
+              "reply": "020400fa",
+              "delay_ms": 95
+            }
+          ]
+        },
+        {
+          "name": "normal_fe_then_entry",
+          "steps": [
+            {
+              "target": [
+                254
+              ],
+              "payload": [
+                255
+              ],
+              "noreturn": true
+            },
+            {
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "damaged_fe_then_entry",
+          "steps": [
+            {
+              "target": [
+                254
+              ],
+              "payload": [
+                255
+              ],
+              "echo": "fc00fefe",
+              "noreturn": true
+            },
+            {
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        },
+        {
+          "name": "absent_fe_echo_then_entry",
+          "steps": [
+            {
+              "target": [
+                254
+              ],
+              "payload": [
+                255
+              ],
+              "echo": "",
+              "noreturn": true
+            },
+            {
+              "reply": "020400fa",
+              "delay_ms": 20
+            }
+          ]
+        }
+      ],
+      "original_observations": [
+        {
+          "name": "normal_echo_delayed_ack",
+          "results": [
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              4.0
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              20.6
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 25.7,
+          "empty_reads": 15,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "damaged_echo_delayed_ack",
+          "results": [
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "600000e010",
+              2.0
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              20.1
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 23.3,
+          "empty_reads": 18,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "header_like_damaged_echo_delayed_ack",
+          "results": [
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "020000e010",
+              2.1
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              20.9
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 24.6,
+          "empty_reads": 16,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "normal_echo_fragmented_reply",
+          "results": [
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              2.0
+            ],
+            [
+              "read",
+              1,
+              "02",
+              20.0
+            ],
+            [
+              "read",
+              1,
+              "04",
+              23.1
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ],
+            [
+              "read",
+              1,
+              "00",
+              26.1
+            ],
+            [
+              "read",
+              1,
+              "fa",
+              29.2
+            ]
+          ],
+          "elapsed_ms": 31.3,
+          "empty_reads": 18,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "no_echo_delayed_reply",
+          "results": [
+            [
+              false,
+              null
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              20.7
+            ]
+          ],
+          "elapsed_ms": 80.3,
+          "empty_reads": 71,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "short_echo_followed_by_reply",
+          "result": "inconclusive; isolated worker timed out and was terminated"
+        },
+        {
+          "name": "invalid_checksum",
+          "result": "inconclusive; isolated worker timed out and was terminated"
+        },
+        {
+          "name": "wrong_reply_header_valid_checksum",
+          "results": [
+            [
+              false,
+              null
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              2.0
+            ],
+            [
+              "read",
+              4,
+              "030400f9",
+              20.5
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 23.6,
+          "empty_reads": 16,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "valid_reply_with_trailing_noise",
+          "result": "inconclusive; isolated worker timed out and was terminated"
+        },
+        {
+          "name": "two_valid_replies",
+          "results": [
+            [
+              true,
+              [
+                "02",
+                4,
+                "00fa020400",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              2.0
+            ],
+            [
+              "read",
+              8,
+              "020400fa020400fa",
+              20.1
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 24.5,
+          "empty_reads": 15,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "reply_after_timeout",
+          "results": [
+            [
+              false,
+              null
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "720500f099",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              2.6
+            ]
+          ],
+          "elapsed_ms": 94.4,
+          "empty_reads": 71,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "normal_fe_then_entry",
+          "results": [
+            [
+              false,
+              null
+            ],
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "fe04ffff",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              4,
+              "fe04ffff",
+              2.0
+            ],
+            [
+              "write",
+              "720500f099",
+              54.9
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              57.0
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              75.1
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 78.2,
+          "empty_reads": 17,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "damaged_fe_then_entry",
+          "results": [
+            [
+              false,
+              null
+            ],
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "fe04ffff",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              4,
+              "fc00fefe",
+              2.0
+            ],
+            [
+              "write",
+              "720500f099",
+              54.2
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              56.2
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              74.3
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 77.4,
+          "empty_reads": 19,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        },
+        {
+          "name": "absent_fe_echo_then_entry",
+          "results": [
+            [
+              false,
+              null
+            ],
+            [
+              true,
+              [
+                "02",
+                4,
+                "00",
+                1
+              ]
+            ]
+          ],
+          "events": [
+            [
+              "write",
+              "fe04ffff",
+              0.0
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "write",
+              "720500f099",
+              81.7
+            ],
+            [
+              "setLatencyTimer",
+              [
+                8
+              ]
+            ],
+            [
+              "read",
+              5,
+              "720500f099",
+              83.8
+            ],
+            [
+              "read",
+              4,
+              "020400fa",
+              101.9
+            ],
+            [
+              "setLatencyTimer",
+              [
+                12
+              ]
+            ]
+          ],
+          "elapsed_ms": 108.6,
+          "empty_reads": 75,
+          "scope": "Original Lite Kline native engine; scripted UART; no hardware"
+        }
+      ],
+      "artifact_digests_asserted_before_import": true
+    }
+  ],
+  "saved_oracle": {
+    "path": "honda_tuner/re/linux_transport_oracle.json",
+    "sha256": "5c510d0d45799b5f60c4a2fa0d586ee4f601ae0841c5f04c73ace3b8572daae8"
+  },
+  "observations": [
+    "Full-length damaged echo 600000e010 and header-like echo 020000e010 followed by 020400fa at 20 ms are accepted with one TX by the original module.",
+    "Exact echo followed by reply bytes at 20/23/26/29 ms is accepted by the original module.",
+    "No echo with 020400fa at 20 ms fails in the original module; Android AUTO/NONE direct-frame acceptance is an explicit compatibility behavior.",
+    "The original wrong-target case fails. Reply at 95 ms after an 80 ms configured timeout fails.",
+    "The original short-echo, invalid-checksum and trailing-noise probes timed out in isolated workers and were terminated; these outcomes are inconclusive.",
+    "The original concatenated two-frame probe was accepted despite a 4-byte declared length with payload 00fa020400. Android strict total-length/extra-data checks intentionally reject that input.",
+    "FE followed by entry has TX offsets 54.9 ms for exact echo, 54.2 ms damaged echo and 81.7 ms absent FE echo in the scripted probe."
+  ],
+  "limitations": [
+    "The scripted UART data and arrival delays are supplied test inputs, not captured ECU recordings.",
+    "The FTDI handle is mocked, so these results establish native receive/parsing behavior rather than physical FTDI/K-Line signal correctness.",
+    "An inconclusive worker timeout is not evidence of acceptance or rejection.",
+    "Original acceptance of malformed combined replies is not a requirement to reproduce unsafe/lax parsing in Android.",
+    "The Java fixtures use deterministic 6 ms TX completion and 7 ms echo arrival to reproduce Android scheduling; those times are synthetic and separate from observed native read timestamps."
+  ],
+  "android_completion_boundary": {
+    "evidence_type": "Android design choice tested with synthetic memory UART data; not an original Lite runtime observation",
+    "quiet_guard_ms": 24,
+    "rationale": "Wait three 8 ms FTDI latency intervals after a candidate complete frame, using the same quiet interval as wake cleanup, to detect fragmented trailing data or a frame-shaped prefix followed by a second reply.",
+    "deadline_bound": "The quiet guard remains bounded by the selected transaction RX deadline; a complete candidate received before the deadline may finish at that boundary.",
+    "synthetic_regressions": [
+      "fragmented_trailing_noise_after_complete_direct_reply",
+      "valid_frame_shaped_echo_before_delayed_reply_is_ambiguous"
+    ],
+    "physical_limit": "This checks additional UART bytes observed within the bounded receive window. It does not establish that the physical ECU sent a valid reply, prove the cause of damaged echo, or guarantee that no later bytes can arrive beyond the transaction deadline."
+  }
+}

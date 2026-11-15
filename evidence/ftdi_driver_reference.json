@@ -41,5 +41,28 @@
     "delayed_rising_edge": "Unproven hypothesis; no waveform measured"
   },
   "physical_ecu_success_verified": false,
-  "evidence_kind": "Retained original-engine observation, user trace, published upstream source/artifact and ordinary shell inspection; no new REA runtime Evidence claimed"
+  "evidence_kind": "Retained original-engine observation, user trace, published upstream source/artifact and ordinary shell inspection; no new REA runtime Evidence claimed",
+  "verification": {
+    "source_commit": "dc6736d83b4bc06c1979235efe609bb1aa7cc501",
+    "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43766397156",
+    "core_regression_tests": 83,
+    "reference_decoder_vectors": 312,
+    "reference_field_values": 5616,
+    "android_sdk_compilation": true,
+    "android_lint_errors": 0,
+    "android_lint_warnings": 35,
+    "downloaded_release_assets_verified": 7,
+    "ci_source_files_verified": 42,
+    "apk_declares_both_ftdi_driver_classes": true,
+    "driver_license_in_apk_matches_source": true,
+    "same_signer_as_1_1_1": true,
+    "apk_sha256": "910c983462cd22a8b2fe899f608ee9cfea68aa20a7b63e8fb9a97fa0427933b9",
+    "rea_signature_structure_evidence_id": "ev_80456a53ffc9e317e1616d1e1b2075282edf9e29594dc6574ade73ced7607b98",
+    "actual_build_failure_resolved": {
+      "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43766162568",
+      "cause": "AndroidX dependency flag was disabled",
+      "fix": "android.useAndroidX=true"
+    },
+    "physical_ecu_success_verified": false
+  }
 }

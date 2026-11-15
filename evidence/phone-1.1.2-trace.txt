@@ -1,0 +1,739 @@
+Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+USB #1002 · VID:0403 PID:6001
+/dev/bus/usb/001/002, interfaces=1, permission=true
+K-Line 10400 baud, 8N1, flow=none
+Echo=AUTO, timeout=1000 ms
+State=DISCONNECTED, session=18, ECU=
+Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 00 08 00 10 FA
+
+Honda Tuner diagnostic trace
+UTC 2026-11-15T22:03:08.761751Z
+Detail TX/RX: true; dropped old entries: 0
+
+2026-11-15T22:02:23.489Z +16ms #1 INFO [APP] Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+2026-11-15T22:02:23.618Z +146ms #2 INFO [LIFECYCLE] Foreground
+2026-11-15T22:02:23.621Z +148ms #3 INFO [USB SCAN] USB #1002 · VID:0403 PID:6001 · kandidat FT232R
+2026-11-15T22:02:27.009Z +3536ms #4 INFO [UI] Hubungkan
+Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+USB #1002 · VID:0403 PID:6001
+/dev/bus/usb/001/002, interfaces=1, permission=true
+K-Line 10400 baud, 8N1, flow=none
+Echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:27.010Z +3538ms #5 INFO [STATE] session=1 DISCONNECTED · Mengganti koneksi.
+2026-11-15T22:02:27.011Z +3538ms #6 INFO [STATE] session=1 CONNECTING · Membuka USB dan memulai sesi ECU...
+2026-11-15T22:02:27.013Z +3540ms #7 INFO [USB] Buka VID=0403 PID=6001 device=/dev/bus/usb/001/002, permission=true, interfaces=1
+2026-11-15T22:02:27.014Z +3542ms #8 DEBUG [USB] DESCRIPTORS 50 byte: 12 01 00 02 00 00 00 08 03 04 01 60 00 06 01 02 03 01 09 02 20 00 01 01 00 A0 2D 09 04 00 00 02 FF FF FF 02 07 05 81 02 40 00 00 07 05 02 02 40 00 00
+2026-11-15T22:02:27.018Z +3545ms #9 INFO [USB DRIVER] usb-serial-for-android 3.12.0; FTDI UART; wake=BREAK 70/130 ms
+2026-11-15T22:02:27.018Z +3546ms #10 INFO [USB] UART claimed: interface=0, IN=0x81, OUT=0x2, packet=64
+2026-11-15T22:02:27.021Z +3548ms #11 INFO [KLINE] Transport: echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:27.021Z +3549ms #12 INFO [STATE] session=1 CONNECTING · Menyiapkan K-Line · percobaan 1/3
+2026-11-15T22:02:27.021Z +3549ms #13 INFO [SCAN] Percobaan 1/3: inisialisasi K-Line
+2026-11-15T22:02:27.022Z +3549ms #14 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:27.022Z +3550ms #15 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.022Z +3550ms #16 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.023Z +3550ms #17 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.024Z +3551ms #18 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:27.025Z +3552ms #19 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:27.025Z +3553ms #20 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.026Z +3553ms #21 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:27.097Z +3624ms #22 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:27.097Z +3625ms #23 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.2 ms
+2026-11-15T22:02:27.228Z +3755ms #24 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.229Z +3756ms #25 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.229Z +3756ms #26 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:27.242Z +3770ms #27 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:27.251Z +3778ms #28 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:27.260Z +3788ms #29 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:27.261Z +3788ms #30 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=31.8 ms
+2026-11-15T22:02:27.261Z +3788ms #31 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=163.3 ms
+2026-11-15T22:02:27.261Z +3789ms #32 INFO [STATE] session=1 CONNECTING · Membangunkan ECU · percobaan 1/3
+2026-11-15T22:02:27.261Z +3789ms #33 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:27.261Z +3789ms #34 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.262Z +3789ms #35 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.262Z +3790ms #36 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:27.263Z +3790ms #37 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.1 ms
+2026-11-15T22:02:27.267Z +3795ms #38 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.268Z +3795ms #39 DEBUG [UART TX] 4 byte drained, elapsed=5.2 ms
+2026-11-15T22:02:27.268Z +3796ms #40 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:27.269Z +3796ms #41 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:27.320Z +3848ms #42 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:27.321Z +3848ms #43 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:27.328Z +3856ms #44 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:27.329Z +3856ms #45 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:27.329Z +3856ms #46 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.329Z +3857ms #47 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.329Z +3857ms #48 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:27.329Z +3857ms #49 INFO [STATE] session=1 CONNECTING · Menunggu balasan ECU · percobaan 1/3
+2026-11-15T22:02:27.330Z +3857ms #50 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:27.330Z +3857ms #51 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.330Z +3858ms #52 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.330Z +3858ms #53 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:27.331Z +3858ms #54 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.2 ms
+2026-11-15T22:02:27.336Z +3864ms #55 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.337Z +3864ms #56 DEBUG [UART TX] 5 byte drained, elapsed=6.0 ms
+2026-11-15T22:02:27.337Z +3864ms #57 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:27.337Z +3865ms #58 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:27.337Z +3865ms #59 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.337Z +3865ms #60 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:27.337Z +3865ms #61 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.338Z +3865ms #62 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.338Z +3865ms #63 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:27.338Z +3866ms #64 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.2 ms
+2026-11-15T22:02:27.344Z +3871ms #65 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.344Z +3872ms #66 DEBUG [UART TX] 5 byte drained, elapsed=5.9 ms
+2026-11-15T22:02:27.345Z +3872ms #67 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:27.345Z +3872ms #68 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:27.345Z +3872ms #69 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.345Z +3872ms #70 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.499Z +4026ms #71 INFO [STATE] session=1 CONNECTING · Menyiapkan K-Line · percobaan 2/3
+2026-11-15T22:02:27.505Z +4032ms #72 INFO [SCAN] Percobaan 2/3: inisialisasi K-Line
+2026-11-15T22:02:27.505Z +4032ms #73 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:27.505Z +4033ms #74 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.505Z +4033ms #75 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.506Z +4033ms #76 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.510Z +4037ms #77 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=3.9 ms
+2026-11-15T22:02:27.511Z +4039ms #78 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:27.512Z +4039ms #79 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.513Z +4040ms #80 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:27.584Z +4111ms #81 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:27.584Z +4112ms #82 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=70.9 ms
+2026-11-15T22:02:27.715Z +4242ms #83 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.715Z +4243ms #84 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.716Z +4244ms #85 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:27.729Z +4257ms #86 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:27.737Z +4265ms #87 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:27.744Z +4271ms #88 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=27.7 ms
+2026-11-15T22:02:27.744Z +4271ms #89 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=159.4 ms
+2026-11-15T22:02:27.744Z +4271ms #90 INFO [STATE] session=1 CONNECTING · Membangunkan ECU · percobaan 2/3
+2026-11-15T22:02:27.744Z +4272ms #91 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:27.744Z +4272ms #92 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.745Z +4272ms #93 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:27.745Z +4273ms #94 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:27.746Z +4273ms #95 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.4 ms
+2026-11-15T22:02:27.750Z +4278ms #96 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.751Z +4278ms #97 DEBUG [UART TX] 4 byte drained, elapsed=5.4 ms
+2026-11-15T22:02:27.751Z +4279ms #98 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:27.751Z +4279ms #99 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:27.803Z +4331ms #100 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:27.803Z +4331ms #101 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:27.811Z +4339ms #102 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:27.811Z +4339ms #103 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:27.812Z +4339ms #104 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.812Z +4339ms #105 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.812Z +4340ms #106 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:27.812Z +4340ms #107 INFO [STATE] session=1 CONNECTING · Menunggu balasan ECU · percobaan 2/3
+2026-11-15T22:02:27.812Z +4340ms #108 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:27.813Z +4340ms #109 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.813Z +4340ms #110 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.813Z +4341ms #111 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:27.814Z +4341ms #112 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:27.819Z +4347ms #113 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.819Z +4347ms #114 DEBUG [UART TX] 5 byte drained, elapsed=6.0 ms
+2026-11-15T22:02:27.820Z +4347ms #115 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:27.820Z +4347ms #116 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:27.820Z +4348ms #117 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.820Z +4348ms #118 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:27.820Z +4348ms #119 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.821Z +4348ms #120 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.821Z +4348ms #121 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:27.821Z +4349ms #122 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:27.826Z +4354ms #123 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:27.827Z +4354ms #124 DEBUG [UART TX] 5 byte drained, elapsed=5.8 ms
+2026-11-15T22:02:27.827Z +4355ms #125 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:27.827Z +4355ms #126 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:27.827Z +4355ms #127 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.828Z +4355ms #128 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:27.981Z +4509ms #129 INFO [STATE] session=1 CONNECTING · Menyiapkan K-Line · percobaan 3/3
+2026-11-15T22:02:27.982Z +4509ms #130 INFO [SCAN] Percobaan 3/3: inisialisasi K-Line
+2026-11-15T22:02:27.982Z +4509ms #131 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:27.984Z +4511ms #132 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=1.8 ms
+2026-11-15T22:02:27.984Z +4512ms #133 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:27.985Z +4512ms #134 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:27.985Z +4512ms #135 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.986Z +4514ms #136 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:27.986Z +4514ms #137 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:27.987Z +4514ms #138 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:28.058Z +4585ms #139 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:28.058Z +4586ms #140 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.3 ms
+2026-11-15T22:02:28.189Z +4717ms #141 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:28.192Z +4719ms #142 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=1.5 ms
+2026-11-15T22:02:28.192Z +4720ms #143 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:28.203Z +4731ms #144 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:28.211Z +4739ms #145 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:28.219Z +4747ms #146 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:28.220Z +4747ms #147 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=27.9 ms
+2026-11-15T22:02:28.220Z +4748ms #148 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=161.4 ms
+2026-11-15T22:02:28.220Z +4748ms #149 INFO [STATE] session=1 CONNECTING · Membangunkan ECU · percobaan 3/3
+2026-11-15T22:02:28.220Z +4748ms #150 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:28.221Z +4748ms #151 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:28.221Z +4749ms #152 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:28.223Z +4751ms #153 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:28.224Z +4751ms #154 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.1 ms
+2026-11-15T22:02:28.228Z +4756ms #155 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:28.229Z +4756ms #156 DEBUG [UART TX] 4 byte drained, elapsed=5.0 ms
+2026-11-15T22:02:28.229Z +4757ms #157 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:28.229Z +4757ms #158 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:28.281Z +4809ms #159 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:28.281Z +4809ms #160 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:28.289Z +4817ms #161 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:28.290Z +4817ms #162 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:28.290Z +4817ms #163 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:28.290Z +4818ms #164 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:28.290Z +4818ms #165 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:28.290Z +4818ms #166 INFO [STATE] session=1 CONNECTING · Menunggu balasan ECU · percobaan 3/3
+2026-11-15T22:02:28.291Z +4818ms #167 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:28.291Z +4818ms #168 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:28.291Z +4819ms #169 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:28.292Z +4819ms #170 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:28.292Z +4820ms #171 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.2 ms
+2026-11-15T22:02:28.299Z +4826ms #172 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:28.299Z +4826ms #173 DEBUG [UART TX] 5 byte drained, elapsed=6.9 ms
+2026-11-15T22:02:28.299Z +4827ms #174 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:28.299Z +4827ms #175 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:28.300Z +4827ms #176 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:28.300Z +4827ms #177 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:28.300Z +4827ms #178 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:28.300Z +4828ms #179 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:28.300Z +4828ms #180 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:28.301Z +4828ms #181 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:28.306Z +4834ms #182 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:28.306Z +4834ms #183 DEBUG [UART TX] 5 byte drained, elapsed=5.8 ms
+2026-11-15T22:02:28.307Z +4834ms #184 DEBUG [USB RX] RAW 6 byte: 01 60 00 00 00 10
+2026-11-15T22:02:28.307Z +4834ms #185 DEBUG [KLINE] RX UART 4 byte: 00 00 00 10
+2026-11-15T22:02:28.307Z +4834ms #186 WARN [KLINE] Awal RX bukan echo atau header ECU: 00 00 00 10
+2026-11-15T22:02:28.307Z +4835ms #187 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 00 00 00 10
+2026-11-15T22:02:28.308Z +4836ms #188 ERROR [CONNECT] id.hondatuner.core.ProtocolException: Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 00 00 00 10
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:49)
+	at id.hondatuner.core.DiagnosticController.openAndDetect(DiagnosticController.java:112)
+	at id.hondatuner.core.DiagnosticController.lambda$connect$2$id-hondatuner-core-DiagnosticController(DiagnosticController.java:92)
+	at id.hondatuner.core.DiagnosticController$$ExternalSyntheticLambda14.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:323)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1248)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:650)
+	at java.lang.Thread.run(Thread.java:1572)
+Caused by: id.hondatuner.core.ProtocolException: Awal RX bukan echo atau header ECU: 00 00 00 10
+	at id.hondatuner.core.KLineTransport.exchangeOnce(KLineTransport.java:115)
+	at id.hondatuner.core.KLineTransport.exchange(KLineTransport.java:77)
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:42)
+	... 9 more
+
+2026-11-15T22:02:28.324Z +4851ms #189 INFO [USB] Menutup adaptor
+2026-11-15T22:02:28.328Z +4855ms #190 INFO [STATE] session=2 DISCONNECTED · Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 00 00 00 10
+2026-11-15T22:02:40.744Z +17271ms #191 INFO [UI] Hubungkan
+Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+USB #1002 · VID:0403 PID:6001
+/dev/bus/usb/001/002, interfaces=1, permission=true
+K-Line 10400 baud, 8N1, flow=none
+Echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:40.747Z +17274ms #192 INFO [STATE] session=3 DISCONNECTED · Mengganti koneksi.
+2026-11-15T22:02:40.747Z +17274ms #193 INFO [STATE] session=3 CONNECTING · Membuka USB dan memulai sesi ECU...
+2026-11-15T22:02:40.748Z +17275ms #194 INFO [USB] Buka VID=0403 PID=6001 device=/dev/bus/usb/001/002, permission=true, interfaces=1
+2026-11-15T22:02:40.749Z +17277ms #195 DEBUG [USB] DESCRIPTORS 50 byte: 12 01 00 02 00 00 00 08 03 04 01 60 00 06 01 02 03 01 09 02 20 00 01 01 00 A0 2D 09 04 00 00 02 FF FF FF 02 07 05 81 02 40 00 00 07 05 02 02 40 00 00
+2026-11-15T22:02:40.751Z +17279ms #196 INFO [USB DRIVER] usb-serial-for-android 3.12.0; FTDI UART; wake=BREAK 70/130 ms
+2026-11-15T22:02:40.751Z +17279ms #197 INFO [USB] UART claimed: interface=0, IN=0x81, OUT=0x2, packet=64
+2026-11-15T22:02:40.752Z +17279ms #198 INFO [KLINE] Transport: echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:40.752Z +17279ms #199 INFO [STATE] session=3 CONNECTING · Menyiapkan K-Line · percobaan 1/3
+2026-11-15T22:02:40.752Z +17279ms #200 INFO [SCAN] Percobaan 1/3: inisialisasi K-Line
+2026-11-15T22:02:40.752Z +17279ms #201 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:40.752Z +17280ms #202 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:40.753Z +17280ms #203 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:40.753Z +17280ms #204 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:40.754Z +17281ms #205 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:40.755Z +17282ms #206 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:40.755Z +17282ms #207 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:40.755Z +17283ms #208 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:40.827Z +17354ms #209 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:40.827Z +17354ms #210 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.2 ms
+2026-11-15T22:02:40.958Z +17485ms #211 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:40.959Z +17486ms #212 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:40.959Z +17487ms #213 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:40.980Z +17507ms #214 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:40.988Z +17515ms #215 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=28.0 ms
+2026-11-15T22:02:40.988Z +17515ms #216 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=160.7 ms
+2026-11-15T22:02:40.988Z +17515ms #217 INFO [STATE] session=3 CONNECTING · Membangunkan ECU · percobaan 1/3
+2026-11-15T22:02:40.988Z +17516ms #218 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:40.988Z +17516ms #219 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:40.989Z +17516ms #220 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:40.989Z +17516ms #221 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:40.989Z +17517ms #222 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.2 ms
+2026-11-15T22:02:40.994Z +17521ms #223 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:40.994Z +17522ms #224 DEBUG [UART TX] 4 byte drained, elapsed=5.0 ms
+2026-11-15T22:02:40.994Z +17522ms #225 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:40.995Z +17522ms #226 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:41.047Z +17574ms #227 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:41.047Z +17575ms #228 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:41.055Z +17582ms #229 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:41.055Z +17583ms #230 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:41.055Z +17583ms #231 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.056Z +17583ms #232 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.4 ms
+2026-11-15T22:02:41.056Z +17584ms #233 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:41.056Z +17584ms #234 INFO [STATE] session=3 CONNECTING · Menunggu balasan ECU · percobaan 1/3
+2026-11-15T22:02:41.056Z +17584ms #235 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:41.056Z +17584ms #236 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.057Z +17584ms #237 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.057Z +17584ms #238 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:41.057Z +17585ms #239 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:41.064Z +17591ms #240 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.064Z +17592ms #241 DEBUG [UART TX] 5 byte drained, elapsed=7.1 ms
+2026-11-15T22:02:41.064Z +17592ms #242 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:41.064Z +17592ms #243 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:41.065Z +17592ms #244 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:41.065Z +17592ms #245 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:41.065Z +17592ms #246 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.065Z +17593ms #247 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.065Z +17593ms #248 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:41.065Z +17593ms #249 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:41.073Z +17600ms #250 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.073Z +17601ms #251 DEBUG [UART TX] 5 byte drained, elapsed=8.1 ms
+2026-11-15T22:02:41.074Z +17601ms #252 DEBUG [USB RX] RAW 7 byte: 01 60 00 00 02 00 10
+2026-11-15T22:02:41.074Z +17601ms #253 DEBUG [KLINE] RX UART 5 byte: 00 00 02 00 10
+2026-11-15T22:02:41.074Z +17601ms #254 WARN [KLINE] Awal RX bukan echo atau header ECU: 00 00 02 00 10
+2026-11-15T22:02:41.074Z +17602ms #255 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 00 00 02 00 10
+2026-11-15T22:02:41.227Z +17754ms #256 INFO [STATE] session=3 CONNECTING · Menyiapkan K-Line · percobaan 2/3
+2026-11-15T22:02:41.227Z +17755ms #257 INFO [SCAN] Percobaan 2/3: inisialisasi K-Line
+2026-11-15T22:02:41.228Z +17755ms #258 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:41.228Z +17756ms #259 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:41.228Z +17756ms #260 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.229Z +17756ms #261 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.229Z +17757ms #262 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.233Z +17760ms #263 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:41.233Z +17760ms #264 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.233Z +17761ms #265 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:41.304Z +17832ms #266 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:41.305Z +17832ms #267 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.3 ms
+2026-11-15T22:02:41.435Z +17963ms #268 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.436Z +17964ms #269 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.437Z +17964ms #270 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:41.458Z +17985ms #271 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:41.464Z +17992ms #272 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=27.7 ms
+2026-11-15T22:02:41.465Z +17992ms #273 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=159.7 ms
+2026-11-15T22:02:41.465Z +17992ms #274 INFO [STATE] session=3 CONNECTING · Membangunkan ECU · percobaan 2/3
+2026-11-15T22:02:41.465Z +17993ms #275 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:41.465Z +17993ms #276 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.466Z +17993ms #277 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.466Z +17993ms #278 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:41.466Z +17994ms #279 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.2 ms
+2026-11-15T22:02:41.473Z +18001ms #280 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.474Z +18001ms #281 DEBUG [UART TX] 4 byte drained, elapsed=7.2 ms
+2026-11-15T22:02:41.474Z +18001ms #282 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:41.474Z +18001ms #283 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:41.525Z +18052ms #284 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:41.525Z +18052ms #285 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:41.539Z +18067ms #286 DEBUG [USB RX] bulk result=0, wait=9 ms, elapsed=14.1 ms (empty/timeout or USB error)
+2026-11-15T22:02:41.539Z +18067ms #287 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.540Z +18067ms #288 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.540Z +18067ms #289 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:41.540Z +18068ms #290 INFO [STATE] session=3 CONNECTING · Menunggu balasan ECU · percobaan 2/3
+2026-11-15T22:02:41.540Z +18068ms #291 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:41.540Z +18068ms #292 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.541Z +18068ms #293 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.541Z +18068ms #294 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:41.541Z +18069ms #295 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:41.547Z +18074ms #296 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.547Z +18074ms #297 DEBUG [UART TX] 5 byte drained, elapsed=5.9 ms
+2026-11-15T22:02:41.547Z +18075ms #298 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:41.548Z +18075ms #299 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:41.548Z +18075ms #300 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:41.548Z +18075ms #301 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:41.548Z +18075ms #302 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.548Z +18076ms #303 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.548Z +18076ms #304 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:41.549Z +18076ms #305 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:41.554Z +18082ms #306 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.554Z +18082ms #307 DEBUG [UART TX] 5 byte drained, elapsed=5.9 ms
+2026-11-15T22:02:41.555Z +18082ms #308 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:41.555Z +18082ms #309 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:41.555Z +18082ms #310 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:41.555Z +18083ms #311 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:41.709Z +18236ms #312 INFO [STATE] session=3 CONNECTING · Menyiapkan K-Line · percobaan 3/3
+2026-11-15T22:02:41.709Z +18236ms #313 INFO [SCAN] Percobaan 3/3: inisialisasi K-Line
+2026-11-15T22:02:41.709Z +18236ms #314 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:41.710Z +18237ms #315 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.710Z +18237ms #316 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.710Z +18238ms #317 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.710Z +18238ms #318 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:41.712Z +18239ms #319 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:41.712Z +18239ms #320 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.712Z +18240ms #321 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:41.783Z +18310ms #322 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:41.783Z +18311ms #323 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=70.7 ms
+2026-11-15T22:02:41.914Z +18442ms #324 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.915Z +18442ms #325 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:41.915Z +18443ms #326 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:41.930Z +18458ms #327 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:41.944Z +18471ms #328 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=28.3 ms
+2026-11-15T22:02:41.944Z +18471ms #329 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=160.4 ms
+2026-11-15T22:02:41.944Z +18472ms #330 INFO [STATE] session=3 CONNECTING · Membangunkan ECU · percobaan 3/3
+2026-11-15T22:02:41.944Z +18472ms #331 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:41.944Z +18472ms #332 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:41.946Z +18474ms #333 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=1.7 ms
+2026-11-15T22:02:41.947Z +18474ms #334 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:41.947Z +18474ms #335 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.2 ms
+2026-11-15T22:02:41.952Z +18479ms #336 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:41.952Z +18480ms #337 DEBUG [UART TX] 4 byte drained, elapsed=5.3 ms
+2026-11-15T22:02:41.955Z +18482ms #338 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:41.955Z +18482ms #339 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:42.005Z +18533ms #340 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:42.006Z +18533ms #341 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:42.013Z +18541ms #342 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:42.014Z +18541ms #343 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:42.014Z +18541ms #344 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:42.014Z +18542ms #345 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:42.015Z +18542ms #346 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:42.015Z +18542ms #347 INFO [STATE] session=3 CONNECTING · Menunggu balasan ECU · percobaan 3/3
+2026-11-15T22:02:42.015Z +18543ms #348 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:42.015Z +18543ms #349 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:42.016Z +18544ms #350 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.6 ms
+2026-11-15T22:02:42.016Z +18544ms #351 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:42.017Z +18544ms #352 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:42.023Z +18550ms #353 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:42.023Z +18551ms #354 DEBUG [UART TX] 5 byte drained, elapsed=6.5 ms
+2026-11-15T22:02:42.024Z +18551ms #355 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:42.024Z +18551ms #356 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:42.024Z +18552ms #357 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:42.024Z +18552ms #358 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:42.024Z +18552ms #359 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:42.025Z +18552ms #360 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:42.025Z +18552ms #361 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:42.025Z +18553ms #362 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:42.031Z +18558ms #363 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:42.031Z +18559ms #364 DEBUG [UART TX] 5 byte drained, elapsed=6.0 ms
+2026-11-15T22:02:42.032Z +18559ms #365 DEBUG [USB RX] RAW 7 byte: 01 60 10 00 E0 00 FA
+2026-11-15T22:02:42.032Z +18559ms #366 DEBUG [KLINE] RX UART 5 byte: 10 00 E0 00 FA
+2026-11-15T22:02:42.032Z +18559ms #367 WARN [KLINE] Awal RX bukan echo atau header ECU: 10 00 E0 00 FA
+2026-11-15T22:02:42.032Z +18559ms #368 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 10 00 E0 00 FA
+2026-11-15T22:02:42.033Z +18561ms #369 ERROR [CONNECT] id.hondatuner.core.ProtocolException: Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 10 00 E0 00 FA
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:49)
+	at id.hondatuner.core.DiagnosticController.openAndDetect(DiagnosticController.java:112)
+	at id.hondatuner.core.DiagnosticController.lambda$connect$2$id-hondatuner-core-DiagnosticController(DiagnosticController.java:92)
+	at id.hondatuner.core.DiagnosticController$$ExternalSyntheticLambda14.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:323)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1248)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:650)
+	at java.lang.Thread.run(Thread.java:1572)
+Caused by: id.hondatuner.core.ProtocolException: Awal RX bukan echo atau header ECU: 10 00 E0 00 FA
+	at id.hondatuner.core.KLineTransport.exchangeOnce(KLineTransport.java:115)
+	at id.hondatuner.core.KLineTransport.exchange(KLineTransport.java:77)
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:42)
+	... 9 more
+
+2026-11-15T22:02:42.063Z +18590ms #370 INFO [USB] Menutup adaptor
+2026-11-15T22:02:42.065Z +18593ms #371 INFO [STATE] session=4 DISCONNECTED · Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 10 00 E0 00 FA
+2026-11-15T22:02:45.702Z +22230ms #372 INFO [UI] Hubungkan
+Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+USB #1002 · VID:0403 PID:6001
+/dev/bus/usb/001/002, interfaces=1, permission=true
+K-Line 10400 baud, 8N1, flow=none
+Echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:45.705Z +22232ms #373 INFO [STATE] session=5 DISCONNECTED · Mengganti koneksi.
+2026-11-15T22:02:45.705Z +22232ms #374 INFO [STATE] session=5 CONNECTING · Membuka USB dan memulai sesi ECU...
+2026-11-15T22:02:45.706Z +22233ms #375 INFO [USB] Buka VID=0403 PID=6001 device=/dev/bus/usb/001/002, permission=true, interfaces=1
+2026-11-15T22:02:45.708Z +22235ms #376 DEBUG [USB] DESCRIPTORS 50 byte: 12 01 00 02 00 00 00 08 03 04 01 60 00 06 01 02 03 01 09 02 20 00 01 01 00 A0 2D 09 04 00 00 02 FF FF FF 02 07 05 81 02 40 00 00 07 05 02 02 40 00 00
+2026-11-15T22:02:45.710Z +22237ms #377 INFO [USB DRIVER] usb-serial-for-android 3.12.0; FTDI UART; wake=BREAK 70/130 ms
+2026-11-15T22:02:45.710Z +22237ms #378 INFO [USB] UART claimed: interface=0, IN=0x81, OUT=0x2, packet=64
+2026-11-15T22:02:45.710Z +22238ms #379 INFO [KLINE] Transport: echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:45.710Z +22238ms #380 INFO [STATE] session=5 CONNECTING · Menyiapkan K-Line · percobaan 1/3
+2026-11-15T22:02:45.710Z +22238ms #381 INFO [SCAN] Percobaan 1/3: inisialisasi K-Line
+2026-11-15T22:02:45.711Z +22238ms #382 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:45.711Z +22238ms #383 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:45.711Z +22239ms #384 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:45.712Z +22239ms #385 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:45.712Z +22239ms #386 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:45.713Z +22240ms #387 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:45.713Z +22241ms #388 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:45.714Z +22241ms #389 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:45.785Z +22312ms #390 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:45.785Z +22313ms #391 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.2 ms
+2026-11-15T22:02:45.916Z +22444ms #392 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:45.917Z +22444ms #393 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:45.917Z +22444ms #394 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:45.939Z +22466ms #395 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:45.946Z +22474ms #396 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:45.947Z +22474ms #397 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=29.7 ms
+2026-11-15T22:02:45.947Z +22474ms #398 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=161.5 ms
+2026-11-15T22:02:45.947Z +22475ms #399 INFO [STATE] session=5 CONNECTING · Membangunkan ECU · percobaan 1/3
+2026-11-15T22:02:45.947Z +22475ms #400 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:45.947Z +22475ms #401 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:45.948Z +22475ms #402 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:45.948Z +22475ms #403 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:45.948Z +22476ms #404 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.1 ms
+2026-11-15T22:02:45.953Z +22480ms #405 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:45.953Z +22481ms #406 DEBUG [UART TX] 4 byte drained, elapsed=4.9 ms
+2026-11-15T22:02:45.956Z +22483ms #407 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:45.956Z +22483ms #408 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:46.006Z +22534ms #409 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:46.006Z +22534ms #410 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:46.014Z +22542ms #411 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:46.014Z +22542ms #412 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:46.014Z +22542ms #413 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.015Z +22543ms #414 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.6 ms
+2026-11-15T22:02:46.016Z +22543ms #415 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:46.016Z +22543ms #416 INFO [STATE] session=5 CONNECTING · Menunggu balasan ECU · percobaan 1/3
+2026-11-15T22:02:46.016Z +22543ms #417 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:46.016Z +22543ms #418 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.016Z +22544ms #419 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.016Z +22544ms #420 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.017Z +22544ms #421 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.3 ms
+2026-11-15T22:02:46.022Z +22550ms #422 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.023Z +22550ms #423 DEBUG [UART TX] 5 byte drained, elapsed=6.1 ms
+2026-11-15T22:02:46.023Z +22550ms #424 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:46.023Z +22551ms #425 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:46.023Z +22551ms #426 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:46.023Z +22551ms #427 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:46.023Z +22551ms #428 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.024Z +22551ms #429 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.024Z +22551ms #430 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.024Z +22552ms #431 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.2 ms
+2026-11-15T22:02:46.030Z +22558ms #432 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.031Z +22558ms #433 DEBUG [UART TX] 5 byte drained, elapsed=6.6 ms
+2026-11-15T22:02:46.031Z +22558ms #434 DEBUG [USB RX] RAW 7 byte: 01 60 40 08 00 10 FA
+2026-11-15T22:02:46.031Z +22559ms #435 DEBUG [KLINE] RX UART 5 byte: 40 08 00 10 FA
+2026-11-15T22:02:46.031Z +22559ms #436 WARN [KLINE] Awal RX bukan echo atau header ECU: 40 08 00 10 FA
+2026-11-15T22:02:46.031Z +22559ms #437 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 40 08 00 10 FA
+2026-11-15T22:02:46.185Z +22712ms #438 INFO [STATE] session=5 CONNECTING · Menyiapkan K-Line · percobaan 2/3
+2026-11-15T22:02:46.185Z +22713ms #439 INFO [SCAN] Percobaan 2/3: inisialisasi K-Line
+2026-11-15T22:02:46.185Z +22713ms #440 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:46.186Z +22713ms #441 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.186Z +22713ms #442 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.186Z +22714ms #443 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.187Z +22714ms #444 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.188Z +22715ms #445 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:46.188Z +22715ms #446 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.188Z +22716ms #447 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:46.259Z +22787ms #448 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:46.260Z +22787ms #449 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.0 ms
+2026-11-15T22:02:46.391Z +22918ms #450 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.396Z +22923ms #451 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=4.4 ms
+2026-11-15T22:02:46.396Z +22923ms #452 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:46.405Z +22933ms #453 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.413Z +22941ms #454 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.421Z +22949ms #455 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.422Z +22949ms #456 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=25.5 ms
+2026-11-15T22:02:46.422Z +22949ms #457 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=161.9 ms
+2026-11-15T22:02:46.422Z +22949ms #458 INFO [STATE] session=5 CONNECTING · Membangunkan ECU · percobaan 2/3
+2026-11-15T22:02:46.422Z +22949ms #459 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:46.422Z +22950ms #460 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.422Z +22950ms #461 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.423Z +22950ms #462 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:46.423Z +22950ms #463 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.1 ms
+2026-11-15T22:02:46.428Z +22956ms #464 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.429Z +22956ms #465 DEBUG [UART TX] 4 byte drained, elapsed=5.8 ms
+2026-11-15T22:02:46.429Z +22956ms #466 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:46.429Z +22957ms #467 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:46.480Z +23008ms #468 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:46.480Z +23008ms #469 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:46.495Z +23023ms #470 DEBUG [USB RX] bulk result=0, wait=9 ms, elapsed=14.6 ms (empty/timeout or USB error)
+2026-11-15T22:02:46.495Z +23023ms #471 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.496Z +23023ms #472 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.496Z +23023ms #473 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:46.496Z +23023ms #474 INFO [STATE] session=5 CONNECTING · Menunggu balasan ECU · percobaan 2/3
+2026-11-15T22:02:46.496Z +23024ms #475 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:46.496Z +23024ms #476 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.496Z +23024ms #477 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.497Z +23024ms #478 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.497Z +23024ms #479 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:46.502Z +23030ms #480 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.503Z +23030ms #481 DEBUG [UART TX] 5 byte drained, elapsed=5.7 ms
+2026-11-15T22:02:46.503Z +23030ms #482 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:46.503Z +23030ms #483 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:46.503Z +23030ms #484 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:46.503Z +23031ms #485 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:46.503Z +23031ms #486 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.505Z +23033ms #487 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=2.1 ms
+2026-11-15T22:02:46.506Z +23033ms #488 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.506Z +23033ms #489 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:46.511Z +23039ms #490 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.512Z +23039ms #491 DEBUG [UART TX] 5 byte drained, elapsed=5.9 ms
+2026-11-15T22:02:46.512Z +23040ms #492 DEBUG [USB RX] RAW 8 byte: 01 60 02 00 00 00 E0 10
+2026-11-15T22:02:46.512Z +23040ms #493 DEBUG [KLINE] RX UART 6 byte: 02 00 00 00 E0 10
+2026-11-15T22:02:46.512Z +23040ms #494 DEBUG [KLINE] Echo terdeteksi: false
+2026-11-15T22:02:46.512Z +23040ms #495 WARN [KLINE] Panjang balasan ECU tidak valid.
+2026-11-15T22:02:46.513Z +23040ms #496 WARN [SCAN] Gagal pada diagnostic entry: Panjang balasan ECU tidak valid.
+2026-11-15T22:02:46.666Z +23193ms #497 INFO [STATE] session=5 CONNECTING · Menyiapkan K-Line · percobaan 3/3
+2026-11-15T22:02:46.666Z +23194ms #498 INFO [SCAN] Percobaan 3/3: inisialisasi K-Line
+2026-11-15T22:02:46.666Z +23194ms #499 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:46.667Z +23195ms #500 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.667Z +23195ms #501 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.668Z +23195ms #502 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.5 ms
+2026-11-15T22:02:46.669Z +23196ms #503 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.670Z +23197ms #504 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:46.670Z +23198ms #505 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.670Z +23198ms #506 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:46.741Z +23269ms #507 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:46.742Z +23270ms #508 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.3 ms
+2026-11-15T22:02:46.874Z +23401ms #509 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.874Z +23402ms #510 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.875Z +23402ms #511 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:46.887Z +23414ms #512 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.895Z +23423ms #513 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.903Z +23430ms #514 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:46.903Z +23431ms #515 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=28.6 ms
+2026-11-15T22:02:46.904Z +23431ms #516 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=161.2 ms
+2026-11-15T22:02:46.904Z +23431ms #517 INFO [STATE] session=5 CONNECTING · Membangunkan ECU · percobaan 3/3
+2026-11-15T22:02:46.904Z +23431ms #518 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:46.904Z +23431ms #519 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.904Z +23432ms #520 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.3 ms
+2026-11-15T22:02:46.904Z +23432ms #521 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:46.905Z +23433ms #522 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.3 ms
+2026-11-15T22:02:46.910Z +23437ms #523 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.910Z +23437ms #524 DEBUG [UART TX] 4 byte drained, elapsed=5.1 ms
+2026-11-15T22:02:46.910Z +23438ms #525 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:46.910Z +23438ms #526 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:46.963Z +23490ms #527 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:46.963Z +23491ms #528 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:46.971Z +23498ms #529 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:46.971Z +23498ms #530 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:46.971Z +23499ms #531 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.973Z +23500ms #532 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=1.1 ms
+2026-11-15T22:02:46.973Z +23500ms #533 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:46.973Z +23500ms #534 INFO [STATE] session=5 CONNECTING · Menunggu balasan ECU · percobaan 3/3
+2026-11-15T22:02:46.973Z +23501ms #535 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:46.973Z +23501ms #536 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.974Z +23501ms #537 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:46.974Z +23501ms #538 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.974Z +23502ms #539 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.2 ms
+2026-11-15T22:02:46.980Z +23508ms #540 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.980Z +23508ms #541 DEBUG [UART TX] 5 byte drained, elapsed=6.4 ms
+2026-11-15T22:02:46.981Z +23508ms #542 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:46.981Z +23508ms #543 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:46.981Z +23508ms #544 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:46.981Z +23509ms #545 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:46.981Z +23509ms #546 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:46.981Z +23509ms #547 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:46.982Z +23509ms #548 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:46.982Z +23509ms #549 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:46.987Z +23515ms #550 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:46.988Z +23515ms #551 DEBUG [UART TX] 5 byte drained, elapsed=5.8 ms
+2026-11-15T22:02:46.988Z +23515ms #552 DEBUG [USB RX] RAW 6 byte: 01 60 20 00 10 FA
+2026-11-15T22:02:46.988Z +23516ms #553 DEBUG [KLINE] RX UART 4 byte: 20 00 10 FA
+2026-11-15T22:02:46.988Z +23516ms #554 WARN [KLINE] Awal RX bukan echo atau header ECU: 20 00 10 FA
+2026-11-15T22:02:46.988Z +23516ms #555 WARN [SCAN] Gagal pada diagnostic entry: Awal RX bukan echo atau header ECU: 20 00 10 FA
+2026-11-15T22:02:46.989Z +23516ms #556 ERROR [CONNECT] id.hondatuner.core.ProtocolException: Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 20 00 10 FA
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:49)
+	at id.hondatuner.core.DiagnosticController.openAndDetect(DiagnosticController.java:112)
+	at id.hondatuner.core.DiagnosticController.lambda$connect$2$id-hondatuner-core-DiagnosticController(DiagnosticController.java:92)
+	at id.hondatuner.core.DiagnosticController$$ExternalSyntheticLambda14.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:323)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1248)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:650)
+	at java.lang.Thread.run(Thread.java:1572)
+Caused by: id.hondatuner.core.ProtocolException: Awal RX bukan echo atau header ECU: 20 00 10 FA
+	at id.hondatuner.core.KLineTransport.exchangeOnce(KLineTransport.java:115)
+	at id.hondatuner.core.KLineTransport.exchange(KLineTransport.java:77)
+	at id.hondatuner.core.HondaClient.connect(HondaClient.java:42)
+	... 9 more
+
+2026-11-15T22:02:47.006Z +23533ms #557 INFO [USB] Menutup adaptor
+2026-11-15T22:02:47.009Z +23536ms #558 INFO [STATE] session=6 DISCONNECTED · Gagal pada diagnostic entry setelah 3 percobaan. Awal RX bukan echo atau header ECU: 20 00 10 FA
+2026-11-15T22:02:48.315Z +24842ms #559 INFO [UI] Hubungkan
+Honda Tuner 1.1.2-debug
+Android 17 (API 37)
+Xiaomi 2311DRK48G
+USB #1002 · VID:0403 PID:6001
+/dev/bus/usb/001/002, interfaces=1, permission=true
+K-Line 10400 baud, 8N1, flow=none
+Echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:48.317Z +24845ms #560 INFO [STATE] session=7 DISCONNECTED · Mengganti koneksi.
+2026-11-15T22:02:48.317Z +24845ms #561 INFO [STATE] session=7 CONNECTING · Membuka USB dan memulai sesi ECU...
+2026-11-15T22:02:48.318Z +24845ms #562 INFO [USB] Buka VID=0403 PID=6001 device=/dev/bus/usb/001/002, permission=true, interfaces=1
+2026-11-15T22:02:48.319Z +24846ms #563 DEBUG [USB] DESCRIPTORS 50 byte: 12 01 00 02 00 00 00 08 03 04 01 60 00 06 01 02 03 01 09 02 20 00 01 01 00 A0 2D 09 04 00 00 02 FF FF FF 02 07 05 81 02 40 00 00 07 05 02 02 40 00 00
+2026-11-15T22:02:48.321Z +24848ms #564 INFO [USB DRIVER] usb-serial-for-android 3.12.0; FTDI UART; wake=BREAK 70/130 ms
+2026-11-15T22:02:48.321Z +24849ms #565 INFO [USB] UART claimed: interface=0, IN=0x81, OUT=0x2, packet=64
+2026-11-15T22:02:48.321Z +24849ms #566 INFO [KLINE] Transport: echo=AUTO, timeout=1000 ms
+2026-11-15T22:02:48.321Z +24849ms #567 INFO [STATE] session=7 CONNECTING · Menyiapkan K-Line · percobaan 1/3
+2026-11-15T22:02:48.322Z +24849ms #568 INFO [SCAN] Percobaan 1/3: inisialisasi K-Line
+2026-11-15T22:02:48.322Z +24849ms #569 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:48.322Z +24849ms #570 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.322Z +24850ms #571 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.323Z +24850ms #572 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.323Z +24850ms #573 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.324Z +24851ms #574 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:48.324Z +24852ms #575 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:48.325Z +24852ms #576 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:48.396Z +24924ms #577 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:48.397Z +24924ms #578 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.6 ms
+2026-11-15T22:02:48.527Z +25054ms #579 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.529Z +25056ms #580 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=1.7 ms
+2026-11-15T22:02:48.529Z +25057ms #581 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:48.541Z +25069ms #582 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:48.549Z +25077ms #583 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:48.557Z +25085ms #584 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:48.557Z +25085ms #585 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=28.2 ms
+2026-11-15T22:02:48.558Z +25085ms #586 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=160.8 ms
+2026-11-15T22:02:48.558Z +25085ms #587 INFO [STATE] session=7 CONNECTING · Membangunkan ECU · percobaan 1/3
+2026-11-15T22:02:48.558Z +25085ms #588 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:48.558Z +25085ms #589 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.558Z +25086ms #590 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.558Z +25086ms #591 DEBUG [KLINE] TX 4 byte: FE 04 FF FF
+2026-11-15T22:02:48.559Z +25086ms #592 DEBUG [USB TX] bulk requested=4 result=4 elapsed=0.1 ms
+2026-11-15T22:02:48.563Z +25091ms #593 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:48.564Z +25091ms #594 DEBUG [UART TX] 4 byte drained, elapsed=5.1 ms
+2026-11-15T22:02:48.564Z +25091ms #595 DEBUG [USB RX] RAW 6 byte: 01 60 FC 00 FE FE
+2026-11-15T22:02:48.564Z +25092ms #596 DEBUG [WAKE] RX opsional dibuang 4 byte: FC 00 FE FE
+2026-11-15T22:02:48.616Z +25144ms #597 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:48.616Z +25144ms #598 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:48.624Z +25151ms #599 DEBUG [USB RX] RAW 2 byte: 01 60
+2026-11-15T22:02:48.624Z +25152ms #600 DEBUG [USB RX] Status-only packet; no UART data.
+2026-11-15T22:02:48.624Z +25152ms #601 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.625Z +25152ms #602 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.625Z +25152ms #603 DEBUG [KLINE] Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.
+2026-11-15T22:02:48.625Z +25152ms #604 INFO [STATE] session=7 CONNECTING · Menunggu balasan ECU · percobaan 1/3
+2026-11-15T22:02:48.627Z +25155ms #605 DEBUG [KLINE] Transaksi 72, coba 1, one-way=false
+2026-11-15T22:02:48.627Z +25155ms #606 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.627Z +25155ms #607 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:48.628Z +25155ms #608 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:48.628Z +25155ms #609 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:48.635Z +25162ms #610 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:48.635Z +25163ms #611 DEBUG [UART TX] 5 byte drained, elapsed=7.4 ms
+2026-11-15T22:02:48.636Z +25163ms #612 DEBUG [USB RX] RAW 7 byte: 01 60 60 00 00 E0 10
+2026-11-15T22:02:48.636Z +25163ms #613 DEBUG [KLINE] RX UART 5 byte: 60 00 00 E0 10
+2026-11-15T22:02:48.636Z +25163ms #614 WARN [KLINE] Awal RX bukan echo atau header ECU: 60 00 00 E0 10
+2026-11-15T22:02:48.636Z +25163ms #615 DEBUG [KLINE] Transaksi 72, coba 2, one-way=false
+2026-11-15T22:02:48.636Z +25163ms #616 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.636Z +25164ms #617 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.636Z +25164ms #618 DEBUG [KLINE] TX 5 byte: 72 05 00 F0 99
+2026-11-15T22:02:48.637Z +25164ms #619 DEBUG [USB TX] bulk requested=5 result=5 elapsed=0.1 ms
+2026-11-15T22:02:48.642Z +25169ms #620 DEBUG [FTDI] TX MODEM/LSR 2 byte: 01 60
+2026-11-15T22:02:48.642Z +25170ms #621 DEBUG [UART TX] 5 byte drained, elapsed=5.7 ms
+2026-11-15T22:02:48.642Z +25170ms #622 DEBUG [USB RX] RAW 7 byte: 01 60 02 00 00 E0 10
+2026-11-15T22:02:48.642Z +25170ms #623 DEBUG [KLINE] RX UART 5 byte: 02 00 00 E0 10
+2026-11-15T22:02:48.643Z +25170ms #624 DEBUG [KLINE] Echo terdeteksi: false
+2026-11-15T22:02:48.643Z +25170ms #625 WARN [KLINE] Panjang balasan ECU tidak valid.
+2026-11-15T22:02:48.643Z +25170ms #626 WARN [SCAN] Gagal pada diagnostic entry: Panjang balasan ECU tidak valid.
+2026-11-15T22:02:48.798Z +25325ms #627 INFO [STATE] session=7 CONNECTING · Menyiapkan K-Line · percobaan 2/3
+2026-11-15T22:02:48.798Z +25326ms #628 INFO [SCAN] Percobaan 2/3: inisialisasi K-Line
+2026-11-15T22:02:48.798Z +25326ms #629 INFO [KLINE] Inisialisasi adaptor / pulsa wake-up
+2026-11-15T22:02:48.799Z +25326ms #630 DEBUG [FTDI] CTRL req=0 value=0x0 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:48.799Z +25326ms #631 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:48.799Z +25327ms #632 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:48.800Z +25327ms #633 DEBUG [FTDI] CTRL req=11 value=0x0 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.801Z +25328ms #634 DEBUG [USB DRIVER] FTDI setParameters(10400, 8N1), flow=NONE
+2026-11-15T22:02:48.801Z +25328ms #635 DEBUG [FTDI] CTRL req=9 value=0x8 index=1 result=0 elapsed=0.1 ms
+2026-11-15T22:02:48.801Z +25329ms #636 DEBUG [USB DRIVER] FTDI setBreak(true)
+2026-11-15T22:02:48.872Z +25400ms #637 DEBUG [USB DRIVER] FTDI setBreak(false)
+2026-11-15T22:02:48.873Z +25400ms #638 INFO [WAKE] UART BREAK ON/OFF accepted; LOW hold host elapsed=71.5 ms
+2026-11-15T22:02:49.004Z +25532ms #639 DEBUG [FTDI] Purge RX only (TX preserved)
+2026-11-15T22:02:49.005Z +25532ms #640 DEBUG [FTDI] CTRL req=0 value=0x1 index=1 result=0 elapsed=0.2 ms
+2026-11-15T22:02:49.005Z +25533ms #641 DEBUG [WAKE CLEANUP] RAW 3 byte: 01 60 00
+2026-11-15T22:02:49.026Z +25554ms #642 DEBUG [WAKE CLEANUP] RAW 2 byte: 01 60
+2026-11-15T22:02:49.031Z +25559ms #643 INFO [WAKE CLEANUP] RX quiet for 24 ms; discarded UART samples=1; elapsed=26.2 ms
+2026-11-15T22:02:49.032Z +25559ms #644 INFO [WAKE] UART 10400 8N1, flow=none; HIGH settling host elapsed=158.4 ms
+2026-11-15T22:02:49.032Z +25559ms #645 INFO [STATE] session=7 CONNECTING · Membangunkan ECU · percobaan 2/3
+2026-11-15T22:02:49.032Z +25559ms #646 DEBUG [KLINE] Transaksi fe, coba 1, one-way=true
+2026-11-15T22:02:49.032Z +25560ms #647 DEBUG [FTDI] Purge

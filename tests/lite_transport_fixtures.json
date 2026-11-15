@@ -1,0 +1,632 @@
+{
+  "schema_version": 1,
+  "evidence_path": "evidence/lite_transport_reference.json",
+  "scope": "Deterministic Android regression inputs derived from separately retained native-memory observations; synthetic timing and strict Android validation choices are explicit",
+  "schedule_anchor": "rx_schedule.at_ms is relative to each request TX start; repeated attempts repeat the schedule",
+  "cases": [
+    {
+      "name": "normal_echo_delayed_ack",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/normal_echo_delayed_ack"
+    },
+    {
+      "name": "damaged_echo_delayed_ack",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "600000e010"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/damaged_echo_delayed_ack"
+    },
+    {
+      "name": "damaged_echo_coalesced_ack",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "600000e010020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 7
+      },
+      "original_case": "lite_echo_4/damaged_echo_immediate_ack"
+    },
+    {
+      "name": "header_like_damaged_echo_delayed_ack",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "020000e010"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/header_like_damaged_echo_delayed_ack"
+    },
+    {
+      "name": "normal_echo_fragmented_reply",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "02"
+        },
+        {
+          "at_ms": 23,
+          "hex": "04"
+        },
+        {
+          "at_ms": 26,
+          "hex": "00"
+        },
+        {
+          "at_ms": 29,
+          "hex": "fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 29
+      },
+      "original_case": "lite_contract_14/normal_echo_fragmented_reply"
+    },
+    {
+      "name": "damaged_echo_and_reply_fragmented",
+      "provenance": "synthetic_fragmentation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "6000"
+        },
+        {
+          "at_ms": 8,
+          "hex": "00e0"
+        },
+        {
+          "at_ms": 9,
+          "hex": "10"
+        },
+        {
+          "at_ms": 20,
+          "hex": "0204"
+        },
+        {
+          "at_ms": 22,
+          "hex": "00fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 22
+      }
+    },
+    {
+      "name": "auto_direct_delayed_reply",
+      "provenance": "android_compatibility",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/no_echo_delayed_reply"
+    },
+    {
+      "name": "none_direct_delayed_reply",
+      "provenance": "android_compatibility",
+      "echo_mode": "NONE",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/no_echo_delayed_reply"
+    },
+    {
+      "name": "required_exact_echo_delayed_ack",
+      "provenance": "android_echo_policy",
+      "echo_mode": "REQUIRED",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "00",
+        "min_elapsed_ms": 20
+      },
+      "original_case": "lite_contract_14/normal_echo_delayed_ack"
+    },
+    {
+      "name": "required_damaged_echo_rejected",
+      "provenance": "android_echo_policy",
+      "echo_mode": "REQUIRED",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "600000e010"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/damaged_echo_delayed_ack"
+    },
+    {
+      "name": "none_echoed_reply_rejected",
+      "provenance": "android_echo_policy",
+      "echo_mode": "NONE",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "wrong_reply_target_rejected",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "030400f9"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/wrong_reply_header_valid_checksum"
+    },
+    {
+      "name": "bad_checksum_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fb"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/invalid_checksum"
+    },
+    {
+      "name": "zero_declared_length_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020000e010"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "truncated_reply_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020600fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "wrong_declared_length_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020300fb"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "trailing_noise_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa55"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/valid_reply_with_trailing_noise"
+    },
+    {
+      "name": "two_replies_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/two_valid_replies"
+    },
+    {
+      "name": "two_direct_frames_cannot_be_damaged_echo",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 20,
+          "hex": "02050000f9020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "echo_without_reply_times_out",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "720500f099"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "damaged_echo_without_reply_times_out",
+      "provenance": "original_memory_ftdi",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "600000e010"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_echo_4/damaged_echo_without_ack"
+    },
+    {
+      "name": "short_echo_followed_by_reply_rejected",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "600000e0"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      },
+      "original_case": "lite_contract_14/short_echo_followed_by_reply"
+    },
+    {
+      "name": "fragmented_trailing_noise_after_complete_direct_reply",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        },
+        {
+          "at_ms": 23,
+          "hex": "55"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    },
+    {
+      "name": "valid_frame_shaped_echo_before_delayed_reply_is_ambiguous",
+      "provenance": "synthetic_strict_validation",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "payload_hex": "00f0",
+      "tx_hex": "720500f099",
+      "timeout_ms": 100,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "hex": "02050000f9"
+        },
+        {
+          "at_ms": 20,
+          "hex": "020400fa"
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "min_elapsed_ms": 200
+      }
+    }
+  ]
+}

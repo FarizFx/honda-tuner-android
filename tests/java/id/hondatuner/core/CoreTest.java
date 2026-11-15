@@ -59,7 +59,7 @@ public final class CoreTest {
         run("AUTO receives fragmented ECU replies without adapter echo", CoreTest::autoDirect);
         run("AUTO recognizes echo independently on each transaction", CoreTest::autoMixed);
         run("AUTO reports echo-only and completely absent RX distinctly", CoreTest::autoMissing);
-        run("AUTO still rejects malformed frames and damaged echo", CoreTest::autoMalformed);
+        run("AUTO rejects malformed frames and requires a valid reply after damaged echo", CoreTest::autoMalformed);
         run("forced echo modes enforce the selected receive format", CoreTest::forcedEcho);
         run("no-echo wake is one-way and never becomes a connection ACK", CoreTest::autoWake);
         run("wake UART framing error is discarded before a strict diagnostic reply", CoreTest::wakeUartError);
@@ -433,7 +433,8 @@ public final class CoreTest {
             io(() -> auto(c, null).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
         }
         FakeChannel c = new FakeChannel(); c.responder = request -> { request[2] ^= 1; return reply((byte) 0); };
-        io(() -> auto(c, null).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
+        bytes(new byte[]{0}, auto(c, null).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER).payload());
+        eq(1, c.writes.size());
     }
     private static void forcedEcho() throws Exception {
         FakeChannel c = new FakeChannel(); c.echo = false;

@@ -10,6 +10,10 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 import java.util.Arrays;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import id.hondatuner.core.ByteChannel;
 import id.hondatuner.core.CancelSignal;
@@ -20,10 +24,13 @@ import id.hondatuner.core.ProtocolException;
 /** usb-serial-for-android FTDI driver with bounded Honda wake/session timing. */
 public final class FtdiChannel implements ByteChannel {
     public static final int VENDOR_ID = 0x0403, PRODUCT_ID = 0x6001;
+    private static final ConcurrentMap<String, CountDownLatch> CLOSING = new ConcurrentHashMap<>();
     private final FtdiSerialDriver.FtdiSerialPort serial;
     private final DiagnosticLog log;
     private final AtomicBoolean closed = new AtomicBoolean();
+    private final AtomicBoolean connectionClosed = new AtomicBoolean();
     private final FtdiUart driver;
+    private final String deviceName;
 
     public static boolean matches(UsbDevice device) {
         return device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID;
@@ -35,6 +42,7 @@ public final class FtdiChannel implements ByteChannel {
         cancel.check();
         if (log != null) log.info("USB", "Buka VID=0403 PID=6001 device=" + device.getDeviceName() + ", permission=" + manager.hasPermission(device) + ", interfaces=" + device.getInterfaceCount());
         if (!matches(device) || !manager.hasPermission(device)) throw new ProtocolException("Izin USB FT232R belum diberikan.");
+        awaitCleanup(device.getDeviceName(), cancel, log);
         UsbDeviceConnection connection = manager.openDevice(device);
         if (connection == null) throw new ProtocolException("USB tidak bisa dibuka. Lepas aplikasi lain yang memakai adaptor ini.");
         FtdiSerialDriver.FtdiSerialPort opened = null;
@@ -72,6 +80,7 @@ public final class FtdiChannel implements ByteChannel {
     private FtdiChannel(UsbDeviceConnection connection, FtdiSerialDriver.FtdiSerialPort serial, UsbEndpoint input, DiagnosticLog log) {
         this.serial = serial;
         this.log = log;
+        deviceName = serial.getDevice().getDeviceName();
         driver = new FtdiUart(new FtdiUart.UsbIo() {
             @Override public int controlOut(int request, int value, int index, int timeoutMillis) {
                 return connection.controlTransfer(0x40, request, value, index, null, 0, timeoutMillis);
@@ -106,9 +115,36 @@ public final class FtdiChannel implements ByteChannel {
     @Override public byte[] read(int maximumBytes, int timeoutMillis) throws IOException {
         return driver.read(maximumBytes, timeoutMillis);
     }
-    @Override public void close() { driver.close(); }
+    @Override public boolean isHealthy() { return !closed.get() && driver.isHealthy(); }
+    @Override public void close() {
+        if (!closed.compareAndSet(false, true)) return;
+        CountDownLatch completed = new CountDownLatch(1);
+        CLOSING.put(deviceName, completed);
+        // UI disconnect revokes ownership immediately. Restore BREAK/idle and
+        // release USB on a worker so controls cannot block the Android receiver.
+        Thread cleanup = new Thread(() -> {
+            try { driver.close(); }
+            finally { CLOSING.remove(deviceName, completed); completed.countDown(); }
+        }, "Honda-USB-close");
+        cleanup.setDaemon(true);
+        cleanup.start();
+    }
+    private static void awaitCleanup(String deviceName, CancelSignal cancel, DiagnosticLog log) throws InterruptedIOException {
+        CountDownLatch previous = CLOSING.get(deviceName);
+        if (previous != null && log != null) log.info("USB", "Menunggu koneksi USB sebelumnya selesai ditutup.");
+        while (previous != null) {
+            cancel.check();
+            try { previous.await(10, TimeUnit.MILLISECONDS); }
+            catch (InterruptedException error) {
+                Thread.currentThread().interrupt();
+                throw new InterruptedIOException("Pembukaan USB dibatalkan.");
+            }
+            previous = CLOSING.get(deviceName);
+        }
+        cancel.check();
+    }
     private void closeConnection() {
-        if (closed.compareAndSet(false, true)) {
+        if (connectionClosed.compareAndSet(false, true)) {
             if (log != null) log.info("USB", "Menutup adaptor");
             try { serial.close(); }
             catch (IOException | RuntimeException error) { if (log != null) log.warn("USB", "close: " + error.getMessage()); }

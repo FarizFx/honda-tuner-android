@@ -3,22 +3,32 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.2-debug / versionCode 4:** memakai driver FTDI dari
-`usb-serial-for-android 3.12.0` (MIT). Pulsanya memakai UART BREAK dengan timing
-Honda 70 ms LOW / 130 ms HIGH, kemudian pembersihan RX sampai tenang 24 ms
-(batas 250 ms). Tidak ada aliran sampel GPIO dari mode bit-bang.
-**83 tes regresi JVM**, **312 vektor dekoder** dan **5.616 nilai field** lulus.
-Build APK baru menunggu verifikasi di server Linux; APK lokal terakhir masih 1.1.1.
+**v1.1.3-debug / versionCode 5:** memperbaiki pembacaan echo dan pembatalan
+transaksi. AUTO menerima frame langsung atau frame valid setelah prefix echo
+sepanjang TX, termasuk echo berbeda seperti `60 00 00 E0 10`. RX yang belum
+valid tetap dibaca sampai timeout; retry tidak memotong jendela balasan.
+Balasan transaksi yang dibatalkan dikuras sampai batas waktunya sebelum
+perintah berikutnya. Kegagalan USB/TX fatal memutus sesi terkait, termasuk
+operasi yang dibatalkan, tanpa memutus koneksi pengganti dari callback lama.
 
-Pembaruan ini mengikuti frame HondaECU; BREAK adalah adaptasi driver Android.
-Balasan ECU tetap diperiksa lewat status UART, echo, header, panjang dan checksum.
-Detail sumber driver dan perbedaannya: [evidence/ftdi_driver_reference.json](evidence/ftdi_driver_reference.json).
+Target, panjang, checksum dan status UART tetap ketat. Frame lengkap diberi
+jendela tenang 24 ms, dibatasi timeout yang dipilih, untuk mendeteksi data
+tambahan pada fragmen USB berikutnya. REQUIRED memeriksa echo persis; NONE
+hanya menerima frame langsung. Bukti dan batas perbandingan dengan modul asli
+**HondaECU Lite Kline Edition v3.5.99.30** tersimpan di
+[evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).
 
-Pengujian fisik pengguna pada 1.1.1 masih gagal: TX `72 05 00 F0 99` selalu
-diterima sebagai `60 00 00 E0 10`, dan RX wake berisi sampel GPIO `FF/FC`.
-Penyebab listrik belum terukur. APK, laporan asli, source dan trace versi itu
-disimpan di `dist/baseline-1.1.1`; baseline 1.1.0 dan 1.0.0 tetap tersimpan.
-Keberhasilan koneksi fisik versi 1.1.2 masih perlu pengujian pada HP dan ECU.
+Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1 dan BREAK
+minimum 70/130 ms. Pembersihan sebelum wake tetap tenang 24 ms / batas 250 ms.
+Source telah diuji dengan JVM dan 312 vektor dekoder / 5.616 nilai; build APK
+1.1.3 di runner Linux `2` sedang disiapkan. APK di `dist/` masih baseline 1.1.2
+sampai hasil server baru diunduh dan diperiksa.
+
+**1.1.2 telah diuji pengguna dan masih gagal konek.** Log aslinya disimpan di
+`evidence/phone-1.1.2-trace.txt`; source, APK dan laporan sebelumnya tetap di
+`dist/baseline-1.1.2` beserta baseline 1.1.1, 1.1.0 dan 1.0.0. Penyebab fisik
+kerusakan echo belum terbukti. Keberhasilan 1.1.3 perlu dibuktikan lewat
+[pengujian HP dan ECU](PHYSICAL_TEST.md).
 
 ## Hubungkan
 
@@ -139,7 +149,7 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
-APK 1.1.1-debug terakhir dibangun dari source `c7717c0a9c822185c27e7a8b6e577907c54651d0`.
+APK 1.1.2-debug terakhir dibangun dari source `dc6736d83b4bc06c1979235efe609bb1aa7cc501`.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

@@ -14,7 +14,7 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
     public interface Progress { void onStage(String message); }
     private final KLineTransport transport;
     private final DiagnosticLog log;
-    private boolean connected;
+    private volatile boolean connected;
     private String identifier = "";
     public HondaClient(KLineTransport transport) { this(transport, null); }
     public HondaClient(KLineTransport transport, DiagnosticLog log) { this.transport = Objects.requireNonNull(transport); this.log = log; }
@@ -43,7 +43,9 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
                 if (log != null) log.info("SCAN", "Diagnostic entry mendapat balasan valid dari ECU.");
                 break;
             } catch (InterruptedIOException error) { throw error; }
+            catch (TransportException error) { throw error; }
             catch (IOException error) {
+                requireHealthy();
                 if (log != null) log.warn("SCAN", "Gagal pada " + stage + ": " + error.getMessage());
                 if (attempt == attempts) {
                     ProtocolException failed = new ProtocolException("Gagal pada " + stage + " setelah " + attempts + " percobaan. " + error.getMessage());
@@ -70,13 +72,23 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
                 if (log != null) log.warn("ECU ID", "Balasan ID memiliki layout berbeda: total=" + reply.totalLength + ", payload=" + data.length);
             }
         } catch (InterruptedIOException error) { throw error; }
+        catch (TransportException error) { throw error; }
         catch (IOException error) { if (log != null) log.warn("ECU ID", "ID opsional belum terbaca: " + error.getMessage()); }
         cancel.check();
+        requireHealthy();
         connected = true;
         return identifier;
     }
 
+    /** A volatile health snapshot; callers must not wait for an in-flight exchange. */
+    @Override public boolean isHealthy() { return transport.isHealthy(); }
+
+    private void requireHealthy() throws TransportException {
+        if (!isHealthy()) throw new TransportException("Kanal USB tidak dapat digunakan. Hubungkan ulang adaptor.");
+    }
+
     private void requireConnection() throws ProtocolException {
+        requireHealthy();
         if (!connected) throw new ProtocolException("ECU belum terhubung.");
     }
 

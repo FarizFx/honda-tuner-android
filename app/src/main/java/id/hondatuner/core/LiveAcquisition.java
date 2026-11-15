@@ -11,6 +11,8 @@ public final class LiveAcquisition {
     public interface Listener {
         void onSample(long generation, LiveProfile.Sample sample);
         void onStopped(long generation, String reason);
+        /** Channel failures remain relevant even after this generation is cancelled. */
+        default void onTransportFailure(long generation, IOException error) { onStopped(generation, error.getMessage()); }
     }
     private final ScheduledExecutorService executor;
     private final LiveProfile.Reader reader;
@@ -61,8 +63,14 @@ public final class LiveAcquisition {
         synchronized (this) { if (cancelled(run)) return; pending = null; activeProfile = profile; }
         long began = System.nanoTime();
         LiveProfile.Sample sample;
+        boolean fatalReported = false;
         try { sample = activeProfile.read(reader, () -> cancelled(run)); }
         catch (InterruptedIOException ignored) { return; }
+        catch (TransportException error) {
+            fatalReported = true;
+            transportFailed(run, error);
+            return;
+        }
         catch (IOException error) {
             if (cancelled(run)) return;
             if (log != null) log.warn("LIVE", error.getMessage()); sample = activeProfile.unread(error.getMessage());
@@ -70,6 +78,11 @@ public final class LiveAcquisition {
         catch (RuntimeException error) {
             if (cancelled(run)) return;
             if (log != null) log.error("LIVE", error); sample = activeProfile.unread(error.getClass().getSimpleName() + ": " + error.getMessage());
+        }
+        finally {
+            if (!fatalReported && !reader.isHealthy()) {
+                transportFailed(run, new TransportException("Kanal USB tidak dapat digunakan. Hubungkan ulang adaptor."));
+            }
         }
         final boolean terminal;
         synchronized (this) {
@@ -95,5 +108,19 @@ public final class LiveAcquisition {
             long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - began);
             pending = executor.schedule(() -> poll(run), Math.max(0, intervalMillis - elapsedMillis), TimeUnit.MILLISECONDS);
         }
+    }
+
+    private void transportFailed(long run, IOException error) {
+        synchronized (this) {
+            if (generation == run) {
+                running = false;
+                if (pending != null) pending.cancel(false);
+                pending = null;
+            }
+        }
+        if (log != null) log.error("LIVE USB", error);
+        // No acquisition lock is held: the owning controller validates its
+        // session/client, independently of the cancelled live generation.
+        listener.onTransportFailure(run, error);
     }
 }

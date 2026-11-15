@@ -1,40 +1,40 @@
-# Active Honda FTDI Android driver repair - 16 November 2026
+# Active Honda Tuner 1.1.3 connection repair - 16 November 2026
 
-Version 1.1.2-debug / code 4: source_pushed_build_failure. Source commit: 4f87381bb88a2d78f7b460c4cb1637d3528a4b08.
-Run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43766162568. 83 JVM regressions, 312 vectors / 5,616 values passed.
-FTDI UART now uses usb-serial-for-android 3.12.0; Gradle checks AAR SHA-256
-61221d698f71d2e4ac182e7b55ffeee17a01426ebb92e6e3c407b7c6df90f279.
-Honda frames are unchanged. BREAK ON/OFF replaces original bit-bang LOW/HIGH,
-holding at least 70/130 ms. Raw RX is drained before FE until 24 ms quiet, bounded
-to 250 ms. Raw FTDI headers remain available for strict LSR/frame checks. Direct
-RX purge request 0/value 1 avoids the upstream purgeHwBuffers RX/TX reversal.
-No command follows uncertain TX until full initialization. See ftdi_driver_reference.json.
+1.1.3-debug / versionCode 5 source is implemented and locally verified: 141 JVM
+regressions (83 existing, 21 transport, 13 lifecycle, 24 Lite fixtures), 312
+decoder vectors / 5,616 values and project XML/YAML/source checks passed.
+Source is not pushed yet; 1.1.3 APK is not built. Current dist APK remains 1.1.2.
 
-1.1.1 built successfully on runner 1/28, source c7717c0a9c822185c27e7a8b6e577907c54651d0,
-run 43762436502, APK b02bffd7fbebb90029b16ba62d3a26a9f0bed0d7fa4f95c384625c84cb272348,
-signer 3e754a6e53eea394bb69c62aa4faea575316a2105c88f04f4b8da49c21dbff20.
-User installed it: Android 17/API 37, Xiaomi 2311DRK48G, FT232RL 0403:6001/0600,
-ECU Shindengen. Same adapter/ECU works directly in HondaECU Lite on PC. Latest
-trace has GPIO FF/FC samples (LSR 0x62); all six entry attempts return 60 00 00 E0 10
-for TX 72 05 00 F0 99. Full original assets/reports/source/trace are sealed in
-the development mirror's dist/baseline-1.1.1. Older baselines and historical ZIP remain.
+AUTO validates direct frames or full frames after exactly TX-length echo,
+including damaged 60 00 00 E0 10 and 02 00 00 E0 10. REQUIRED checks exact echo,
+NONE accepts direct frames. Target/length/checksum/UART/bounds stay strict.
+Complete replies settle for 24 ms, bounded by the selected receive deadline,
+to catch trailing fragments. Invalid prefixes do not trigger early retries.
+Cancelled RX retains its original deadline; the next operation drains until it
+ends before purging/TX. USB/partial or uncertain TX errors are fatal even after
+operation cancellation. Old callbacks cannot close a replacement session.
+Hardware cleanup is asynchronous; reopening waits for the old device cleanup.
 
-User says K-Line board has 12 V/GND; FTDI is connected GND/VCC/RX/TX in 5 V mode.
-Exact power routing unknown. Delayed RX HIGH remains a hypothesis, not a waveform
-measurement or evidence that the user's wiring/power is faulty. User asks about
-Android drivers and following HondaECU. D2XX exists; the downloaded sample license
-restricts bundling/distribution, so no D2XX SDK was bundled. The chosen maintained
-FTDI driver is MIT and its license is shipped in APK assets. Original retained
-HondaECU oracle is honda_tuner/re/linux_transport_oracle.json. Physical success on
-1.1.2 remains unverified. Keihin/Shindengen scan must not require a catalog ID.
+FTDI 3.12.0, 10400/8N1, BREAK minimum 70/130 ms, RX-only purge, 60 ms wake drain
+and pre-wake 24 ms quiet / 250 ms bound remain. Identity/catalog never gates scan.
+Original HondaECU Lite Kline v3.5.99.30 observations and their explicit limits:
+evidence/lite_transport_reference.json. Original native tests are memory FTDI,
+not physical ECU traces. The user's 1.1.2 physically failed; diagnostic text is
+evidence/phone-1.1.2-trace.txt, full user message is retained locally in build/.
+Do not blame wiring, infer a measured rising edge or claim physical success.
 
-Authoritative checkout: honda_tuner_android/build/github-repo; mirror: honda_tuner_android.
-Push, source repair, server build and APK delivery are authorized. Never register
-the laptop as a runner or install Java/Android/CI toolchains here. Build APK only
-on existing Linux server. Existing JDK D:/Tools/jre25/jdk-25.0.4.1+1 may run offline
-core tests. Terminal Git/gh directly; no Python Git wrappers. Commit identity may
-be per-command Codex/codex@localhost. Preserve runner 1/28, KC/27, KillerCoda/26 and
-credentials. Never run tools/prepare_repo.py; it overwrites a historical ZIP.
+Authoritative checkout: honda_tuner_android/build/github-repo; mirror:
+honda_tuner_android. Source/push/server build/APK delivery are authorized.
+Build only on existing Linux runner 2 / ID29; other runners/credentials stay.
+Never register this laptop as a runner or install Android/Java/CI toolchains.
+Existing D:/Tools/jre25/jdk-25.0.4.1+1 may run offline JVM tests. Git/gh directly
+in terminal, no Python Git wrappers. Never run tools/prepare_repo.py; preserve
+the historical ZIP and all baselines. Git identity can be per-command Codex /
+codex@localhost. Metadata from the prior interrupted 1.1.2 delivery was present
+before this continuation and is now corrected to include its physical failure.
 
-Current APK: 1.1.1 at dist/HondaTuner-Android-debug.apk; 1.1.2 is pending.
-Remaining: monitor CI, fix actual failures, download/verify seven release assets, compare signer to 1.1.1, mirror and deliver APK.
+Next: push this source, monitor the single 1.1.3 server build, download/verify
+all seven release assets and compare installation signer with 1.1.2, then sync
+the mirror and deliver APK. PHYSICAL_TEST.md covers direct OTG connection,
+reconnect, at least 20 live rounds responding to real changes, pause/resume and
+DTC. Physical success remains unverified until the user performs those tests.

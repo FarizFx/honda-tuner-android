@@ -10,7 +10,11 @@ import java.util.Map;
 
 /** Discover ECU-returned schemas once, then poll only the successful requests. */
 public final class LiveProfile {
-    public interface Reader { SensorDecoder.Result readTable(int request, CancelSignal cancel) throws IOException; }
+    public interface Reader {
+        SensorDecoder.Result readTable(int request, CancelSignal cancel) throws IOException;
+        /** Nonblocking channel health, separate from whether a table is supported. */
+        default boolean isHealthy() { return true; }
+    }
     private static final int[][] GROUPS = {{0x10, 0x11, 0x13, 0x15, 0x16, 0x17}, {0x20, 0x21}, {0xd0}, {0xd1}};
     public static final class Table {
         public final int request, response, bodyLength;
@@ -61,7 +65,9 @@ public final class LiveProfile {
                 cancel.check();
                 progress.onStage("ECU merespons · deteksi sensor 0x" + Integer.toHexString(request) + " · " + values.size() + " sensor ditemukan");
                 try {
+                    requireHealthy(reader);
                     SensorDecoder.Result result = reader.readTable(request, cancel);
+                    requireHealthy(reader);
                     boolean correctGroup = false;
                     for (int response : group) if (result.tableId == response) correctGroup = true;
                     if (!correctGroup || result.named().isEmpty()) throw new ProtocolException("Grup sensor yang dibalas ECU berbeda.");
@@ -71,7 +77,9 @@ public final class LiveProfile {
                     if (log != null) log.info("DETECT", "Request 0x" + Integer.toHexString(request) + " berhasil: tabel=0x" + Integer.toHexString(result.tableId) + ", bytes=" + result.bodyLength + ", sensors=" + result.named().size());
                     break;
                 } catch (InterruptedIOException error) { throw error; }
+                catch (TransportException error) { throw error; }
                 catch (IOException error) {
+                    requireHealthy(reader);
                     groupFailures.put(request, error.getMessage());
                     if (log != null) log.warn("DETECT", "Request 0x" + Integer.toHexString(request) + ": " + error.getMessage());
                 }
@@ -93,14 +101,17 @@ public final class LiveProfile {
         for (Table table : tables) {
             cancel.check();
             try {
+                requireHealthy(reader);
                 SensorDecoder.Result result = reader.readTable(table.request, cancel);
+                requireHealthy(reader);
                 if (result.tableId != table.response || result.bodyLength != table.bodyLength || !table.fields.equals(new ArrayList<>(result.fields.keySet()))) {
                     throw new ProtocolException("Layout sensor ECU berubah. Deteksi ulang sensor.");
                 }
                 mergeFirst(values, result.named());
                 valid++;
             } catch (InterruptedIOException error) { throw error; }
-            catch (IOException error) { failures.put(table.request, error.getMessage()); }
+            catch (TransportException error) { throw error; }
+            catch (IOException error) { requireHealthy(reader); failures.put(table.request, error.getMessage()); }
         }
         // Failed groups are unread, never copied from an older sample.
         Map<String, Object> ordered = new LinkedHashMap<>();
@@ -118,5 +129,9 @@ public final class LiveProfile {
 
     private static void mergeFirst(Map<String, Object> target, Map<String, Object> source) {
         for (Map.Entry<String, Object> value : source.entrySet()) if (!target.containsKey(value.getKey())) target.put(value.getKey(), value.getValue());
+    }
+
+    private static void requireHealthy(Reader reader) throws TransportException {
+        if (!reader.isHealthy()) throw new TransportException("Kanal USB tidak dapat digunakan. Hubungkan ulang adaptor.");
     }
 }

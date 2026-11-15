@@ -38,7 +38,7 @@ OK failed rediscovery revokes the previous sensor profile
 OK AUTO receives fragmented ECU replies without adapter echo
 OK AUTO recognizes echo independently on each transaction
 OK AUTO reports echo-only and completely absent RX distinctly
-OK AUTO still rejects malformed frames and damaged echo
+OK AUTO rejects malformed frames and requires a valid reply after damaged echo
 OK forced echo modes enforce the selected receive format
 OK no-echo wake is one-way and never becomes a connection ACK
 OK wake UART framing error is discarded before a strict diagnostic reply
@@ -86,5 +86,66 @@ OK reported 60 00 00 E0 10 entry bytes cannot establish connection
 OK required wake echo still rejects the reported framing error
 OK truncated USB status on wake cannot be ignored as optional UART RX
 PASS: 83 core regression tests
+OK damaged echo waits for delayed ECU reply with one TX
+OK header-like damaged echo cannot select the wrong receive layout
+OK extra RX in a later USB fragment cannot complete a frame
+OK valid-frame-shaped damaged prefix cannot win before its suffix
+OK valid RX near the selected deadline is still accepted
+OK cancelled live response is drained before both DTC groups
+OK cancel during old RX drain preserves the original deadline
+OK USB failure during old RX drain prevents a new command
+OK malformed first RX never starts retry before its deadline
+OK 510-byte combined echo and reply is accepted
+OK oversized RX stays bounded and waits before retry
+OK UART error poisons the receive attempt despite a later valid frame
+OK fatal read is not retried or hidden by simultaneous cancellation
+OK fatal write never appends a second command
+OK cancelled uncertain TX remains unhealthy
+OK USB write InterruptedIOException is a fatal partial TX
+OK USB read errors are fatal while status-only timeout stays healthy
+OK UART sample error leaves USB healthy for a later transaction
+OK healthy exact fragmented RX records no false first failure
+OK damaged echo trace retains full TX RX and wait evidence
+OK one-way wake remains one TX and consumes its whole window
+PASS: 21 transport regression tests
+OK fatal optional ECU ID never publishes a connected state
+OK optional protocol ID failure keeps diagnostics usable
+OK fatal sensor discovery stops before another candidate
+OK typed table failures cannot become unsupported or unread sensors
+OK cancelled live fatal RX disconnects the owning session
+OK cancelled live fatal RX prevents queued DTC transmission
+OK cancelled uncertain TX still disconnects through channel health
+OK fatal DTC failure never resumes live or returns an empty report
+OK recoverable DTC protocol failure keeps live usable
+OK fatal manual read discards its sample and sensor profile
+OK fatal rediscovery cannot leave an apparently connected session
+OK an old cancelled fatal callback cannot close a replacement session
+OK UI pause, health snapshot and disconnect stay responsive during RX
+PASS: 13 controller health regression tests
+OK Lite fixture normal_echo_delayed_ack (valid, 1 TX, 44 ms)
+OK Lite fixture damaged_echo_delayed_ack (valid, 1 TX, 44 ms)
+OK Lite fixture damaged_echo_coalesced_ack (valid, 1 TX, 31 ms)
+OK Lite fixture header_like_damaged_echo_delayed_ack (valid, 1 TX, 44 ms)
+OK Lite fixture normal_echo_fragmented_reply (valid, 1 TX, 53 ms)
+OK Lite fixture damaged_echo_and_reply_fragmented (valid, 1 TX, 46 ms)
+OK Lite fixture auto_direct_delayed_reply (valid, 1 TX, 44 ms)
+OK Lite fixture none_direct_delayed_reply (valid, 1 TX, 44 ms)
+OK Lite fixture required_exact_echo_delayed_ack (valid, 1 TX, 44 ms)
+OK Lite fixture required_damaged_echo_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture none_echoed_reply_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture wrong_reply_target_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture bad_checksum_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture zero_declared_length_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture truncated_reply_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture wrong_declared_length_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture trailing_noise_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture two_replies_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture two_direct_frames_cannot_be_damaged_echo (rejected, 2 TX, 212 ms)
+OK Lite fixture echo_without_reply_times_out (rejected, 2 TX, 212 ms)
+OK Lite fixture damaged_echo_without_reply_times_out (rejected, 2 TX, 212 ms)
+OK Lite fixture short_echo_followed_by_reply_rejected (rejected, 2 TX, 212 ms)
+OK Lite fixture fragmented_trailing_noise_after_complete_direct_reply (rejected, 2 TX, 212 ms)
+OK Lite fixture valid_frame_shaped_echo_before_delayed_reply_is_ambiguous (rejected, 2 TX, 212 ms)
 
+PASS: 141 total regression tests
 PASS: 312 reference decoder vectors, 5616 field values

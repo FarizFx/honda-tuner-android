@@ -8,6 +8,9 @@ import java.util.Objects;
 
 /** Honda frames, optional/required adapter echo, bounded replies and serialized dispatch. */
 public final class KLineTransport implements AutoCloseable {
+    // Three 8 ms FTDI latency intervals, matching wake cleanup. A completed
+    // frame must settle so a later USB fragment cannot hide trailing data.
+    private static final int REPLY_QUIET_MILLIS = 24;
     public interface NanoClock { long now(); }
     public enum EchoMode { AUTO, REQUIRED, NONE }
     private final ByteChannel channel;
@@ -15,6 +18,11 @@ public final class KLineTransport implements AutoCloseable {
     private final int timeoutMillis;
     private final EchoMode echoMode;
     private final DiagnosticLog log;
+    private volatile boolean closed;
+    private volatile TransportException failure;
+    // Wire operations are serialized, but cancellation can leave an ECU reply
+    // in flight. Keep its original deadline before allowing a different command.
+    private long discardUntil;
 
     public KLineTransport(ByteChannel channel) { this(channel, System::nanoTime, 500); }
     public KLineTransport(ByteChannel channel, NanoClock clock, int timeoutMillis) {
@@ -31,8 +39,30 @@ public final class KLineTransport implements AutoCloseable {
 
     public synchronized void initialize(CancelSignal cancel) throws IOException {
         cancel.check();
-        if (log != null) log.info("KLINE", "Inisialisasi adaptor / pulsa wake-up");
-        channel.initialize(cancel);
+        requireHealthy();
+        try {
+            discardPrevious(cancel);
+            if (log != null) log.info("KLINE", "Inisialisasi adaptor / pulsa wake-up");
+            channel.initialize(cancel);
+            requireHealthy();
+        } catch (IOException error) { throw observeFailure(error); }
+    }
+
+    public boolean isHealthy() { return !closed && failure == null && channel.isHealthy(); }
+    private void requireHealthy() throws TransportException {
+        if (failure != null) throw failure;
+        if (closed || !channel.isHealthy()) throw new TransportException("Kanal USB tidak siap; hubungkan ulang adaptor.");
+    }
+    private IOException observeFailure(IOException error) {
+        if (error instanceof InterruptedIOException) {
+            if (!channel.isHealthy()) failure = new TransportException("Kanal USB gagal saat operasi dibatalkan.", error);
+            return error;
+        }
+        if (error instanceof TransportException) failure = (TransportException) error;
+        else if (!(error instanceof ProtocolException) || !channel.isHealthy()) {
+            failure = new TransportException("Komunikasi USB gagal: " + error.getMessage(), error);
+        }
+        return failure == null ? error : failure;
     }
 
     public static byte[] command(int target, byte... payload) {
@@ -73,105 +103,250 @@ public final class KLineTransport implements AutoCloseable {
         // A one-way FE/FF wake-up is sent once, even when its echo fails.
         for (int attempt = 0; attempt < (noReturn ? 1 : 2); attempt++) {
             cancel.check();
+            requireHealthy();
             if (log != null) log.debug("KLINE", "Transaksi " + Integer.toHexString(target) + ", coba " + (attempt + 1) + ", one-way=" + noReturn);
-            try { return exchangeOnce(target, request, noReturn, cancel); }
-            catch (InterruptedIOException error) { throw error; }
-            catch (IOException error) { last = error; if (log != null) log.warn("KLINE", error.getMessage()); }
+            try {
+                discardPrevious(cancel);
+                return exchangeOnce(target, request, noReturn, cancel);
+            } catch (IOException error) {
+                last = observeFailure(error);
+                if (last instanceof InterruptedIOException || last instanceof TransportException) throw last;
+                if (log != null) log.warn("KLINE", last.getMessage());
+            }
         }
         throw last;
     }
 
     private Packet exchangeOnce(int target, byte[] request, boolean noReturn, CancelSignal cancel) throws IOException {
         channel.purge();
-        int receiveTimeout = noReturn && echoMode != EchoMode.REQUIRED ? Math.min(60, timeoutMillis) : timeoutMillis;
+        int receiveTimeout = noReturn ? Math.min(60, timeoutMillis) : timeoutMillis;
         long began = clock.now();
-        if (log != null) log.wire("KLINE", "TX", request, request.length);
-        channel.write(request, timeoutMillis, cancel);
-        // USB acceptance is not UART completion. The channel drains TX before
-        // returning, then the reply gets its entire receive window.
-        long deadline = clock.now() + receiveTimeout * 1000000L;
-        if (noReturn && echoMode != EchoMode.REQUIRED) {
-            drainWake(deadline, cancel);
-            return null;
-        }
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        Boolean echoed = echoMode == EchoMode.REQUIRED ? Boolean.TRUE : echoMode == EchoMode.NONE ? Boolean.FALSE : null;
-        while (clock.now() < deadline) {
-            cancel.check();
-            long remaining = deadline - clock.now();
-            if (remaining <= 0) break;
-            int wait = (int) Math.min(50, Math.max(1, (remaining + 999999) / 1000000));
-            byte[] piece = channel.read(256, wait);
-            cancel.check();
-            if (clock.now() >= deadline) break;
-            if (piece.length == 0) continue;
-            if (log != null) log.wire("KLINE", "RX UART", piece, piece.length);
-            captured.write(piece, 0, piece.length);
-            if (captured.size() > 510) throw new ProtocolException("Balasan ECU melebihi batas frame.");
-            byte[] bytes = captured.toByteArray();
-            if (echoed == null) {
-                if ((bytes[0] & 255) == (request[0] & 255)) echoed = Boolean.TRUE;
-                else if ((bytes[0] & 255) == (target & 15)) echoed = Boolean.FALSE;
-                else if (!noReturn) throw new ProtocolException("Awal RX bukan echo atau header ECU: " + DiagnosticLog.hex(bytes, Math.min(bytes.length, 8)));
-                if (log != null && echoed != null) log.debug("KLINE", "Echo terdeteksi: " + echoed);
+        TransactionTrace trace = new TransactionTrace(request, began, receiveTimeout);
+        try {
+            cancel.check(); requireHealthy();
+            if (log != null) log.wire("KLINE", "TX", request, request.length);
+            channel.write(request, timeoutMillis, cancel);
+            // USB acceptance is not UART completion. Start RX after the channel
+            // confirms TX drained, and retain this window if reception is cancelled.
+            long deadline = clock.now() + receiveTimeout * 1000000L;
+            discardUntil = deadline;
+            trace.receiveBegan = clock.now();
+            if (noReturn && echoMode != EchoMode.REQUIRED) {
+                drainWake(deadline, cancel, trace);
+                discardUntil = 0;
+                trace.outcome = "wake_sent";
+                return null;
             }
-            if (Boolean.TRUE.equals(echoed)) {
-                for (int i = 0; i < Math.min(bytes.length, request.length); i++) {
-                    if (bytes[i] != request[i]) throw new ProtocolException("Echo adaptor tidak cocok dengan perintah saat ini.");
+            String detail = null;
+            boolean uartFault = false;
+            ReplyChoice candidate = null;
+            long quietUntil = deadline;
+            while (clock.now() < deadline) {
+                cancel.check(); requireHealthy();
+                if (candidate != null && clock.now() >= quietUntil) return complete(candidate, trace, cancel);
+                byte[] piece;
+                try { piece = channel.read(256, waitMillis(candidate == null ? deadline : Math.min(deadline, quietUntil))); }
+                catch (FtdiCodec.UartException error) {
+                    cancel.check();
+                    uartFault = true; candidate = null; trace.uart(error);
+                    detail = error.getMessage();
+                    continue;
                 }
-                if (noReturn && bytes.length >= request.length) {
-                    channel.purge();
-                    return null;
+                cancel.check(); requireHealthy();
+                if (piece == null) throw new TransportException("Driver USB tidak mengembalikan RX yang valid.");
+                trace.capture(piece);
+                if (piece.length != 0) candidate = null;
+                if (clock.now() >= deadline) break;
+                if (piece.length == 0) continue;
+                if (log != null) log.wire("KLINE", "RX UART", piece, piece.length);
+                if (trace.received > 510) throw new ProtocolException("Balasan ECU melebihi batas frame.");
+                byte[] bytes = trace.rx.toByteArray();
+                if (noReturn) {
+                    if (!prefixMatches(bytes, request)) {
+                        detail = "Echo adaptor tidak cocok dengan perintah saat ini.";
+                        trace.first(detail);
+                    } else if (bytes.length >= request.length && !uartFault) {
+                        trace.echo = "exact";
+                        drainWake(deadline, cancel, trace);
+                        discardUntil = 0;
+                        trace.outcome = "wake_sent";
+                        return null;
+                    }
+                    continue;
                 }
-                if (bytes.length <= request.length) continue;
+                ReplyChoice choice = chooseReply(target, request, bytes);
+                if (choice.packet != null && !uartFault) {
+                    candidate = choice;
+                    quietUntil = Math.min(deadline, clock.now() + REPLY_QUIET_MILLIS * 1000000L);
+                    continue;
+                }
+                if (choice.detail != null) {
+                    if (!uartFault) detail = choice.detail;
+                    trace.first(choice.detail);
+                }
             }
-            if (noReturn) continue;
-            byte[] reply = Boolean.TRUE.equals(echoed) ? Arrays.copyOfRange(bytes, request.length, bytes.length) : bytes;
-            if ((reply[0] & 255) != (target & 15)) throw new ProtocolException("Balasan bukan untuk target Honda saat ini.");
-            if (reply.length >= 2) {
-                int length = reply[1] & 255;
-                if (length < 3 || reply.length > length) throw new ProtocolException("Panjang balasan ECU tidak valid.");
-                if (reply.length == length) {
-                    Packet packet = parseReply(target, reply);
-                    if (log != null) log.debug("KLINE", "RX valid " + length + " byte, echo=" + echoed + ", " + (clock.now() - began) / 1000000L + " ms");
-                    return packet;
-                }
-            }
-        }
-        cancel.check();
-        byte[] bytes = captured.toByteArray();
-        channel.purge();
-        String detail;
-        if (bytes.length == 0) detail = "Tidak ada RX dari adaptor/ECU";
-        else if (Boolean.TRUE.equals(echoed) && bytes.length == request.length) detail = "Echo TX diterima, tetapi ECU belum membalas";
-        else if (Boolean.TRUE.equals(echoed) && bytes.length < request.length) detail = "Echo TX terpotong (" + bytes.length + "/" + request.length + " byte)";
-        else detail = "Balasan ECU terpotong (RX " + bytes.length + " byte)";
-        throw new ProtocolException(detail + " dalam " + receiveTimeout + " ms. Periksa kontak, daya dan kabel K-Line.");
+            cancel.check(); requireHealthy();
+            // A frame received before the deadline remains valid if the rest of
+            // the available window is empty, even if less than 24 ms remained.
+            if (candidate != null && !uartFault) return complete(candidate, trace, cancel);
+            channel.purge();
+            discardUntil = 0;
+            byte[] bytes = trace.rx.toByteArray();
+            if (uartFault) detail = "Sampel UART rusak; balasan transaksi tidak digunakan. " + trace.firstFailure;
+            else if (bytes.length == 0) detail = "Tidak ada RX dari adaptor/ECU";
+            else if (Arrays.equals(bytes, request) && echoMode != EchoMode.NONE) detail = "Echo TX diterima, tetapi ECU belum membalas";
+            else if (prefixMatches(bytes, request) && bytes.length < request.length && echoMode != EchoMode.NONE) detail = "Echo TX terpotong (" + bytes.length + "/" + request.length + " byte)";
+            else if (detail == null) detail = "Balasan ECU terpotong (RX " + bytes.length + " byte)";
+            throw new ProtocolException(detail + " dalam " + receiveTimeout + " ms.");
+        } catch (IOException error) {
+            trace.first(error.getMessage());
+            trace.outcome = error instanceof InterruptedIOException ? "cancelled" : "failed";
+            throw error;
+        } finally { trace.publish(); }
     }
 
-    private void drainWake(long deadline, CancelSignal cancel) throws IOException {
+    private Packet complete(ReplyChoice choice, TransactionTrace trace, CancelSignal cancel) throws IOException {
+        cancel.check(); requireHealthy();
+        trace.echo = choice.echo; trace.outcome = "valid";
+        if (log != null) log.debug("KLINE", "Echo terdeteksi: " + !"none".equals(choice.echo) + "; kualitas=" + choice.echo);
+        discardUntil = 0;
+        return choice.packet;
+    }
+
+    private static boolean prefixMatches(byte[] bytes, byte[] request) {
+        for (int i = 0; i < Math.min(bytes.length, request.length); i++) if (bytes[i] != request[i]) return false;
+        return true;
+    }
+    private static final class ReplyChoice {
+        final Packet packet;
+        final String echo, detail;
+        ReplyChoice(Packet packet, String echo, String detail) { this.packet = packet; this.echo = echo; this.detail = detail; }
+    }
+    private static ReplyChoice replyAt(int target, byte[] bytes, int offset) {
+        int available = bytes.length - offset;
+        if (available <= 0) return new ReplyChoice(null, null, null);
+        if ((bytes[offset] & 255) != (target & 15)) return new ReplyChoice(null, null, "Balasan bukan untuk target Honda saat ini.");
+        if (available < 2) return new ReplyChoice(null, null, null);
+        int length = bytes[offset + 1] & 255;
+        if (length < 3 || available > length) return new ReplyChoice(null, null, "Panjang balasan ECU tidak valid.");
+        if (available < length) return new ReplyChoice(null, null, null);
+        try { return new ReplyChoice(parseReply(target, Arrays.copyOfRange(bytes, offset, bytes.length)), null, null); }
+        catch (ProtocolException error) { return new ReplyChoice(null, null, error.getMessage()); }
+    }
+    private ReplyChoice chooseReply(int target, byte[] request, byte[] bytes) {
+        if (echoMode == EchoMode.NONE) {
+            ReplyChoice direct = replyAt(target, bytes, 0);
+            return new ReplyChoice(direct.packet, "none", direct.detail);
+        }
+        if (echoMode == EchoMode.REQUIRED) {
+            if (!prefixMatches(bytes, request)) return new ReplyChoice(null, "different", "Echo adaptor tidak cocok dengan perintah saat ini.");
+            ReplyChoice echoed = replyAt(target, bytes, request.length);
+            return new ReplyChoice(echoed.packet, "exact", echoed.detail);
+        }
+        ReplyChoice direct = replyAt(target, bytes, 0);
+        ReplyChoice echoed = replyAt(target, bytes, request.length);
+        // A complete ECU frame followed by more input cannot be relabelled as
+        // damaged echo. In particular, two replies may align at the TX length.
+        if (bytes.length >= 3 && (bytes[0] & 255) == (target & 15)) {
+            int leadingLength = bytes[1] & 255;
+            if (leadingLength >= 3 && leadingLength < bytes.length) {
+                try {
+                    parseReply(target, Arrays.copyOfRange(bytes, 0, leadingLength));
+                    return new ReplyChoice(null, "ambiguous", "RX berisi frame ECU lengkap diikuti data tambahan.");
+                } catch (ProtocolException ignored) { /* not a valid leading reply */ }
+            }
+        }
+        if (direct.packet != null && echoed.packet != null) return new ReplyChoice(null, "ambiguous", "Dua bentuk balasan ECU sama-sama valid; transaksi ambigu.");
+        if (direct.packet != null) return new ReplyChoice(direct.packet, "none", null);
+        if (echoed.packet != null) return new ReplyChoice(echoed.packet, prefixMatches(bytes, request) ? "exact" : "different", null);
+        if (prefixMatches(bytes, request)) return new ReplyChoice(null, null, echoed.detail);
+        if (direct.detail == null) return new ReplyChoice(null, null, null);
+        String detail = bytes.length > request.length && echoed.detail != null ? echoed.detail : direct.detail;
+        if (detail == null && !prefixMatches(bytes, request) && bytes.length >= request.length) detail = "Prefix echo berbeda; menunggu frame ECU lengkap.";
+        return new ReplyChoice(null, null, detail);
+    }
+
+    private int waitMillis(long deadline) {
+        long remaining = deadline - clock.now();
+        return (int) Math.min(50, Math.max(1, (remaining + 999999L) / 1000000L));
+    }
+    private void discardPrevious(CancelSignal cancel) throws IOException {
+        if (discardUntil == 0) return;
+        long began = clock.now();
+        int discarded = 0;
+        while (clock.now() < discardUntil) {
+            cancel.check(); requireHealthy();
+            try {
+                byte[] piece = channel.read(256, waitMillis(discardUntil));
+                if (piece == null) throw new TransportException("Driver USB tidak mengembalikan RX yang valid.");
+                discarded += piece.length;
+                if (log != null && piece.length != 0) log.wire("RX DISCARD", "Transaksi sebelumnya", piece, piece.length);
+            } catch (FtdiCodec.UartException error) {
+                if (log != null) log.warn("RX DISCARD", error.getMessage());
+            }
+            cancel.check(); requireHealthy();
+        }
+        cancel.check(); requireHealthy();
+        channel.purge();
+        discardUntil = 0;
+        if (log != null) log.info("RX DISCARD", "Jendela RX sebelumnya selesai; dibuang=" + discarded + " byte, tunggu=" + (clock.now() - began) / 1000000L + " ms.");
+    }
+
+    private void drainWake(long deadline, CancelSignal cancel, TransactionTrace trace) throws IOException {
         // FE/FF is a one-way wake, not a sensor reply. Consume its whole bounded
         // RX window even if the first loopback byte is FC or has a framing error.
         // Data errors stay strict on the subsequent diagnostic entry and reads.
         while (clock.now() < deadline) {
-            cancel.check();
-            long remaining = deadline - clock.now();
-            if (remaining <= 0) break;
-            int wait = (int) Math.min(50, Math.max(1, (remaining + 999999) / 1000000));
+            cancel.check(); requireHealthy();
             try {
-                byte[] piece = channel.read(256, wait);
-                cancel.check();
+                byte[] piece = channel.read(256, waitMillis(deadline));
+                cancel.check(); requireHealthy();
+                if (piece == null) throw new TransportException("Driver USB tidak mengembalikan RX yang valid.");
+                trace.capture(piece);
                 if (log != null && piece.length != 0) log.wire("WAKE", "RX opsional dibuang", piece, piece.length);
             } catch (InterruptedIOException error) { throw error; }
             catch (FtdiCodec.UartException error) {
-                cancel.check();
+                cancel.check(); trace.uart(error);
                 if (log != null) log.warn("WAKE", "RX wake dibuang: " + error.getMessage());
             }
         }
-        cancel.check();
+        cancel.check(); requireHealthy();
         channel.purge();
         if (log != null) log.debug("KLINE", "Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.");
     }
 
-    @Override public void close() { channel.close(); }
+    private final class TransactionTrace {
+        final byte[] request;
+        final long began;
+        final int receiveTimeout;
+        final ByteArrayOutputStream rx = new ByteArrayOutputStream();
+        long receiveBegan = -1;
+        int received;
+        String echo = "undetermined", uartStatus = "no-error-reported", firstFailure, outcome = "failed";
+        TransactionTrace(byte[] request, long began, int receiveTimeout) { this.request = request; this.began = began; this.receiveTimeout = receiveTimeout; }
+        void first(String reason) { if (firstFailure == null && reason != null) firstFailure = reason; }
+        void capture(byte[] piece) {
+            received += piece.length;
+            rx.write(piece, 0, Math.min(piece.length, 510 - rx.size()));
+        }
+        void uart(FtdiCodec.UartException error) {
+            uartStatus = "LSR 0x" + Integer.toHexString(error.lineStatus);
+            first(error.getMessage());
+        }
+        void publish() {
+            if (log == null) return;
+            byte[] bytes = rx.toByteArray();
+            if ("undetermined".equals(echo)) {
+                if (bytes.length != 0 && prefixMatches(bytes, request)) echo = bytes.length >= request.length ? "exact" : "incomplete";
+                else if (bytes.length >= request.length) echo = "different-or-absent";
+            }
+            String txText = log.isDetailed() ? DiagnosticLog.hex(request, request.length) : request.length + " byte";
+            String rxText = log.isDetailed() ? DiagnosticLog.hex(bytes, bytes.length) : received + " byte";
+            log.info("TRANSACTION", "result=" + outcome + "; TX=" + txText + "; RX=" + rxText + "; rx_bytes=" + received +
+                    "; echo=" + echo + "; UART=" + uartStatus + "; receive_wait=" + (receiveBegan < 0 ? 0 : (clock.now() - receiveBegan) / 1000000L) +
+                    "/" + receiveTimeout + " ms; frame_quiet=" + REPLY_QUIET_MILLIS + " ms; elapsed=" + (clock.now() - began) / 1000000L + " ms; first_failure=" + (firstFailure == null ? "none" : firstFailure));
+        }
+    }
+
+    @Override public void close() { closed = true; channel.close(); }
 }

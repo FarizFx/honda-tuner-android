@@ -10,5 +10,8 @@ public interface ByteChannel extends AutoCloseable {
     /** Return after all bytes have left the UART, within the supplied timeout. */
     void write(byte[] data, int timeoutMillis, CancelSignal cancel) throws IOException;
     byte[] read(int maximumBytes, int timeoutMillis) throws IOException;
+    /** Cached state only; this must never wait for USB or a wire-operation lock. */
+    default boolean isHealthy() { return true; }
+    /** Revoke the channel immediately; implementations may finish USB cleanup asynchronously. */
     @Override void close();
 }

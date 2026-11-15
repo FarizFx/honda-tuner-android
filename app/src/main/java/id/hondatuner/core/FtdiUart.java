@@ -34,6 +34,7 @@ public final class FtdiUart implements ByteChannel {
     private final AtomicBoolean closed = new AtomicBoolean();
     private byte[] pending = new byte[0];
     private boolean transmitReady;
+    private volatile boolean failed;
 
     public FtdiUart(UsbIo io, int port, int packetSize, DiagnosticLog log) {
         this(io, port, packetSize, log, SYSTEM);
@@ -43,8 +44,22 @@ public final class FtdiUart implements ByteChannel {
         this.io = Objects.requireNonNull(io); this.port = port; this.packetSize = packetSize;
         this.log = log; this.timing = Objects.requireNonNull(timing);
     }
-    private void requireOpen() throws ProtocolException {
-        if (closed.get()) throw new ProtocolException("Adaptor USB sudah ditutup atau dilepas.");
+    @Override public boolean isHealthy() { return !closed.get() && !failed; }
+    private void requireOpen() throws TransportException {
+        if (closed.get()) throw new TransportException("Adaptor USB sudah ditutup atau dilepas.");
+    }
+    private TransportException failed(String message, Throwable cause) {
+        failed = true; transmitReady = false;
+        return cause == null ? new TransportException(message) : new TransportException(message, cause);
+    }
+    private int readUsb(byte[] buffer, int timeoutMillis) throws TransportException {
+        try { return io.read(buffer, timeoutMillis); }
+        catch (IOException | RuntimeException error) { throw failed("Pembacaan USB FT232R gagal: " + error.getMessage(), error); }
+    }
+    private void setBreak(boolean enabled) throws TransportException {
+        try { io.setBreak(enabled); }
+        catch (IOException | RuntimeException error) { throw failed("Pengaturan BREAK FT232R gagal: " + error.getMessage(), error); }
+        requireOpen();
     }
     private String elapsed(long began) {
         return String.format(Locale.ROOT, "%.1f ms", (timing.now() - began) / 1000000.0);
@@ -52,14 +67,18 @@ public final class FtdiUart implements ByteChannel {
     private void control(int request, int value, int index) throws IOException {
         requireOpen();
         long began = timing.now();
-        int result = io.controlOut(request, value, index, 500);
+        int result;
+        try { result = io.controlOut(request, value, index, 500); }
+        catch (IOException | RuntimeException error) { throw failed("Kontrol USB FT232R gagal: " + error.getMessage(), error); }
         if (log != null) log.debug("FTDI", "CTRL req=" + request + " value=0x" + Integer.toHexString(value) + " index=" + index + " result=" + result + " elapsed=" + elapsed(began));
         requireOpen();
-        if (result != 0) throw new ProtocolException("Pengaturan FT232R gagal (USB request " + request + ").");
+        if (result != 0) throw failed("Pengaturan FT232R gagal (USB request " + request + ").", null);
     }
     private void configureUart(CancelSignal cancel) throws IOException {
         cancel.check(); control(11, 0, port);
-        cancel.check(); io.configureUart(BAUD); // serial library sets 8N1 and no flow control
+        cancel.check();
+        try { io.configureUart(BAUD); } // serial library sets 8N1 and no flow control
+        catch (IOException | RuntimeException error) { throw failed("Pengaturan UART FT232R gagal: " + error.getMessage(), error); }
         requireOpen();
         cancel.check();
     }
@@ -70,16 +89,16 @@ public final class FtdiUart implements ByteChannel {
             cancel.check(); purge();
             configureUart(cancel);
             control(9, 8, port);
-            cancel.check(); io.setBreak(true); requireOpen();
+            cancel.check(); setBreak(true);
             long lowBegan = timing.now();
             pauseUntil(lowBegan + 70000000L, cancel);
-            cancel.check(); io.setBreak(false); requireOpen();
+            cancel.check(); setBreak(false);
             if (log != null) log.info("WAKE", "UART BREAK ON/OFF accepted; LOW hold host elapsed=" + elapsed(lowBegan));
             long highBegan = timing.now();
             pauseUntil(highBegan + 130000000L, cancel);
             purge();
             drainBeforeWake(cancel);
-            cancel.check(); transmitReady = true;
+            cancel.check(); transmitReady = true; failed = false;
             if (log != null) log.info("WAKE", "UART 10400 8N1, flow=none; HIGH settling host elapsed=" + elapsed(highBegan));
         } catch (IOException | RuntimeException error) {
             if (!closed.get()) restoreIdle();
@@ -100,15 +119,15 @@ public final class FtdiUart implements ByteChannel {
             if (now >= deadline) throw new ProtocolException("RX FT232R belum tenang dalam 250 ms sebelum wake; perintah ECU dibatalkan.");
             long waitUntil = Math.min(deadline, lastData + 24000000L);
             int waitMillis = (int) Math.min(8, Math.max(1, (waitUntil - now + 999999L) / 1000000L));
-            int count = io.read(raw, waitMillis);
+            int count = readUsb(raw, waitMillis);
             requireOpen(); cancel.check();
-            if (count > raw.length) throw new ProtocolException("Panjang RX USB tidak valid saat membersihkan wake.");
+            if (count > raw.length) throw failed("Panjang RX USB tidak valid saat membersihkan wake.", null);
             if (count > 0) {
                 if (log != null) log.wire("WAKE CLEANUP", "RAW", raw, count);
                 int payload = 0;
                 for (int offset = 0; offset < count; offset += packetSize) {
                     int size = Math.min(packetSize, count - offset);
-                    if (size < 2) throw new ProtocolException("Status USB FTDI terpotong saat membersihkan wake.");
+                    if (size < 2) throw failed("Status USB FTDI terpotong saat membersihkan wake.", null);
                     payload += size - 2;
                 }
                 if (payload > 0) { discarded += payload; lastData = timing.now(); }
@@ -139,15 +158,23 @@ public final class FtdiUart implements ByteChannel {
         }
         cancel.check();
     }
-    private void writeQueued(byte[] data, long deadline, CancelSignal cancel) throws IOException {
+    private void writeQueued(byte[] data, long deadline, CancelSignal cancel, boolean[] attempted) throws IOException {
         int sent = 0;
         long began = timing.now();
         while (sent < data.length) {
             cancel.check(); requireOpen();
-            int count = io.write(data, sent, data.length - sent, slice(deadline));
+            int timeout = slice(deadline);
+            attempted[0] = true;
+            int count;
+            try { count = io.write(data, sent, data.length - sent, timeout); }
+            catch (IOException | RuntimeException error) {
+                // SerialTimeoutException is an InterruptedIOException too, but
+                // it represents potentially partial USB TX, not user cancellation.
+                throw failed("Pengiriman USB FT232R tidak pasti: " + error.getMessage(), error);
+            }
             if (log != null) log.debug("USB TX", "bulk requested=" + (data.length - sent) + " result=" + count + " elapsed=" + elapsed(began));
             requireOpen(); cancel.check();
-            if (count <= 0 || count > data.length - sent) throw new ProtocolException("USB tidak menyelesaikan pengiriman.");
+            if (count <= 0 || count > data.length - sent) throw failed("USB tidak menyelesaikan pengiriman.", null);
             sent += count;
         }
     }
@@ -155,23 +182,26 @@ public final class FtdiUart implements ByteChannel {
         Objects.requireNonNull(data);
         if (timeoutMillis <= 0) throw new IllegalArgumentException("Timeout harus positif.");
         cancel.check(); requireOpen();
-        if (!transmitReady) throw new ProtocolException("UART FT232R perlu diinisialisasi sebelum mengirim lagi.");
+        if (!transmitReady) throw failed("UART FT232R perlu diinisialisasi sebelum mengirim lagi.", null);
         if (data.length == 0) return;
         // A bulk transfer only queues bytes. Guard against an initially stale
         // TEMT bit, then require both THRE and TEMT from a fresh modem-status poll.
         long wireMillis = (data.length * 10000L + BAUD - 1) / BAUD;
         if (wireMillis >= timeoutMillis) throw new ProtocolException("Frame UART tidak dapat selesai dalam timeout kirim.");
         long began = timing.now(), deadline = began + timeoutMillis * 1000000L;
+        boolean[] attempted = {false};
         try {
-            writeQueued(data, deadline, cancel);
+            writeQueued(data, deadline, cancel, attempted);
             long earliestEmpty = timing.now() + wireMillis * 1000000L;
             pauseUntil(Math.min(earliestEmpty, deadline), cancel);
             byte[] status = new byte[2];
             while (timing.now() < deadline) {
                 cancel.check(); requireOpen();
-                int count = io.controlIn(5, 0, port, status, slice(deadline));
+                int count;
+                try { count = io.controlIn(5, 0, port, status, slice(deadline)); }
+                catch (IOException | RuntimeException error) { throw failed("Status TX USB FT232R gagal: " + error.getMessage(), error); }
                 requireOpen(); cancel.check();
-                if (count != 2) throw new ProtocolException("Status TX FT232R tidak tersedia (" + count + ").");
+                if (count != 2) throw failed("Status TX FT232R tidak tersedia (" + count + ").", null);
                 if (log != null) log.wire("FTDI", "TX MODEM/LSR", status, count);
                 if (timing.now() < deadline && (status[1] & 0x60) == 0x60) {
                     if (log != null) log.debug("UART TX", data.length + " byte drained, elapsed=" + elapsed(began));
@@ -180,11 +210,15 @@ public final class FtdiUart implements ByteChannel {
                 pauseUntil(Math.min(deadline, timing.now() + 2000000L), cancel);
             }
             cancel.check();
-            throw new ProtocolException("TX UART FT232R belum kosong dalam " + timeoutMillis + " ms; pengiriman berikutnya dibatalkan.");
+            throw failed("TX UART FT232R belum kosong dalam " + timeoutMillis + " ms; pengiriman berikutnya dibatalkan.", null);
         } catch (IOException | RuntimeException error) {
             // Never append another command to a transmission with unknown completion.
-            // HondaClient may retry a full initialization, which resets the UART.
-            transmitReady = false;
+            // A cancelled operation can still have queued TX. Expose that state
+            // even when the operation's normal callback has been revoked.
+            if (attempted[0]) { transmitReady = false; failed = true; }
+            if (attempted[0] && error instanceof ProtocolException && !(error instanceof TransportException)) {
+                throw failed(error.getMessage(), error);
+            }
             throw error;
         }
     }
@@ -195,15 +229,17 @@ public final class FtdiUart implements ByteChannel {
         int packets = (int) Math.min(4L, Math.max(1L, ((long) maximumBytes + packetSize - 3) / (packetSize - 2)));
         byte[] raw = new byte[packetSize * packets];
         long began = timing.now();
-        int count = io.read(raw, Math.max(1, timeoutMillis));
+        int count = readUsb(raw, Math.max(1, timeoutMillis));
         requireOpen();
         if (count <= 0) {
-            if (log != null) log.debug("USB RX", "bulk result=" + count + ", wait=" + timeoutMillis + " ms, elapsed=" + elapsed(began) + " (empty/timeout or USB error)");
+            if (log != null) log.debug("USB RX", "bulk result=" + count + ", wait=" + timeoutMillis + " ms, elapsed=" + elapsed(began) + " (empty/timeout)");
             return new byte[0];
         }
-        if (count > raw.length) throw new ProtocolException("Panjang RX USB tidak valid.");
+        if (count > raw.length) throw failed("Panjang RX USB tidak valid.", null);
         if (log != null) log.wire("USB RX", "RAW", raw, count);
-        pending = FtdiCodec.stripStatus(raw, count, packetSize);
+        try { pending = FtdiCodec.stripStatus(raw, count, packetSize); }
+        catch (FtdiCodec.UartException error) { throw error; }
+        catch (ProtocolException error) { throw failed(error.getMessage(), error); }
         if (log != null && pending.length == 0) log.debug("USB RX", "Status-only packet; no UART data.");
         return takePending(maximumBytes);
     }
