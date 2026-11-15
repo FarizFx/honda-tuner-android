@@ -28,7 +28,7 @@
     "app/src/main/res/values/strings.xml": "a73e59e355c166e09eddac57ec85dd540f49f8775e1484cd1645f3bba189af34",
     "app/src/main/res/values/styles.xml": "ce860f9ac55dfe4a3063cd283445891cf86ab35b747491372d806f3c582ab629",
     "app/src/main/res/xml/device_filter.xml": "cc9785726b1ae08c60385f0221f6d152b760b61e4ce429dfb086dc4bc63a557b",
-    "tools/package_apk.py": "330d99b41e532888e644403dfd34cdc976e03ddead4e8d2861b03cebcea4dc93",
+    "tools/package_apk.py": "f72325f806f92abb4f8efee40e720e36a79da0bbd1f720c6dbb0729d3109d174",
     "tools/prepare_repo.py": "7fe15448562c6e4026e61cd821f61f29deb8377e24d3dce924d67b35a56dcde0",
     "tools/sync_reference.py": "409cceb2c9ba6dfb8777e8e4eb9eb96df3463aa74b40f073d5f47bc04df5ac58",
     "tools/test_core.py": "d1364f4090957b73b29b53cfb508273afd0ac390a6574916fe574c71f734c017",

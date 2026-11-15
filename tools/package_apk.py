@@ -38,9 +38,9 @@ def main():
         raise RuntimeError("Install Android SDK build-tools 35.0.0 first")
     signature = checked([java_bin(home, "java"), "-jar", str(signer), "verify", "--verbose", "--print-certs", str(apk)])
     badging = checked([str(aapt), "dump", "badging", str(apk)])
-    for expected in ("name='id.hondatuner.android'", "sdkVersion:'26'", "targetSdkVersion:'35'", "name='id.hondatuner.android.MainActivity'", "name='android.hardware.usb.host'"):
+    for expected in ("name='id.hondatuner.android'", "minSdkVersion:'26'", "targetSdkVersion:'35'", "name='id.hondatuner.android.MainActivity'", "name='android.hardware.usb.host'"):
         if expected not in badging:
-            raise RuntimeError("APK metadata is not the expected app: " + expected)
+            raise RuntimeError("APK metadata is not the expected app: " + expected + "\n" + badging)
     if "uses-permission:" in badging:
         raise RuntimeError("Unexpected manifest permission in the diagnostic APK")
     with zipfile.ZipFile(apk) as archive:

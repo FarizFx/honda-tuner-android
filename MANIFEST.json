@@ -113,7 +113,7 @@
       "bytes": 2446
     },
     "evidence/project_verification.json": {
-      "sha256": "126692104b43b2195708f90aa3ff928e28b81a4a76a341f4e6fee1ca8d726c7d",
+      "sha256": "5f1e3a672eac63582e96bfaa65028609fd4bac7e155a257749903f3c82c36e55",
       "bytes": 3971
     },
     "evidence/reference_provenance.json": {
@@ -153,8 +153,8 @@
       "bytes": 224130
     },
     "tools/package_apk.py": {
-      "sha256": "330d99b41e532888e644403dfd34cdc976e03ddead4e8d2861b03cebcea4dc93",
-      "bytes": 3833
+      "sha256": "f72325f806f92abb4f8efee40e720e36a79da0bbd1f720c6dbb0729d3109d174",
+      "bytes": 3853
     },
     "tools/prepare_repo.py": {
       "sha256": "7fe15448562c6e4026e61cd821f61f29deb8377e24d3dce924d67b35a56dcde0",
