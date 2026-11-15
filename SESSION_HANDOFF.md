@@ -1,76 +1,73 @@
-# Android continuation — 15 November 2026
+# Honda Tuner Android continuation — 15 November 2026
 
-The user resumed the preceding chat. Its last unfinished request was an Android
-version of Honda Tuner. The previous user choices were recovered from the session:
-**direct USB + OTG**, initially **connection, live data and DTC reading**.
-The user then explicitly requested a **new repo in their own GitHub account**,
-source upload and APK build through GitHub. Do not ask those scope/creation
-authorization questions again.
+The requested first Android version uses direct USB + OTG for ECU connection,
+continuous live data and current/stored DTC reading. Repository creation,
+source upload, build and delivery were authorized by the user. Use direct
+terminal `git` and `gh` commands; never wrap Git in Python.
 
-The delivery record names `FarizFx/honda-tuner-android` at
-`https://github.com/FarizFx/honda-tuner-android` and records successful repository
-creation and source upload at commit `fc392c3f2bd83399abfc90789c8c913cd5997765`.
-Private visibility was requested; current visibility has not been independently
-verified. Do not recreate the repo or describe the recorded upload as unperformed.
-Actions runs and APK results remain unverified, and no APK is present locally.
-GitHub tools are absent, `gh` was not found, and direct Git/API requests fail at
-the configured network proxy `127.0.0.1:9`.
-Local SDK searches found no Android SDK; the JDK and offline JVM tests work.
-These are external access/build-host blockers, not a request to pause work.
-
+The existing repository is https://github.com/FarizFx/honda-tuner-android.
 The publishing checkout is `honda_tuner_android/build/github-repo` relative to
-the workspace root. The user explicitly requires plain `git` commands in the
-terminal, without Python wrappers. Repository upload/build authorization persists.
+the workspace. Do not recreate/reset it or force-push over the user's edits.
 
-## Implemented source
+Build and delivery are verified. Actions run `43683216038`, attempt 1, passed
+on the user's **KillerCoda Linux server**, runner ID 24, at source commit
+`22a4bba94ddd020e2325b388b5f09e3af3e03797`:
+https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038
 
-- Native Android Java app, API 26+, compile/target API 35; Gradle 8.9 / AGP 8.7.3.
-- Direct FT232R USB host driver for 0403:6001 / bcdDevice 0600, one UART;
-  10400 baud, TXD bit-bang low 70 ms/high settling 130 ms, status removal from
-  every USB packet and bounded, partial-aware bulk I/O.
-- Original source-backed FE/FF plus diagnostic entry and optional identity;
-  automatic ECU-returned sensor schema discovery and repeated 500-ms acquisition.
-- Exact current echo and checksum/length/header validation; one-way wake sends
-  once. Failed groups become unread; three consecutive cycles without a valid
-  group stop live.
-- Core controller serializes connection/discovery/live/DTC. Stop, replacement
-  session, detach and lifecycle changes invalidate queued/in-flight UI callbacks.
-  Failed rediscovery revokes the old profile. DTC resumes live only if it was
-  running before the read.
-- Dark phone UI with sensor cards, measured RPM graph, current/stored DTC and
-  catalog ID labels preserving ambiguity. No ECU write/clear command is exposed.
-- `.github/workflows/build-android.yml` installs the toolchain, runs offline tests,
-  builds/signs a debug APK, verifies signature/manifest/ZIP, and uploads artifacts.
+It compiled a signed debug APK and verified its signature, Android manifest
+metadata and ZIP integrity. The APK is 61,358 bytes, with SHA-256:
+`6bf9159335a26a7d8c81ac061e9c70065ee27cd6354a67623689f13b769c6d2e`.
+All seven release assets were downloaded and their size/digest checked against
+GitHub. The APK hash also matches the sidecar and successful CI report; a local
+ZIP CRC check passed without installing Java or an Android SDK on the laptop.
 
-## Verification and package
+Draft prerelease tag: `android-debug-43683216038-1`.
+Owner-accessible release:
+https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-d4cd86f485282c42a592
+The APK and reports are in `dist/` in the development folder and publishing
+checkout; `dist/` is ignored by Git. The historical source ZIP was preserved.
 
-The final local suite passed **33 core/controller regressions**. `tools/test_core.py`
-compiles actual core Java with `--release 8`, runs the real
-scheduled workers/controller against UART fixtures, and compares 312 table-body
-vectors / 5,616 values against the desktop decoder's saved output. Results and
-source hashes are in `evidence/core_verification.json` and `core_tests.txt`.
-`tools/verify_project.py` checks manifest/resource/configuration consistency and
-parses workflow YAML when PyYAML is available. This is not Android API compilation.
+## Runner constraint and laptop cleanup
 
-`tools/prepare_repo.py` can package verified source as a root-ready ZIP in
-`dist/`, with manifest and SHA-256 sidecar. The original source ZIP in the
-development folder remains a snapshot from before the documentation corrections;
-`dist/` is not tracked in the publishing checkout. The corrected README explains
-the unverified build status, SDK requirements, artifact paths, DTC resume rule,
-failure threshold, and the graph's 50-entry limit. The application source is
-unchanged by these corrections.
+**Do not use the user's laptop as a self-hosted runner or install CI toolchains
+on it without explicit approval for that use.** The user wanted server builds.
+General permission to execute commands did not authorize making the laptop a
+runner. The temporary laptop runner was stopped after the user cancelled run
+`43681836445`; its registration and credentials were automatically removed.
 
-## Next authorized actions when GitHub access is available
+At the user's cleanup request, `C:\Windows\TEMP\HondaTunerCI-20261115`
+(about 828 MiB including the runner, portable Java 17/Python and SDK remnants),
+the job-created pip cache, and four installer logs were moved to Recycle Bin.
+No local runner process/service or CI environment/PATH entries were found.
+The temporary files are absent from their original locations. They still use
+disk space in Recycle Bin; permanent deletion was rejected by automatic command
+review (`blocked by policy`). The pre-existing Python installation was retained
+and still runs. The development folder records this in
+`evidence/local_actions_cleanup.json`.
 
-Push the pending documentation corrections directly with Git. Inspect the
-existing Actions runs for the recorded source commit; dispatch `build-android.yml`
-if needed. Monitor the build, fix actual Android/Gradle failures, and rerun as
-needed. Download and retain `HondaTuner-Android-debug` plus its verification
-artifact; give the user the real repo/run/APK links. README changes alone do not
-match the workflow's automatic push filter.
+## Build corrections and verification
 
-Actual SDK/Android GUI compilation and FT232R control transfers still need their
-first build/device validation. Existing JVM/fixture tests do not prove physical
-USB timing, cold ECU connection or live readings on the user's motorcycle. No
-physical adapter/ECU was opened during development, and no new REA Evidence ID
-is claimed. Maps/remap and additional adapters remain outside the chosen scope.
+The user's self-hosted choice was preserved. The workflow validator no longer
+requires Ubuntu or a fixed step count; it requires PyYAML. The primary workflow
+supports Windows/Linux plus an optional runner-label input. Android CI is a
+manual reusable-workflow wrapper. Default delivery is a draft prerelease because
+Actions artifact storage is exhausted; artifact upload is optional and Gradle
+Actions caching is disabled.
+
+Windows SDK extraction uses an explicitly named ZIP and `sdkmanager.bat`.
+Linux SDK setup requests `platform-tools`, omitting the removed legacy `tools`
+package. The APK verifier checks Android 35 AAPT2's `minSdkVersion` field and
+keeps the required API 26 minimum and API 35 target.
+
+The real CI suite passed 33 JVM regressions, 312 decoder vectors and 5,616 field
+values. Source/XML/YAML verification passed. Evidence records the verified run,
+release, APK and its SHA-256; the README now reflects the successful build.
+
+## Physical validation still outstanding
+
+The application is API 26+ and uses an FT232R/FT232RL K-Line adapter, USB host and
+OTG. The driver targets USB 0403:6001 / bcdDevice 0600, one UART at 10400 baud.
+No physical phone, USB control-transfer/timing or ECU test has been performed.
+No new REA runtime evidence is claimed. BIN/XDF, remap, DTC clearing and ECU
+programming remain outside this first version. The preceding desktop builds
+and pinned native binaries were not changed by this Android build work.

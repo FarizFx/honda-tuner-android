@@ -5,8 +5,9 @@ FT232R/FT232RL K-Line dan USB OTG, live data otomatis, serta baca DTC saat ini
 dan tersimpan.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**Status verifikasi per 15 November 2026:** tes core sudah lulus; hasil build
-Android/APK belum terverifikasi.
+**Status verifikasi per 15 November 2026:** build APK di GitHub Actions dan tes
+core sudah lulus di runner server Linux **KillerCoda**. Tanda tangan, metadata
+Android dan integritas ZIP APK sudah diperiksa.
 Pengujian pada HP, adaptor USB, dan ECU fisik belum dilakukan.
 
 Setelah izin USB diberikan, **Hubungkan** menjalankan inisialisasi K-Line dan
@@ -47,6 +48,9 @@ Input `runner` memilih label runner; nilai default adalah `self-hosted`.
 Runner dengan label itu harus online. Workflow memakai Python 3.12 dan perintah
 yang dapat dijalankan pada Windows maupun Linux. **Android CI** adalah pintasan
 manual ke workflow utama.
+Job berjalan pada mesin runner yang dipilih. Untuk menjalankan build di server,
+pasang dan jalankan runner di server tersebut; build terverifikasi di bawah
+memakai **KillerCoda**, bukan laptop.
 
 Workflow memasang Python/PyYAML, Java 17, Gradle 8.9, Android platform 35 dan
 build-tools 35.0.0; menjalankan
@@ -120,9 +124,16 @@ Windows dan native engine tidak masuk paket repo.
 ## Status verifikasi
 
 Per 15 November 2026, **33 tes regresi JVM** dan pemeriksaan struktur source
-telah lulus lokal. Validasi dekoder mencakup **312 vektor / 5.616 nilai field**.
-Catatan pengiriman mencatat repo dibuat dan source terupload ke GitHub.
-Kompilasi Android lokal belum dijalankan; status run Actions dan APK belum terverifikasi.
+telah lulus lokal dan di CI. Validasi dekoder mencakup **312 vektor / 5.616 nilai field**.
+[Run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038)
+berhasil mengompilasi dan memverifikasi APK debug dari commit `22a4bba` pada
+runner server Linux **KillerCoda**.
+APK, sidecar SHA-256 dan laporan CI tersedia dalam
+[draft release](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-d4cd86f485282c42a592)
+untuk pemilik repo. Ketujuh berkas release telah diunduh dan digest-nya cocok
+dengan GitHub; hash APK juga cocok dengan sidecar dan laporan verifikasi.
+Catatan hasil ada di [evidence/apk_verification.json](evidence/apk_verification.json)
+dan [evidence/github_delivery.json](evidence/github_delivery.json).
 
 Driver USB Android, waktu pulsa aktual, koneksi dingin, perubahan sensor,
 dan DTC pada HP/ECU fisik belum diuji. Fixture memakai input terkontrol.
