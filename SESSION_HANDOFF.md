@@ -1,7 +1,7 @@
 # Active Honda FTDI Android driver repair - 16 November 2026
 
-Version 1.1.2-debug / code 4: source_verified_waiting_push. Source commit: prepared, not yet pushed.
-Run: not yet triggered. 83 JVM regressions, 312 vectors / 5,616 values passed.
+Version 1.1.2-debug / code 4: source_pushed_build_failure. Source commit: 4f87381bb88a2d78f7b460c4cb1637d3528a4b08.
+Run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43766162568. 83 JVM regressions, 312 vectors / 5,616 values passed.
 FTDI UART now uses usb-serial-for-android 3.12.0; Gradle checks AAR SHA-256
 61221d698f71d2e4ac182e7b55ffeee17a01426ebb92e6e3c407b7c6df90f279.
 Honda frames are unchanged. BREAK ON/OFF replaces original bit-bang LOW/HIGH,

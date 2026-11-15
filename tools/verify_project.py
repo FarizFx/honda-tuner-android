@@ -67,7 +67,7 @@ def main():
         assert len(fields) == 3 and re.fullmatch("[0-9A-F]{10}", fields[0]) and fields[0] != "FFFFFFFFFF"
     driver_checksums = ROOT / "gradle/verification-metadata.xml"
     ET.parse(driver_checksums)
-    checked = java_paths + xml_paths + tool_paths + [source / "AndroidManifest.xml", source / "assets/ecu_catalog.tsv", source / "assets/usb-serial-for-android-LICENSE.txt", driver_checksums, workflow_path, ROOT / "app/build.gradle", ROOT / "build.gradle", ROOT / "settings.gradle"]
+    checked = java_paths + xml_paths + tool_paths + [source / "AndroidManifest.xml", source / "assets/ecu_catalog.tsv", source / "assets/usb-serial-for-android-LICENSE.txt", driver_checksums, workflow_path, ROOT / "app/build.gradle", ROOT / "build.gradle", ROOT / "settings.gradle", ROOT / "gradle.properties"]
     report = {
         "result": "passed", "java_source_files": len(java_paths), "resource_xml_files": len(xml_paths),
         "string_resources_resolved": len(references), "exact_id_catalog_rows": len(catalog_lines),

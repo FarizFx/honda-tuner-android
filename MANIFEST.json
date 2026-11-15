@@ -25,8 +25,8 @@
       "bytes": 8187
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "87d803e22a8dd8b83aa6f18f4b41d50c55e5a4a6eab62c87d0ee8ed7bbee3108",
-      "bytes": 2907
+      "sha256": "7d6f143c92fbf91a90e52301e5fc8f5f66f1c78cd8b3b18c75875d696cc6d527",
+      "bytes": 2976
     },
     "app/build.gradle": {
       "sha256": "7dec4673d0d48683e16e70fc592aab21c7f5a3408a5cb10f162013b0dd21bf35",
@@ -145,8 +145,8 @@
       "bytes": 2589
     },
     "evidence/build_status.json": {
-      "sha256": "cc709fa639b7cd27bb8c31c60267149dbd92afcdfcba8988f3f1a226fdef7f7e",
-      "bytes": 2626
+      "sha256": "ff78f0c2746db9bda766880692957d224d76b8c4f98acc6efa86c39fb54b962a",
+      "bytes": 2726
     },
     "evidence/connection_debug_audit.json": {
       "sha256": "c366d6f6f20f6c4cc735336fbf073a9d646accbf4d7f38458e26fc1f297b273e",
@@ -165,12 +165,12 @@
       "bytes": 3095
     },
     "evidence/github_delivery.json": {
-      "sha256": "75e698b5aba56f7f2365efd73a62c5b4f5f4817f6a49d82b3504e06bedc15e35",
-      "bytes": 591
+      "sha256": "528b8be173923a3cad6d6a5de53a870087511f6eef03667b3044d0175f506540",
+      "bytes": 696
     },
     "evidence/project_verification.json": {
-      "sha256": "74414e8257bd5d15eb74568d6868443a16ce80fb472e418a74c5939f180dfc81",
-      "bytes": 4783
+      "sha256": "6035062f6f6449b19afd77e4d66d0213963de8b80eba187dd765d10b60584524",
+      "bytes": 4876
     },
     "evidence/reference_provenance.json": {
       "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4",
@@ -181,8 +181,8 @@
       "bytes": 5237
     },
     "gradle.properties": {
-      "sha256": "3cacd22aa6686499e91f96d801d5557a9c0b81ab1872f81285ee395f2539f630",
-      "bytes": 51
+      "sha256": "fb298af7d84d0e20523e7172625a8d975a11efa043c573ca97f8997a0e84fb5f",
+      "bytes": 76
     },
     "gradle/verification-metadata.xml": {
       "sha256": "8288a0c2ffebd593f94f51b63345b10ebea192807a70ad2acddaeeced34c510f",
@@ -233,16 +233,16 @@
       "bytes": 2313
     },
     "tools/verify_project.py": {
-      "sha256": "2d10b3a3313ef8eb18c21f586896d90bebb0fd7fb3d0f1934729888caa4839f7",
-      "bytes": 5400
+      "sha256": "0e5ff75b437f423fd2e536ae9507da45c86172a514ee1f8128159406d1080bdd",
+      "bytes": 5428
     }
   },
   "scope": "1.1.2-debug FTDI serial-driver / UART BREAK connection repair; server APK pending",
   "android_sdk_compilation": false,
   "apk_included": false,
   "version_name": "1.1.2-debug",
-  "github_actions_run": null,
-  "pushed_source_commit": null,
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43766162568",
+  "pushed_source_commit": "4f87381bb88a2d78f7b460c4cb1637d3528a4b08",
   "built_source_commit": null,
   "physical_ecu_success_verified": false
 }
