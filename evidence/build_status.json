@@ -25,6 +25,11 @@
     "updated_physical_ecu_success_verified":  false,
     "previous_verified_build":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038",
     "source_uploaded":  true,
-    "queued_run_url":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43723005470",
-    "runner_status":  "offline"
+    "queued_run_url":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43723698241",
+    "runner_status":  "offline",
+    "pushed_source_commit":  "09585aaedb8c6047511b8f859c5c521d542a37d1",
+    "host_preference_answer_pending":  true,
+    "source_mirror_synced":  true,
+    "source_mirror_files_verified":  53,
+    "source_mirror_previous_files_backed_up":  31
 }

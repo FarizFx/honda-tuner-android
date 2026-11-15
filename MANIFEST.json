@@ -121,8 +121,8 @@
       "bytes": 73
     },
     "evidence/build_status.json": {
-      "sha256": "995360505f5fb9c10a85967ee00b501d0aacc0c3c22abf72c4d0de3fdb116317",
-      "bytes": 1476
+      "sha256": "e5c1d5e705317d8b81cf523d04bb586c3c0656fbf00f2ff6bb55cca403d20ee2",
+      "bytes": 1721
     },
     "evidence/core_tests.txt": {
       "sha256": "2f9e154ef9adeed1a2aa3b4d4cae71b4c7ab386686fd9b316cf96b4862833090",
@@ -153,8 +153,8 @@
       "bytes": 6620
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "df73febbd58099217b61754c4121afcc580ef56dfadd3effdd5bc5a2225fdaa9",
-      "bytes": 4573
+      "sha256": "dab456b29aaabdf3bd783517948122cba109c8b410f723b5621a2d2db16d066f",
+      "bytes": 5762
     },
     "settings.gradle": {
       "sha256": "004b56d50b80bebfca0b8d8e6f723143bac17d898502bd09325eac9f575a1a4c",
