@@ -17,7 +17,7 @@ def digest(path):
 
 def source_files():
     files = []
-    for name in (".gitignore", "README.md", "NOTICE.md", "SESSION_HANDOFF.md", "build.gradle", "settings.gradle", "gradle.properties", "app/build.gradle"):
+    for name in (".gitattributes", ".gitignore", "README.md", "NOTICE.md", "SESSION_HANDOFF.md", "build.gradle", "settings.gradle", "gradle.properties", "app/build.gradle"):
         files.append(ROOT / name)
     for folder in (".github", "app/src", "tools", "tests"):
         files.extend(path for path in (ROOT / folder).rglob("*") if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc")
@@ -63,12 +63,12 @@ def main():
         if ".github/workflows/build-android.yml" not in archive.namelist():
             raise RuntimeError("GitHub workflow is not at repository root")
     sha = digest(archive_path)
-    (output / (OUTPUT_NAME + ".sha256")).write_text(sha + "  " + OUTPUT_NAME + "\n", encoding="utf-8")
+    (output / (OUTPUT_NAME + ".sha256")).write_text(sha + "  " + OUTPUT_NAME + "\n", encoding="utf-8", newline="\n")
     report = {"result": "passed", "archive": str(archive_path), "sha256": sha, "bytes": archive_path.stat().st_size,
               "source_files": len(files), "exact_verified_source_copy": True, "zip_integrity": True,
               "github_workflow_at_repo_root": True, "apk_included": False, "github_repository_created": False,
               "android_sdk_compilation": False, "physical_android_usb_or_ecu_test": False}
-    (ROOT / "evidence/repo_package_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (ROOT / "evidence/repo_package_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print("Verified repo-ready source ZIP: " + str(archive_path))
     print("%d files; %d bytes; SHA-256 %s" % (len(files), archive_path.stat().st_size, sha))
 

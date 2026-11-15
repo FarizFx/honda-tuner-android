@@ -1,9 +1,9 @@
 {
     "checked_at_utc":  "2026-11-15T14:09:59Z",
-    "stage":  "connection_debug_update_pending_build",
+    "stage":  "source_pushed_build_waiting_for_runner",
     "repository_full_name":  "FarizFx/honda-tuner-android",
     "version_name":  "1.1.0-debug",
-    "source_pushed":  false,
+    "source_pushed":  true,
     "apk_built":  false,
     "apk_downloaded":  false,
     "runner_name":  "KillerCoda",

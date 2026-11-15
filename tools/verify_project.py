@@ -76,7 +76,7 @@ def main():
     }
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    (evidence / "project_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (evidence / "project_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print("PASS: Android manifest, USB filter, %d Java sources, %d XML resources, %d string references and %d catalog rows." %
           (len(java_paths), len(xml_paths), len(references), len(catalog_lines)))
     print("Android SDK compilation and device operation require a build host / actual phone.")

@@ -34,7 +34,7 @@ def main():
     sources = sorted((ROOT / "app/src/main/java/id/hondatuner/core").glob("*.java"))
     sources += sorted((ROOT / "tests/java").rglob("*.java"))
     source_list = build / "sources.txt"
-    source_list.write_text(argfile(sources), encoding="utf-8")
+    source_list.write_text(argfile(sources), encoding="utf-8", newline="\n")
     began = time.time()
     compile_output = run([java_bin(home, "javac"), "--release", "8", "-encoding", "UTF-8", "-Xlint:all", "-d", str(classes), "@" + str(source_list)], timeout=60)
     suite = run([java_bin(home, "java"), "-ea", "-cp", str(classes), "id.hondatuner.core.CoreTest"], timeout=30)
@@ -60,7 +60,7 @@ def main():
             compared += 1
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    (evidence / "core_tests.txt").write_text(compile_output + suite + "\nPASS: %d reference decoder vectors, %d field values\n" % (len(vectors), compared), encoding="utf-8")
+    (evidence / "core_tests.txt").write_text(compile_output + suite + "\nPASS: %d reference decoder vectors, %d field values\n" % (len(vectors), compared), encoding="utf-8", newline="\n")
     report = {
         "result": "passed", "java_home": str(home), "java_version": run([java_bin(home, "java"), "-version"], timeout=10).strip(),
         "java_release": 8, "core_regression_tests": int(suite.split("PASS: ")[1].split()[0]),
@@ -70,7 +70,7 @@ def main():
         "android_sdk_compilation": False, "physical_android_usb_or_ecu_test": False,
         "fixtures_are_vehicle_recordings": False,
     }
-    (evidence / "core_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (evidence / "core_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(suite, end="")
     print("PASS: %d reference decoder vectors; %d field values" % (len(vectors), compared))
 

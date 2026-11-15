@@ -53,7 +53,7 @@ def main():
               "        for (SensorDecoder.Schema schema : SCHEMAS) if (schema.table == table && schema.length == length) return schema;",
               "        return null;", "    }", "}", ""]
     CORE.mkdir(parents=True, exist_ok=True)
-    (CORE / "SensorSchemas.java").write_text("\n".join(lines), encoding="utf-8")
+    (CORE / "SensorSchemas.java").write_text("\n".join(lines), encoding="utf-8", newline="\n")
     lines = ["// Generated from the desktop source DTC description catalog.", "package id.hondatuner.core;", "",
              "import java.util.LinkedHashMap;", "import java.util.Map;", "", "public final class DtcDescriptions {",
              "    private DtcDescriptions() {}", "    private static final Map<String, String> ITEMS = new LinkedHashMap<>();", "    static {"]
@@ -61,7 +61,7 @@ def main():
         lines.append("        ITEMS.put(%s, %s);" % (quote(key), quote(value)))
     lines += ["    }", "    public static String describe(String code) {",
               '        return ITEMS.containsKey(code) ? ITEMS.get(code) : "DTC belum ada dalam katalog: " + code;', "    }", "}", ""]
-    (CORE / "DtcDescriptions.java").write_text("\n".join(lines), encoding="utf-8")
+    (CORE / "DtcDescriptions.java").write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
     catalog = json.loads((DESKTOP / "data/ecudb.json").read_text(encoding="utf-8-sig"))
     labels = []
@@ -73,7 +73,7 @@ def main():
                                 for value in (identifier, entry["model"], entry.get("ecu_pn"))))
     assets = ROOT / "app/src/main/assets"
     assets.mkdir(parents=True, exist_ok=True)
-    (assets / "ecu_catalog.tsv").write_text("\n".join(labels) + "\n", encoding="utf-8")
+    (assets / "ecu_catalog.tsv").write_text("\n".join(labels) + "\n", encoding="utf-8", newline="\n")
 
     sys.path.insert(0, str(DESKTOP))
     from core.diagnostics import decode_table
@@ -94,7 +94,7 @@ def main():
             vectors.append({"table": table, "body": body.hex().upper(), "values": values})
     tests = ROOT / "tests"
     tests.mkdir(parents=True, exist_ok=True)
-    (tests / "reference_vectors.json").write_text(json.dumps(vectors, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (tests / "reference_vectors.json").write_text(json.dumps(vectors, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     source_paths = ["core/commands.py", "core/diagnostics.py", "core/live.py", "core/session.py", "core/protocol.py", "core/ftdi_source.py", "ui/live.py", "data/ecudb.json"]
     generated = [CORE / "SensorSchemas.java", CORE / "DtcDescriptions.java", assets / "ecu_catalog.tsv", tests / "reference_vectors.json"]
     evidence = {
@@ -106,7 +106,7 @@ def main():
         "new_rea_evidence_claimed": False,
     }
     (ROOT / "evidence").mkdir(exist_ok=True)
-    (ROOT / "evidence/reference_provenance.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
+    (ROOT / "evidence/reference_provenance.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8", newline="\n")
     print("Exported %d schema variants, %d decoder vectors and %d exact-ID catalog rows." % (len(schemas), len(vectors), len(labels)))
 
 

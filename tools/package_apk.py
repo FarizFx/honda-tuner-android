@@ -62,7 +62,7 @@ def main():
     exported = output / "HondaTuner-Android-debug.apk"
     shutil.copyfile(apk, exported)
     digest = hashlib.sha256(exported.read_bytes()).hexdigest()
-    (output / (exported.name + ".sha256")).write_text(digest + "  " + exported.name + "\n", encoding="utf-8")
+    (output / (exported.name + ".sha256")).write_text(digest + "  " + exported.name + "\n", encoding="utf-8", newline="\n")
     report = {
         "result": "passed", "apk_sha256": digest, "apk_bytes": exported.stat().st_size,
         "android_sdk_compilation": True, "apk_signature_verified": True, "zip_integrity_verified": True,
@@ -86,7 +86,7 @@ def main():
         report["android_lint_warnings"] = sum(issue.get("severity") == "Warning" for issue in lint)
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    (evidence / "apk_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    (evidence / "apk_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print("Verified signed debug APK: " + str(exported))
     print("SHA-256: " + digest)
 

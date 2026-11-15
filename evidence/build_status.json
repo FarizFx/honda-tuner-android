@@ -6,7 +6,7 @@
     "repository_url":  "https://github.com/FarizFx/honda-tuner-android",
     "version_code":  2,
     "version_name":  "1.1.0-debug",
-    "github_actions_build_status":  "pending_push",
+    "github_actions_build_status":  "queued_runner_offline",
     "apk_built":  false,
     "apk_available_locally":  false,
     "android_sdk_compilation":  false,
@@ -23,5 +23,8 @@
                                           "visible_debug_log_available":  false
                                       },
     "updated_physical_ecu_success_verified":  false,
-    "previous_verified_build":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038"
+    "previous_verified_build":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038",
+    "source_uploaded":  true,
+    "queued_run_url":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43723005470",
+    "runner_status":  "offline"
 }
