@@ -1,12 +1,12 @@
 {
   "result": "passed",
-  "java_home": "/home/ubuntu/actions-runner/_work/_tool/Java_Temurin-Hotspot_jdk/17.0.21-9/x64",
-  "java_version": "openjdk version \"17.0.21\" 2026-10-20\nOpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)\nOpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)",
+  "java_home": "D:\\Tools\\jre25\\jdk-25.0.4.1+1",
+  "java_version": "openjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)",
   "java_release": 8,
-  "core_regression_tests": 76,
+  "core_regression_tests": 83,
   "reference_decoder_vectors": 312,
   "reference_field_values": 5616,
-  "elapsed_seconds": 6.434,
+  "elapsed_seconds": 4.441,
   "source_sha256": {
     "app/src/main/java/id/hondatuner/core/ByteChannel.java": "e0fabc66c40c7bed3a3c2c9c8b4289a6e49d86f1145c533a4968dffafbad5e76",
     "app/src/main/java/id/hondatuner/core/CancelSignal.java": "2128bf532f7f5e29707e25db18eb6febe364f12be600c89c7ae55ca1d9f1a057",
@@ -14,7 +14,7 @@
     "app/src/main/java/id/hondatuner/core/DiagnosticLog.java": "7efb78cce9447a001e3b1de55e1301b48a6426049ee86d846bdae3ad68e54897",
     "app/src/main/java/id/hondatuner/core/DtcDescriptions.java": "baefd0cb0071747b05c773de5bd45109181f31b8f93ebc33f1e08081dbc89506",
     "app/src/main/java/id/hondatuner/core/FtdiCodec.java": "beea9ad8acf7fbda42d349a99f0578f75b0a941de9cd875044ab82714f28c4a3",
-    "app/src/main/java/id/hondatuner/core/FtdiUart.java": "2e28bd99705371cb9790969dd485a29f1fb4cdbb327b09688fc0bb8b66db9f9d",
+    "app/src/main/java/id/hondatuner/core/FtdiUart.java": "75e66ed5276f6b407862027c3a856ff8ef4ce3eec9502b3e19e7f9135d4cf2cd",
     "app/src/main/java/id/hondatuner/core/HondaClient.java": "89f100e16a73f4d329b230e44507d284f00158675615560d1b2cc07fe8ca9644",
     "app/src/main/java/id/hondatuner/core/KLineTransport.java": "1b3004f4f2250fd5e4e3696e4839aa2d6986a6fe21265763b1fb95531941ecba",
     "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": "e670bf513bff808a2fa7b2dfa78e93bf4cee09a91d6479ea4540016f856cff26",
@@ -26,7 +26,7 @@
     "app/src/main/java/id/hondatuner/core/TelemetryHistory.java": "a00fa4fe80152f60f4d2c2b068d165162acbf37e400f9fa93a123c6321363962",
     "tests/java/id/hondatuner/core/CoreTest.java": "4909aa33638d7ae7a3ef44659f8ff0b6ac9d8f6c5e7abbd82cb95f5061de995e",
     "tests/java/id/hondatuner/core/DecodeCli.java": "48fce49c32797d8e81bb76a6b30969ede20d9cc6027b75c269e5eab713500be6",
-    "tests/java/id/hondatuner/core/FtdiUartTest.java": "004da06a674528c753d7cb9870823fe7a323f2d2f3890a85beea95d2c5729532"
+    "tests/java/id/hondatuner/core/FtdiUartTest.java": "d6564f1034c14f177e712f9cc58d6a3c10e8af9c572c922bd8a23e2e14e92560"
   },
   "android_sdk_compilation": false,
   "physical_android_usb_or_ecu_test": false,

@@ -7,12 +7,15 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** FT232R USB protocol and bounded UART timing, independent of Android endpoints. */
+/** Bounded Honda wake/TX timing around the Android FTDI serial driver. */
 public final class FtdiUart implements ByteChannel {
     public interface UsbIo {
         int controlOut(int request, int value, int index, int timeoutMillis) throws IOException;
         int controlIn(int request, int value, int index, byte[] buffer, int timeoutMillis) throws IOException;
+        void configureUart(int baudRate) throws IOException;
+        void setBreak(boolean enabled) throws IOException;
         int write(byte[] data, int offset, int count, int timeoutMillis) throws IOException;
+        /** Raw FTDI USB packets, with their two status bytes still present. */
         int read(byte[] buffer, int timeoutMillis) throws IOException;
         void close();
     }
@@ -56,10 +59,8 @@ public final class FtdiUart implements ByteChannel {
     }
     private void configureUart(CancelSignal cancel) throws IOException {
         cancel.check(); control(11, 0, port);
-        cancel.check(); control(2, 0, port); // no hardware/software flow control
-        cancel.check(); control(4, 8, port); // 8N1, BREAK disabled
-        int divisor = FtdiCodec.baudDivisor(BAUD);
-        cancel.check(); control(3, divisor & 0xffff, (divisor >> 16) & 1);
+        cancel.check(); io.configureUart(BAUD); // serial library sets 8N1 and no flow control
+        requireOpen();
         cancel.check();
     }
     @Override public void initialize(CancelSignal cancel) throws IOException {
@@ -68,20 +69,16 @@ public final class FtdiUart implements ByteChannel {
             control(0, 0, port); // full initialization deliberately resets the UART
             cancel.check(); purge();
             configureUart(cancel);
-            control(9, 12, port);
-            cancel.check(); control(11, 0x0101, port); // async bit-bang, TXD output
-            writeQueued(new byte[]{0}, timing.now() + 500000000L, cancel);
-            awaitPin(0, cancel);
+            control(9, 8, port);
+            cancel.check(); io.setBreak(true); requireOpen();
             long lowBegan = timing.now();
             pauseUntil(lowBegan + 70000000L, cancel);
-            writeQueued(new byte[]{1}, timing.now() + 500000000L, cancel);
-            awaitPin(1, cancel);
-            if (log != null) log.info("WAKE", "TXD LOW/HIGH confirmed by FTDI pins; LOW hold host elapsed=" + elapsed(lowBegan));
+            cancel.check(); io.setBreak(false); requireOpen();
+            if (log != null) log.info("WAKE", "UART BREAK ON/OFF accepted; LOW hold host elapsed=" + elapsed(lowBegan));
             long highBegan = timing.now();
-            configureUart(cancel);
             pauseUntil(highBegan + 130000000L, cancel);
             purge();
-            cancel.check(); control(9, 8, port);
+            drainBeforeWake(cancel);
             cancel.check(); transmitReady = true;
             if (log != null) log.info("WAKE", "UART 10400 8N1, flow=none; HIGH settling host elapsed=" + elapsed(highBegan));
         } catch (IOException | RuntimeException error) {
@@ -89,20 +86,36 @@ public final class FtdiUart implements ByteChannel {
             throw error;
         }
     }
-    private void awaitPin(int expected, CancelSignal cancel) throws IOException {
-        long deadline = timing.now() + 100000000L;
-        byte[] pins = new byte[1];
-        while (timing.now() < deadline) {
+    private void drainBeforeWake(CancelSignal cancel) throws IOException {
+        // A chip purge cannot retract USB packets already queued at the host.
+        // No Honda command has been sent yet: discard these raw samples without
+        // treating UART errors from a previous wake as an ECU response.
+        long began = timing.now(), deadline = began + 250000000L, lastData = began;
+        int discarded = 0;
+        byte[] raw = new byte[packetSize * 4];
+        while (true) {
             cancel.check(); requireOpen();
-            int count = io.controlIn(12, 0, port, pins, slice(deadline));
+            long now = timing.now();
+            if (now - lastData >= 24000000L) break;
+            if (now >= deadline) throw new ProtocolException("RX FT232R belum tenang dalam 250 ms sebelum wake; perintah ECU dibatalkan.");
+            long waitUntil = Math.min(deadline, lastData + 24000000L);
+            int waitMillis = (int) Math.min(8, Math.max(1, (waitUntil - now + 999999L) / 1000000L));
+            int count = io.read(raw, waitMillis);
             requireOpen(); cancel.check();
-            if (count != 1) throw new ProtocolException("Status pin FT232R tidak tersedia (" + count + ").");
-            if (log != null) log.wire("FTDI", "PINS", pins, count);
-            if (timing.now() < deadline && (pins[0] & 1) == expected) return;
-            pauseUntil(Math.min(deadline, timing.now() + 2000000L), cancel);
+            if (count > raw.length) throw new ProtocolException("Panjang RX USB tidak valid saat membersihkan wake.");
+            if (count > 0) {
+                if (log != null) log.wire("WAKE CLEANUP", "RAW", raw, count);
+                int payload = 0;
+                for (int offset = 0; offset < count; offset += packetSize) {
+                    int size = Math.min(packetSize, count - offset);
+                    if (size < 2) throw new ProtocolException("Status USB FTDI terpotong saat membersihkan wake.");
+                    payload += size - 2;
+                }
+                if (payload > 0) { discarded += payload; lastData = timing.now(); }
+            }
         }
         cancel.check();
-        throw new ProtocolException("TXD FT232R belum " + (expected == 0 ? "LOW" : "HIGH") + " dalam 100 ms; pulsa wake dibatalkan.");
+        if (log != null) log.info("WAKE CLEANUP", "RX quiet for 24 ms; discarded UART samples=" + discarded + "; elapsed=" + elapsed(began));
     }
     @Override public void purge() throws IOException {
         pending = new byte[0];
@@ -207,7 +220,7 @@ public final class FtdiUart implements ByteChannel {
         }
     }
     private void restoreIdle() {
-        // Cancellation may happen while TXD is LOW in bit-bang mode. Restore
+        // Cancellation may happen while UART BREAK holds TXD LOW. Restore
         // UART idle without writing another byte, including on failed setup.
         for (int[] setting : new int[][]{{0, 0}, {11, 0}, {4, 8}}) {
             try {

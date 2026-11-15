@@ -17,20 +17,20 @@
       "bytes": 94
     },
     "NOTICE.md": {
-      "sha256": "e24732a89bf73a6166ff57f5108fb09e7e146fecf196c27d0cd9892cf2b0011b",
-      "bytes": 799
+      "sha256": "3ff46899d402837d75f0e28eb171f694291cea1643ef6aeb71e45066cada4b45",
+      "bytes": 1324
     },
     "README.md": {
-      "sha256": "b2d77c15cbe51027876e51624b96faf5466f8c66adcebb8076324d69be89ee14",
-      "bytes": 8056
+      "sha256": "69b521d97012b2299ec2c4459c7d7c5bd5acf1288116f11e3de851e90841747d",
+      "bytes": 8187
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "7cba62ca4105b13803e89f97744180b8b642806fd3596004d6669002bc1768c0",
-      "bytes": 2578
+      "sha256": "87d803e22a8dd8b83aa6f18f4b41d50c55e5a4a6eab62c87d0ee8ed7bbee3108",
+      "bytes": 2907
     },
     "app/build.gradle": {
-      "sha256": "8895f5f3c52a649c2a7df3bee0eafcb91c36c99a31fe55f5943029b3f554b587",
-      "bytes": 546
+      "sha256": "7dec4673d0d48683e16e70fc592aab21c7f5a3408a5cb10f162013b0dd21bf35",
+      "bytes": 632
     },
     "app/src/main/AndroidManifest.xml": {
       "sha256": "fd39faead10d5f70d79816dfa0021eea36b83eeb4accbe32c406b12d0904973a",
@@ -39,6 +39,10 @@
     "app/src/main/assets/ecu_catalog.tsv": {
       "sha256": "8c3874a3d2ae6dffe2b51f20d500c6ec4733d82abd841a71875d336ccd58b047",
       "bytes": 10045
+    },
+    "app/src/main/assets/usb-serial-for-android-LICENSE.txt": {
+      "sha256": "6f467d3d79c5d31734881fb83e082e84512bde05d3f7893e0e8373fd0d2b5d2c",
+      "bytes": 1105
     },
     "app/src/main/java/id/hondatuner/android/MainActivity.java": {
       "sha256": "7d5e7eac056f795ec2fce90bc4dc79422ed2656071956d8c89cd1c061d919ef6",
@@ -49,8 +53,8 @@
       "bytes": 4309
     },
     "app/src/main/java/id/hondatuner/android/usb/FtdiChannel.java": {
-      "sha256": "67724aeac9ceba2c4fb36e7708c3e53ed8998528a2ee1644648d6df8ea924775",
-      "bytes": 6649
+      "sha256": "5e27b780cd242e13e121d165504eb2e8ede39aa994129ee4f645a8b51d739e58",
+      "bytes": 7316
     },
     "app/src/main/java/id/hondatuner/core/ByteChannel.java": {
       "sha256": "e0fabc66c40c7bed3a3c2c9c8b4289a6e49d86f1145c533a4968dffafbad5e76",
@@ -77,8 +81,8 @@
       "bytes": 1975
     },
     "app/src/main/java/id/hondatuner/core/FtdiUart.java": {
-      "sha256": "2e28bd99705371cb9790969dd485a29f1fb4cdbb327b09688fc0bb8b66db9f9d",
-      "bytes": 11809
+      "sha256": "75e66ed5276f6b407862027c3a856ff8ef4ce3eec9502b3e19e7f9135d4cf2cd",
+      "bytes": 12612
     },
     "app/src/main/java/id/hondatuner/core/HondaClient.java": {
       "sha256": "89f100e16a73f4d329b230e44507d284f00158675615560d1b2cc07fe8ca9644",
@@ -136,41 +140,37 @@
       "sha256": "c3c0cf04da0fc239f391c774554d97d890018ab6e37e87cc62f6070d0c8c9909",
       "bytes": 73
     },
-    "dist/HondaTuner-Android-debug.apk": {
-      "sha256": "b02bffd7fbebb90029b16ba62d3a26a9f0bed0d7fa4f95c384625c84cb272348",
-      "bytes": 100246
-    },
-    "dist/HondaTuner-Android-debug.apk.sha256": {
-      "sha256": "effbb54b27806dca0d3cbc260adf831065c6da9d98d1fa2ed87fdcc723890de5",
-      "bytes": 95
-    },
     "evidence/apk_verification.json": {
       "sha256": "68322cc9862356805e8b253af4e888d482ca37e2fe9c2419038bb05248e2718c",
       "bytes": 2589
     },
     "evidence/build_status.json": {
-      "sha256": "5419839f661ea26c617e5e2b0e1aa651ff6bf3b68bcff3e368dec41c27614baf",
-      "bytes": 2400
+      "sha256": "cc709fa639b7cd27bb8c31c60267149dbd92afcdfcba8988f3f1a226fdef7f7e",
+      "bytes": 2626
     },
     "evidence/connection_debug_audit.json": {
       "sha256": "c366d6f6f20f6c4cc735336fbf073a9d646accbf4d7f38458e26fc1f297b273e",
       "bytes": 1443
     },
     "evidence/core_tests.txt": {
-      "sha256": "540389ef3aaabe2ae2e7166d65364b786ae577ef66dce51f7b116f7de904f7d4",
-      "bytes": 4600
+      "sha256": "bba49a182ea629b0876097621904c609758d0494bd67b0719dab624afc2f947a",
+      "bytes": 5303
     },
     "evidence/core_verification.json": {
-      "sha256": "9e6ffcfda295327b1597d094862be8295952c998d0a6d15cc6b0f34acb5d49f8",
-      "bytes": 3088
+      "sha256": "5f2ffc2eef87f6e82fbf8afdaa856d0979403b9591eb2ce4acd1ffc4356b570b",
+      "bytes": 3059
+    },
+    "evidence/ftdi_driver_reference.json": {
+      "sha256": "2cf7239f343613efcd5e0d807aa58b3c7c1d21654538a87befeca23c27d12755",
+      "bytes": 3095
     },
     "evidence/github_delivery.json": {
-      "sha256": "222902a0a79bc70f21b4af48efca487e49056137ed3a223e8fedb4991e53f212",
-      "bytes": 4021
+      "sha256": "75e698b5aba56f7f2365efd73a62c5b4f5f4817f6a49d82b3504e06bedc15e35",
+      "bytes": 591
     },
     "evidence/project_verification.json": {
-      "sha256": "771e080a0c80cf7247547e5247c5b2c68ca46fd10dc79bc1577da5c9e4e57f78",
-      "bytes": 4545
+      "sha256": "74414e8257bd5d15eb74568d6868443a16ce80fb472e418a74c5939f180dfc81",
+      "bytes": 4783
     },
     "evidence/reference_provenance.json": {
       "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4",
@@ -184,9 +184,13 @@
       "sha256": "3cacd22aa6686499e91f96d801d5557a9c0b81ab1872f81285ee395f2539f630",
       "bytes": 51
     },
+    "gradle/verification-metadata.xml": {
+      "sha256": "8288a0c2ffebd593f94f51b63345b10ebea192807a70ad2acddaeeced34c510f",
+      "bytes": 816
+    },
     "settings.gradle": {
-      "sha256": "004b56d50b80bebfca0b8d8e6f723143bac17d898502bd09325eac9f575a1a4c",
-      "bytes": 289
+      "sha256": "e6c80f99eb4eb18b69370915a860c88a8db7e050aef33895bc300edc2f1b6eb0",
+      "bytes": 427
     },
     "tests/java/id/hondatuner/core/CoreTest.java": {
       "sha256": "4909aa33638d7ae7a3ef44659f8ff0b6ac9d8f6c5e7abbd82cb95f5061de995e",
@@ -197,16 +201,16 @@
       "bytes": 1455
     },
     "tests/java/id/hondatuner/core/FtdiUartTest.java": {
-      "sha256": "004da06a674528c753d7cb9870823fe7a323f2d2f3890a85beea95d2c5729532",
-      "bytes": 17549
+      "sha256": "d6564f1034c14f177e712f9cc58d6a3c10e8af9c572c922bd8a23e2e14e92560",
+      "bytes": 22451
     },
     "tests/reference_vectors.json": {
       "sha256": "957e9d75d69b1ed18e70ae378d4b2364c03c639d3c6b8e5a1f559f704b30d49f",
       "bytes": 216640
     },
     "tools/package_apk.py": {
-      "sha256": "7690d73e4314af3669f4f95e088fd28f88534c1eafadc7a4182222c26c943da8",
-      "bytes": 5066
+      "sha256": "390b2e82e61e6a5fd29c1576ae2f51b9b1255c076bec968b49c5446d588ada0c",
+      "bytes": 7733
     },
     "tools/prepare_repo.py": {
       "sha256": "fbcfe898b84392a0e7ca47cfaabd4a663d190ca157558522883127821b246331",
@@ -229,16 +233,16 @@
       "bytes": 2313
     },
     "tools/verify_project.py": {
-      "sha256": "018d4d862ad4e67450211b2bdad2be6b20ab459450307d5dda8b92032e2a31af",
-      "bytes": 5232
+      "sha256": "2d10b3a3313ef8eb18c21f586896d90bebb0fd7fb3d0f1934729888caa4839f7",
+      "bytes": 5400
     }
   },
-  "scope": "Verified 1.1.1 delivery; physical scan failed",
-  "android_sdk_compilation": true,
-  "apk_included": true,
-  "version_name": "1.1.1-debug",
-  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502",
-  "pushed_source_commit": "c7717c0a9c822185c27e7a8b6e577907c54651d0",
-  "built_source_commit": "c7717c0a9c822185c27e7a8b6e577907c54651d0",
+  "scope": "1.1.2-debug FTDI serial-driver / UART BREAK connection repair; server APK pending",
+  "android_sdk_compilation": false,
+  "apk_included": false,
+  "version_name": "1.1.2-debug",
+  "github_actions_run": null,
+  "pushed_source_commit": null,
+  "built_source_commit": null,
   "physical_ecu_success_verified": false
 }

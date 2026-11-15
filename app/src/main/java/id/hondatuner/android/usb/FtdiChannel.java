@@ -1,11 +1,13 @@
 package id.hondatuner.android.usb;
 
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
+import com.hoho.android.usbserial.driver.FtdiSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+import java.util.Arrays;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,11 +17,10 @@ import id.hondatuner.core.DiagnosticLog;
 import id.hondatuner.core.FtdiUart;
 import id.hondatuner.core.ProtocolException;
 
-/** Direct Android USB-host driver for the single-channel FT232R (0403:6001). */
+/** usb-serial-for-android FTDI driver with bounded Honda wake/session timing. */
 public final class FtdiChannel implements ByteChannel {
     public static final int VENDOR_ID = 0x0403, PRODUCT_ID = 0x6001;
-    private final UsbDeviceConnection connection;
-    private final UsbInterface uart;
+    private final FtdiSerialDriver.FtdiSerialPort serial;
     private final DiagnosticLog log;
     private final AtomicBoolean closed = new AtomicBoolean();
     private final FtdiUart driver;
@@ -36,7 +37,7 @@ public final class FtdiChannel implements ByteChannel {
         if (!matches(device) || !manager.hasPermission(device)) throw new ProtocolException("Izin USB FT232R belum diberikan.");
         UsbDeviceConnection connection = manager.openDevice(device);
         if (connection == null) throw new ProtocolException("USB tidak bisa dibuka. Lepas aplikasi lain yang memakai adaptor ini.");
-        UsbInterface claimed = null;
+        FtdiSerialDriver.FtdiSerialPort opened = null;
         try {
             byte[] descriptors = connection.getRawDescriptors();
             if (log != null && descriptors != null) log.wire("USB", "DESCRIPTORS", descriptors, descriptors.length);
@@ -45,30 +46,31 @@ public final class FtdiChannel implements ByteChannel {
             }
             if (device.getInterfaceCount() != 1) throw new ProtocolException("Gunakan FT232R satu kanal untuk K-Line.");
             UsbInterface uart = device.getInterface(0);
-            UsbEndpoint input = null, output = null;
-            for (int i = 0; i < uart.getEndpointCount(); i++) {
-                UsbEndpoint endpoint = uart.getEndpoint(i);
-                if (endpoint.getType() != UsbConstants.USB_ENDPOINT_XFER_BULK) continue;
-                if (endpoint.getDirection() == UsbConstants.USB_DIR_IN) input = endpoint;
-                else output = endpoint;
-            }
+            FtdiSerialDriver library = new FtdiSerialDriver(device);
+            FtdiSerialDriver.FtdiSerialPort serial = library.new FtdiSerialPort(device, 0) {
+                @Override protected int readFilter(byte[] buffer, int count) {
+                    // Keep status headers for FtdiUart's packet codec and trace.
+                    // This preserves UART-error checks during real ECU replies.
+                    return count;
+                }
+            };
+            serial.open(connection);
+            opened = serial;
+            UsbEndpoint input = serial.getReadEndpoint(), output = serial.getWriteEndpoint();
             if (input == null || output == null || input.getMaxPacketSize() <= 2) throw new ProtocolException("Endpoint FT232R tidak tersedia.");
-            if (!connection.claimInterface(uart, true)) throw new ProtocolException("Adaptor USB sedang dipakai aplikasi lain.");
-            claimed = uart;
+            if (log != null) log.info("USB DRIVER", "usb-serial-for-android 3.12.0; FTDI UART; wake=BREAK 70/130 ms");
             if (log != null) log.info("USB", "UART claimed: interface=" + uart.getId() + ", IN=0x" + Integer.toHexString(input.getAddress()) + ", OUT=0x" + Integer.toHexString(output.getAddress()) + ", packet=" + input.getMaxPacketSize());
             cancel.check();
-            return new FtdiChannel(connection, uart, input, output, log);
+            return new FtdiChannel(connection, serial, input, log);
         } catch (IOException | RuntimeException error) {
             if (log != null && !(error instanceof InterruptedIOException) && !cancel.isCancelled()) log.error("USB OPEN", error);
-            try { if (claimed != null) connection.releaseInterface(claimed); }
-            catch (RuntimeException cleanup) { if (log != null) log.warn("USB CLOSE", cleanup.toString()); }
-            try { connection.close(); }
-            catch (RuntimeException cleanup) { if (log != null) log.warn("USB CLOSE", cleanup.toString()); }
+            try { if (opened != null) opened.close(); else connection.close(); }
+            catch (IOException | RuntimeException cleanup) { if (log != null) log.warn("USB CLOSE", cleanup.toString()); }
             throw error;
         }
     }
-    private FtdiChannel(UsbDeviceConnection connection, UsbInterface uart, UsbEndpoint input, UsbEndpoint output, DiagnosticLog log) {
-        this.connection = connection; this.uart = uart;
+    private FtdiChannel(UsbDeviceConnection connection, FtdiSerialDriver.FtdiSerialPort serial, UsbEndpoint input, DiagnosticLog log) {
+        this.serial = serial;
         this.log = log;
         driver = new FtdiUart(new FtdiUart.UsbIo() {
             @Override public int controlOut(int request, int value, int index, int timeoutMillis) {
@@ -77,14 +79,24 @@ public final class FtdiChannel implements ByteChannel {
             @Override public int controlIn(int request, int value, int index, byte[] buffer, int timeoutMillis) {
                 return connection.controlTransfer(0xc0, request, value, index, buffer, buffer.length, timeoutMillis);
             }
-            @Override public int write(byte[] data, int offset, int count, int timeoutMillis) {
-                return connection.bulkTransfer(output, data, offset, count, timeoutMillis);
+            @Override public void configureUart(int baudRate) throws IOException {
+                serial.setParameters(baudRate, UsbSerialPort.DATABITS_8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+                serial.setFlowControl(UsbSerialPort.FlowControl.NONE);
+                if (log != null) log.debug("USB DRIVER", "FTDI setParameters(" + baudRate + ", 8N1), flow=NONE");
             }
-            @Override public int read(byte[] buffer, int timeoutMillis) {
-                return connection.bulkTransfer(input, buffer, buffer.length, timeoutMillis);
+            @Override public void setBreak(boolean enabled) throws IOException {
+                serial.setBreak(enabled);
+                if (log != null) log.debug("USB DRIVER", "FTDI setBreak(" + enabled + ")");
+            }
+            @Override public int write(byte[] data, int offset, int count, int timeoutMillis) throws IOException {
+                serial.write(offset == 0 && count == data.length ? data : Arrays.copyOfRange(data, offset, offset + count), timeoutMillis);
+                return count;
+            }
+            @Override public int read(byte[] buffer, int timeoutMillis) throws IOException {
+                return serial.read(buffer, timeoutMillis);
             }
             @Override public void close() { closeConnection(); }
-        }, uart.getId() + 1, input.getMaxPacketSize(), log);
+        }, serial.getPortNumber() + 1, input.getMaxPacketSize(), log);
     }
     @Override public void initialize(CancelSignal cancel) throws IOException { driver.initialize(cancel); }
     @Override public void purge() throws IOException { driver.purge(); }
@@ -98,9 +110,8 @@ public final class FtdiChannel implements ByteChannel {
     private void closeConnection() {
         if (closed.compareAndSet(false, true)) {
             if (log != null) log.info("USB", "Menutup adaptor");
-            try { connection.releaseInterface(uart); }
-            catch (RuntimeException error) { if (log != null) log.warn("USB", "releaseInterface: " + error.getMessage()); }
-            finally { try { connection.close(); } catch (RuntimeException error) { if (log != null) log.warn("USB", "close: " + error.getMessage()); } }
+            try { serial.close(); }
+            catch (IOException | RuntimeException error) { if (log != null) log.warn("USB", "close: " + error.getMessage()); }
         }
     }
 }

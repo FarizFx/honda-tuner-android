@@ -6,6 +6,7 @@ import os
 import re
 from pathlib import Path
 import shutil
+import struct
 import subprocess
 import sys
 import zipfile
@@ -20,6 +21,41 @@ def checked(args):
     if result.returncode:
         raise RuntimeError("APK verification failed:\n" + result.stdout + result.stderr)
     return result.stdout + result.stderr
+
+
+def dex_classes(data):
+    """Read declared class descriptors, not string references, from a standard DEX."""
+    if len(data) < 112 or data[:4] != b"dex\n" or struct.unpack_from("<I", data, 40)[0] != 0x12345678:
+        raise RuntimeError("Unexpected APK DEX format")
+    strings, string_offset = struct.unpack_from("<II", data, 56)
+    types, type_offset = struct.unpack_from("<II", data, 64)
+    classes, class_offset = struct.unpack_from("<II", data, 96)
+    for count, offset, size in ((strings, string_offset, 4), (types, type_offset, 4), (classes, class_offset, 32)):
+        if offset + count * size > len(data):
+            raise RuntimeError("APK DEX table exceeds file bounds")
+    descriptors = set()
+    for index in range(classes):
+        type_index = struct.unpack_from("<I", data, class_offset + index * 32)[0]
+        if type_index >= types:
+            raise RuntimeError("Invalid DEX class type")
+        string_index = struct.unpack_from("<I", data, type_offset + type_index * 4)[0]
+        if string_index >= strings:
+            raise RuntimeError("Invalid DEX type descriptor")
+        position = struct.unpack_from("<I", data, string_offset + string_index * 4)[0]
+        for _ in range(5):
+            if position >= len(data):
+                raise RuntimeError("Truncated DEX string length")
+            part = data[position]
+            position += 1
+            if part < 128:
+                break
+        else:
+            raise RuntimeError("Invalid DEX string length")
+        end = data.find(b"\x00", position)
+        if end < 0:
+            raise RuntimeError("Truncated DEX class descriptor")
+        descriptors.add(data[position:end].decode("ascii"))
+    return descriptors
 
 
 def main():
@@ -52,11 +88,21 @@ def main():
         if archive.testzip() is not None:
             raise RuntimeError("APK ZIP integrity failed")
         names = archive.namelist()
-        for required in ("AndroidManifest.xml", "classes.dex", "resources.arsc", "assets/ecu_catalog.tsv"):
+        license_entry = "assets/usb-serial-for-android-LICENSE.txt"
+        for required in ("AndroidManifest.xml", "classes.dex", "resources.arsc", "assets/ecu_catalog.tsv", license_entry):
             if required not in names:
                 raise RuntimeError("Missing APK entry: " + required)
         if any(name.endswith((".pyd", ".dll", ".exe")) or "reference_vectors" in name for name in names):
             raise RuntimeError("Development/native artifacts were bundled into the Android app")
+        if archive.read(license_entry) != (ROOT / "app/src/main" / license_entry).read_bytes():
+            raise RuntimeError("The bundled FTDI serial-driver license differs from source")
+        declared = set()
+        for name in names:
+            if re.fullmatch(r"classes(?:\d+)?\.dex", name):
+                declared.update(dex_classes(archive.read(name)))
+        required_driver_classes = {"Lcom/hoho/android/usbserial/driver/FtdiSerialDriver;", "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver$FtdiSerialPort;"}
+        if not required_driver_classes <= declared:
+            raise RuntimeError("The expected FTDI driver classes are absent from the APK")
     output = ROOT / "dist"
     output.mkdir(exist_ok=True)
     exported = output / "HondaTuner-Android-debug.apk"
@@ -70,6 +116,9 @@ def main():
         "version_code": int(version_code), "version_name": version_name,
         "variant": "debug", "signature_verification": signature, "manifest_badging": badging,
         "physical_android_usb_or_ecu_test": False,
+        "ftdi_driver_library": "usb-serial-for-android 3.12.0",
+        "ftdi_driver_classes_verified": sorted(required_driver_classes),
+        "ftdi_driver_license_verified": True,
     }
     if os.environ.get("GITHUB_ACTIONS") == "true":
         report["github_run"] = "https://github.com/%s/actions/runs/%s" % (os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_RUN_ID"])

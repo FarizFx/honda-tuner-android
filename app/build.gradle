@@ -8,8 +8,8 @@ android {
         applicationId 'id.hondatuner.android'
         minSdk 26
         targetSdk 35
-        versionCode 3
-        versionName '1.1.1-debug'
+        versionCode 4
+        versionName '1.1.2-debug'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -19,4 +19,8 @@ android {
         xmlReport = true
         xmlOutput = file('build/reports/lint-results-debug.xml')
     }
+}
+
+dependencies {
+    implementation 'com.github.mik3y:usb-serial-for-android:3.12.0'
 }

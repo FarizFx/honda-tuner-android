@@ -3,20 +3,22 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.1-debug / versionCode 3:** APK sudah dibangun di server Linux dan
-diverifikasi: **76 tes regresi JVM**, **312 vektor dekoder**, **5.616 nilai field**,
-kompilasi SDK, signature, ZIP CRC dan lint (**0 error, 35 warning**).
-[Run 43762436502](https://github.com/FarizFx/honda-tuner-android/actions/runs/43762436502).
+**v1.1.2-debug / versionCode 4:** memakai driver FTDI dari
+`usb-serial-for-android 3.12.0` (MIT). Pulsanya memakai UART BREAK dengan timing
+Honda 70 ms LOW / 130 ms HIGH, kemudian pembersihan RX sampai tenang 24 ms
+(batas 250 ms). Tidak ada aliran sampel GPIO dari mode bit-bang.
+**83 tes regresi JVM**, **312 vektor dekoder** dan **5.616 nilai field** lulus.
+Build APK baru menunggu verifikasi di server Linux; APK lokal terakhir masih 1.1.1.
 
-Pengujian pengguna pada Android 17, FT232RL dan ECU Shindengen masih gagal.
-TX diagnostic entry `72 05 00 F0 99` selalu diterima sebagai `60 00 00 E0 10`;
-RX wake juga masih memuat ratusan sampel GPIO `FF/FC`. Penyebab listrik belum
-terukur. Perbaikan berikutnya sedang diperiksa terhadap urutan HondaECU asli.
-Detail: [evidence/wakeup_audit.json](evidence/wakeup_audit.json).
+Pembaruan ini mengikuti frame HondaECU; BREAK adalah adaptasi driver Android.
+Balasan ECU tetap diperiksa lewat status UART, echo, header, panjang dan checksum.
+Detail sumber driver dan perbedaannya: [evidence/ftdi_driver_reference.json](evidence/ftdi_driver_reference.json).
 
-[Draft release 1.1.1](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-bdf09c01006f3fb014b6)
-dan `dist/HondaTuner-Android-debug.apk` lokal memuat APK yang telah diverifikasi.
-APK, laporan asli, source ZIP dan trace fisik disimpan di `dist/baseline-1.1.1`.
+Pengujian fisik pengguna pada 1.1.1 masih gagal: TX `72 05 00 F0 99` selalu
+diterima sebagai `60 00 00 E0 10`, dan RX wake berisi sampel GPIO `FF/FC`.
+Penyebab listrik belum terukur. APK, laporan asli, source dan trace versi itu
+disimpan di `dist/baseline-1.1.1`; baseline 1.1.0 dan 1.0.0 tetap tersimpan.
+Keberhasilan koneksi fisik versi 1.1.2 masih perlu pengujian pada HP dan ECU.
 
 ## Hubungkan
 

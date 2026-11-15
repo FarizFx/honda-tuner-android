@@ -1,0 +1,45 @@
+{
+  "scope": "1.1.2-debug FTDI Android driver integration and wake adaptation",
+  "library": "usb-serial-for-android",
+  "version": "3.12.0",
+  "upstream_repository": "https://github.com/mik3y/usb-serial-for-android",
+  "upstream_commit": "4cb9e82cdcfa095eb2fe0b0bea9605f50bd8e2f2",
+  "upstream_release": "https://github.com/mik3y/usb-serial-for-android/releases/tag/3.12.0",
+  "maven_coordinate": "com.github.mik3y:usb-serial-for-android:3.12.0",
+  "aar_url": "https://jitpack.io/com/github/mik3y/usb-serial-for-android/3.12.0/usb-serial-for-android-3.12.0.aar",
+  "aar_sha256": "61221d698f71d2e4ac182e7b55ffeee17a01426ebb92e6e3c407b7c6df90f279",
+  "aar_bytes": 68325,
+  "license": "MIT",
+  "license_in_apk": "assets/usb-serial-for-android-LICENSE.txt",
+  "source_observations": {
+    "set_parameters": "FT232R 10400 baud yields value 0x4120 and index 0; 8N1 yields data configuration 8",
+    "set_break": "FtdiSerialPort.setBreak adds flag 0x4000 to 8N1 configuration, using request 4 / port index 1",
+    "receive": "FtdiSerialPort.read supplies USB packets to the protected readFilter method",
+    "purge": "Version 3.12.0 purgeHwBuffers maps purgeWriteBuffers to RESET_PURGE_RX (1) and purgeReadBuffers to RESET_PURGE_TX (2); the application retains direct request 0/value 1 RX purge"
+  },
+  "original_hondaecu_reference": {
+    "retained_oracle": "honda_tuner/re/linux_transport_oracle.json in the REMAP workspace",
+    "scope": "Original pinned Windows HondaECU engine with a scripted FTDI handle; no physical hardware",
+    "original_wake": "setBitMode(1,1), write 00, 70 ms, write 01, setBitMode(0,0), setBaudRate(10400), 130 ms, purge",
+    "android_adaptation": "Use the serial driver's BREAK ON/OFF for the LOW/HIGH pulse; keep at least 70/130 ms and then wait for 24 ms RX quiet, bounded to 250 ms",
+    "same_low_level_implementation_as_hondaecu": false,
+    "honda_command_frames_changed": false
+  },
+  "driver_research": {
+    "ftdi_android_d2xx_exists": true,
+    "sample_package_examined": "https://github.com/brtchip-gdm/J2XXLoopback/tree/5281152bcb69baba2030cf775c0d793ca7a9529f/app/libs",
+    "d2xx_distribution_limitation": "The included driver license clauses 3.1.3 and 3.1.7 restrict incorporation into other programs and making the software available; this SDK was not bundled",
+    "vendor_download_page": "Returned HTTP 403 to the available noninteractive reader",
+    "d2xx_runtime_compatibility_on_android_37": "Not tested"
+  },
+  "physical_failure_target": {
+    "previous_version": "1.1.1-debug",
+    "wake_rx": "Repeated FF/FC GPIO samples, LSR 0x62",
+    "entry_tx": "72 05 00 F0 99",
+    "entry_uart_rx": "60 00 00 E0 10",
+    "power_description": "User reports 12 V/GND on K-Line board, FTDI connected by GND/VCC/RX/TX and set to 5 V; precise power routing unknown",
+    "delayed_rising_edge": "Unproven hypothesis; no waveform measured"
+  },
+  "physical_ecu_success_verified": false,
+  "evidence_kind": "Retained original-engine observation, user trace, published upstream source/artifact and ordinary shell inspection; no new REA runtime Evidence claimed"
+}

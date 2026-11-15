@@ -65,7 +65,9 @@ def main():
     for line in catalog_lines:
         fields = line.split("\t")
         assert len(fields) == 3 and re.fullmatch("[0-9A-F]{10}", fields[0]) and fields[0] != "FFFFFFFFFF"
-    checked = java_paths + xml_paths + tool_paths + [source / "AndroidManifest.xml", source / "assets/ecu_catalog.tsv", workflow_path, ROOT / "app/build.gradle", ROOT / "build.gradle", ROOT / "settings.gradle"]
+    driver_checksums = ROOT / "gradle/verification-metadata.xml"
+    ET.parse(driver_checksums)
+    checked = java_paths + xml_paths + tool_paths + [source / "AndroidManifest.xml", source / "assets/ecu_catalog.tsv", source / "assets/usb-serial-for-android-LICENSE.txt", driver_checksums, workflow_path, ROOT / "app/build.gradle", ROOT / "build.gradle", ROOT / "settings.gradle"]
     report = {
         "result": "passed", "java_source_files": len(java_paths), "resource_xml_files": len(xml_paths),
         "string_resources_resolved": len(references), "exact_id_catalog_rows": len(catalog_lines),

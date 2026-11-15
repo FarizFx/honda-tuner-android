@@ -1,3 +1,7 @@
+warning: [options] source value 8 is obsolete and will be removed in a future release
+warning: [options] target value 8 is obsolete and will be removed in a future release
+warning: [options] To suppress warnings about obsolete options, use -Xlint:-options.
+3 warnings
 OK Honda diagnostic, table, wake and DTC command bytes
 OK fragmented current-request echo and reply
 OK echo-only response cannot become an ECU acknowledgement
@@ -57,8 +61,14 @@ OK transport factory failure closes its unowned USB channel
 OK cancelled open failure cannot become a new session error
 OK logged app controller scans and reads DTC without echo
 OK runtime polling failures produce unread samples and stop visibly
-OK FTDI wake holds confirmed LOW and waits for delayed HIGH
-OK FT232R USB controls configure 10400/8N1 on the correct indices
+OK UART BREAK holds Honda LOW/HIGH timing without GPIO streaming
+OK FTDI serial API receives Honda baud and BREAK settings
+OK queued FF/FC USB samples are drained before sending Honda wake
+OK late stale data restarts the receive quiet window
+OK status-only packets do not prevent a quiet RX window
+OK continuous stale RX fails within the cleanup bound without ECU commands
+OK truncated USB status during cleanup cannot be ignored
+OK cancellation during cleanup prevents the first ECU command
 OK initially stale TX-empty status cannot truncate a queued frame
 OK partial USB writes preserve every command byte until UART completion
 OK TX timeout prevents appending a retry until full reinitialization
@@ -66,14 +76,15 @@ OK short modem status cannot establish UART completion
 OK failed and invalid USB write counts prevent subsequent commands
 OK cancellation during TX guard stops without another frame
 OK cancellation during LOW restores UART idle without another byte
-OK missing and stuck FTDI pins fail within the wake deadline
+OK failed BREAK controls restore idle and prevent ECU commands
 OK FTDI receive keeps pending UART bytes across small reads
 OK status-only BREAK is discarded but UART framing errors stay strict
 OK RX purge preserves the UART transmit queue
 OK reported FC/framing wake reaches entry only after complete TX
 OK UART framing error on diagnostic entry cannot establish connection
+OK reported 60 00 00 E0 10 entry bytes cannot establish connection
 OK required wake echo still rejects the reported framing error
 OK truncated USB status on wake cannot be ignored as optional UART RX
-PASS: 76 core regression tests
+PASS: 83 core regression tests
 
 PASS: 312 reference decoder vectors, 5616 field values
