@@ -9,7 +9,7 @@
   "android_sdk_compilation": false,
   "physical_android_usb_or_ecu_test": false,
   "source_sha256": {
-    "app/src/main/java/id/hondatuner/android/MainActivity.java": "70b9248149da53d63e3240f40f677602950e4827337dae2d5b9bc4fd61af1929",
+    "app/src/main/java/id/hondatuner/android/MainActivity.java": "7d5e7eac056f795ec2fce90bc4dc79422ed2656071956d8c89cd1c061d919ef6",
     "app/src/main/java/id/hondatuner/android/SensorGraph.java": "e7b0c6ac14959ffc101f676b15a2b44c2bf6c00ab11825b7db895405d9e2673c",
     "app/src/main/java/id/hondatuner/android/usb/FtdiChannel.java": "5d774d4e0f600463b971892b1b5e6c25aa444dcb072d274ba918a22074cb9403",
     "app/src/main/java/id/hondatuner/core/ByteChannel.java": "0d686869e58303a73ab9c8f9ca30d050d36a82a7e4b2381c9c5464ea87d14e9c",

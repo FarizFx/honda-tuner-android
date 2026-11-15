@@ -29,8 +29,8 @@
       "bytes": 10045
     },
     "app/src/main/java/id/hondatuner/android/MainActivity.java": {
-      "sha256": "70b9248149da53d63e3240f40f677602950e4827337dae2d5b9bc4fd61af1929",
-      "bytes": 54759
+      "sha256": "7d5e7eac056f795ec2fce90bc4dc79422ed2656071956d8c89cd1c061d919ef6",
+      "bytes": 54843
     },
     "app/src/main/java/id/hondatuner/android/SensorGraph.java": {
       "sha256": "e7b0c6ac14959ffc101f676b15a2b44c2bf6c00ab11825b7db895405d9e2673c",
@@ -133,7 +133,7 @@
       "bytes": 2810
     },
     "evidence/project_verification.json": {
-      "sha256": "785daa971cf1a8774f7cc3fb3daf04c8ff44af58527c7fe72daeb2b754278efc",
+      "sha256": "c4239681e2a9a79138415f135f74d868dcdf55cd4684977637cd71c71354d44f",
       "bytes": 4419
     },
     "evidence/reference_provenance.json": {

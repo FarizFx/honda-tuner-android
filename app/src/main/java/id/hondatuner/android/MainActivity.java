@@ -236,8 +236,9 @@ public final class MainActivity extends Activity {
         controller.setLiveIntervalMillis(INTERVALS[boundedIndex(interval.getSelectedItemPosition(), INTERVALS.length)]);
         IntentFilter filter = new IntentFilter(USB_PERMISSION);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED); filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        else registerReceiver(receiver, filter);
+        // The flags overload is available at minSdk 26; exported flags start at API 33.
+        int receiverFlags = Build.VERSION.SDK_INT >= 33 ? Context.RECEIVER_NOT_EXPORTED : 0;
+        registerReceiver(receiver, filter, receiverFlags);
         registered = true;
         files.execute(() -> {
             File previous = new File(getFilesDir(), FAILURE_FILE);
