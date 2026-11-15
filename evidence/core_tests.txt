@@ -35,6 +35,30 @@ OK disconnect during live receive discards the old session sample
 OK failed DTC never becomes an empty successful report
 OK diagnostic connection without supported sensors can still read DTC
 OK failed rediscovery revokes the previous sensor profile
-PASS: 33 core regression tests
+OK AUTO receives fragmented ECU replies without adapter echo
+OK AUTO recognizes echo independently on each transaction
+OK AUTO reports echo-only and completely absent RX distinctly
+OK AUTO still rejects malformed frames and damaged echo
+OK forced echo modes enforce the selected receive format
+OK no-echo wake is one-way and never becomes a connection ACK
+OK scan retries full wake after a failed diagnostic entry
+OK failed scan stops at the configured attempt limit
+OK cancellation during scan retry prevents another wake
+OK successful fallback removes obsolete discovery failures
+OK status-only BREAK is ignored while UART data errors are rejected
+OK diagnostic trace stays bounded and retains ordered recent entries
+OK trace observers run outside the lock and cannot break exchanges
+OK detail toggle hides wire bytes but keeps errors and stack traces
+OK bounded history preserves real timestamps, gaps and total counts
+OK CSV escapes error text and leaves missing/nonfinite cells empty
+OK statistics ignore missing and boolean values and reset by session
+OK manual sensor read completes once and remains paused
+OK disconnect revokes a queued manual-read result
+OK changing live interval takes effect without overlapping reads
+OK transport factory failure closes its unowned USB channel
+OK cancelled open failure cannot become a new session error
+OK logged app controller scans and reads DTC without echo
+OK runtime polling failures produce unread samples and stop visibly
+PASS: 57 core regression tests
 
 PASS: 312 reference decoder vectors, 5616 field values

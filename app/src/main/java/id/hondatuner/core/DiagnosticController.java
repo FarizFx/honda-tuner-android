@@ -2,12 +2,13 @@ package id.hondatuner.core;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /** The actual app workflow, shared with JVM regression tests. All wire work is serialized. */
 public final class DiagnosticController implements AutoCloseable {
-    public enum State { DISCONNECTED, CONNECTING, DISCOVERING, LIVE, PAUSED, READING_DTC }
+    public enum State { DISCONNECTED, CONNECTING, DISCOVERING, LIVE, PAUSED, READING_DTC, READING_SAMPLE }
     public interface ChannelFactory { ByteChannel open(CancelSignal cancel) throws IOException; }
     public interface TransportFactory { KLineTransport create(ByteChannel channel); }
     public interface Listener {
@@ -26,12 +27,13 @@ public final class DiagnosticController implements AutoCloseable {
             this.session = session; this.state = state; this.ecuId = ecuId; this.message = message; this.hasSensors = hasSensors;
         }
         public boolean connected() { return state != State.DISCONNECTED && state != State.CONNECTING; }
-        public boolean busy() { return state == State.CONNECTING || state == State.DISCOVERING || state == State.READING_DTC; }
+        public boolean busy() { return state == State.CONNECTING || state == State.DISCOVERING || state == State.READING_DTC || state == State.READING_SAMPLE; }
     }
     private final ScheduledExecutorService executor;
     private final Listener listener;
-    private final long liveInterval;
+    private long liveInterval;
     private final TransportFactory transportFactory;
+    private final DiagnosticLog log;
     private long session, operation;
     private boolean closed;
     private HondaClient client;
@@ -41,15 +43,27 @@ public final class DiagnosticController implements AutoCloseable {
     private String ecuId = "", message = "Hubungkan adaptor FT232R K-Line lewat USB OTG.";
 
     public DiagnosticController(Listener listener) {
-        this(listener, Executors.newSingleThreadScheduledExecutor(runnable -> {
+        this(listener, newExecutor(), 500);
+    }
+    public DiagnosticController(Listener listener, DiagnosticLog log) {
+        this(listener, newExecutor(), 500, channel -> new KLineTransport(channel, System::nanoTime, 1000, KLineTransport.EchoMode.AUTO, log), log);
+    }
+    private static ScheduledExecutorService newExecutor() {
+        return Executors.newSingleThreadScheduledExecutor(runnable -> {
             Thread worker = new Thread(runnable, "Honda-KLine"); worker.setDaemon(true); return worker;
-        }), 500);
+        });
     }
     public DiagnosticController(Listener listener, ScheduledExecutorService executor, long liveInterval) {
         this(listener, executor, liveInterval, KLineTransport::new);
     }
     public DiagnosticController(Listener listener, ScheduledExecutorService executor, long liveInterval, TransportFactory transportFactory) {
-        this.listener = listener; this.executor = executor; this.liveInterval = liveInterval; this.transportFactory = transportFactory;
+        this(listener, executor, liveInterval, transportFactory, null);
+    }
+    public DiagnosticController(Listener listener, ScheduledExecutorService executor, long liveInterval, TransportFactory transportFactory, DiagnosticLog log) {
+        if (liveInterval <= 0) throw new IllegalArgumentException("Interval harus positif.");
+        this.listener = Objects.requireNonNull(listener); this.executor = Objects.requireNonNull(executor);
+        this.liveInterval = liveInterval; this.transportFactory = Objects.requireNonNull(transportFactory);
+        this.log = log;
     }
     public synchronized Snapshot snapshot() { return new Snapshot(session, state, ecuId, message, profile != null && acquisition != null); }
     public synchronized boolean isCurrent(long token) { return !closed && session == token; }
@@ -59,44 +73,61 @@ public final class DiagnosticController implements AutoCloseable {
     }
     private synchronized boolean cancelled(long token, long op) { return !isCurrentOperation(token, op); }
     private void publish(State state, String message) {
-        this.state = state; this.message = message; listener.onState(snapshot());
+        this.state = state; this.message = message == null || message.trim().isEmpty() ? "Tidak ada detail; buka Debug untuk log sesi." : message;
+        if (log != null) log.info("STATE", "session=" + session + " " + state + " · " + message);
+        listener.onState(snapshot());
+    }
+    private static String errorMessage(Throwable error) {
+        return error.getMessage() == null || error.getMessage().trim().isEmpty() ? error.getClass().getSimpleName() : error.getMessage();
     }
 
     public synchronized void connect(ChannelFactory factory) {
+        connect(factory, transportFactory);
+    }
+    public synchronized void connect(ChannelFactory factory, TransportFactory selectedTransport) {
         if (closed) return;
         disconnect("Mengganti koneksi.");
         final long token = session, op = ++operation;
         publish(State.CONNECTING, "Membuka USB dan memulai sesi ECU...");
-        executor.execute(() -> openAndDetect(factory, token, op));
+        executor.execute(() -> openAndDetect(factory, selectedTransport, token, op));
     }
 
-    private void openAndDetect(ChannelFactory factory, long token, long op) {
+    private synchronized void progress(long token, long op, State state, String message) {
+        if (!cancelled(token, op)) publish(state, message);
+    }
+    private void openAndDetect(ChannelFactory factory, TransportFactory selectedTransport, long token, long op) {
         HondaClient opened = null;
+        ByteChannel unowned = null;
         boolean ready = false;
         CancelSignal cancel = () -> cancelled(token, op);
         try {
             cancel.check();
-            ByteChannel channel = factory.open(cancel);
-            opened = new HondaClient(transportFactory.create(channel));
+            unowned = factory.open(cancel);
+            opened = new HondaClient(selectedTransport.create(unowned), log);
+            unowned = null;
             synchronized (this) {
                 if (cancelled(token, op)) { opened.close(); return; }
                 client = opened;
             }
-            String identifier = opened.connect(cancel);
+            String identifier = opened.connect(cancel, message -> progress(token, op, State.CONNECTING, message), 3);
             synchronized (this) {
                 if (cancelled(token, op)) return;
                 ready = true; ecuId = identifier;
                 publish(State.DISCOVERING, "ECU terhubung. Mendeteksi grup sensor...");
             }
-            installProfile(LiveProfile.detect(opened, cancel), token, op);
+            installProfile(LiveProfile.detect(opened, cancel, log, message -> progress(token, op, State.DISCOVERING, message)), token, op);
         } catch (InterruptedIOException ignored) {
             if (opened != null) opened.close();
         } catch (IOException | RuntimeException error) {
             synchronized (this) {
                 if (cancelled(token, op)) { if (opened != null) opened.close(); return; }
-                if (ready) publish(State.PAUSED, error.getMessage());
-                else disconnect(error.getMessage());
+                if (log != null) log.error("CONNECT", error);
+                if (ready) publish(State.PAUSED, errorMessage(error));
+                else disconnect(errorMessage(error));
             }
+        } finally {
+            if (unowned != null) try { unowned.close(); }
+            catch (RuntimeException error) { if (log != null) log.warn("USB CLOSE", errorMessage(error)); }
         }
     }
 
@@ -117,13 +148,52 @@ public final class DiagnosticController implements AutoCloseable {
                     if (isCurrentLive(token, generation)) publish(State.PAUSED, reason);
                 }
             }
-        }, liveInterval);
+        }, liveInterval, log);
         startLive();
     }
 
     private void startLive() {
         acquisition.start(profile);
-        publish(State.LIVE, "Live data aktif. Target pembacaan setiap 500 ms.");
+        publish(State.LIVE, "Live data aktif. Target pembacaan setiap " + liveInterval + " ms.");
+    }
+    public synchronized long liveIntervalMillis() { return liveInterval; }
+    public synchronized void setLiveIntervalMillis(long interval) {
+        if (interval < 100 || interval > 5000) throw new IllegalArgumentException("Live interval must be 100..5000 ms.");
+        liveInterval = interval;
+        if (acquisition != null) acquisition.setIntervalMillis(interval);
+        if (state == State.LIVE) publish(State.LIVE, "Live data aktif. Target pembacaan setiap " + interval + " ms.");
+    }
+    public synchronized boolean readOnce() {
+        if (closed || state != State.PAUSED || client == null || profile == null || acquisition == null) return false;
+        acquisition.stop();
+        final long token = session, op = ++operation, generation = acquisition.currentGeneration();
+        final HondaClient current = client;
+        final LiveProfile currentProfile = profile;
+        publish(State.READING_SAMPLE, "Membaca satu putaran sensor...");
+        executor.execute(() -> {
+            try {
+                LiveProfile.Sample sample = currentProfile.read(current, () -> cancelled(token, op));
+                synchronized (this) {
+                    if (cancelled(token, op)) return;
+                    if (log != null) {
+                        log.info("READ ONCE", "groups=" + sample.validGroups + ", fields=" + sample.values.size());
+                        for (java.util.Map.Entry<Integer, String> failure : sample.failures.entrySet()) log.warn("READ ONCE", "0x" + Integer.toHexString(failure.getKey()) + ": " + failure.getValue());
+                        if (sample.validGroups == 0) log.error("READ ONCE", "Tidak ada grup sensor terbaca dalam putaran manual.");
+                    }
+                    listener.onSample(token, generation, sample);
+                    if (!cancelled(token, op)) publish(State.PAUSED, sample.validGroups == 0 ? "Sensor belum terbaca; buka Debug untuk detail." : "Satu putaran selesai. Live tetap dijeda.");
+                }
+            } catch (InterruptedIOException ignored) { }
+            catch (IOException | RuntimeException error) {
+                synchronized (this) {
+                    if (!cancelled(token, op)) {
+                        if (log != null) log.error("READ ONCE", error);
+                        publish(State.PAUSED, errorMessage(error));
+                    }
+                }
+            }
+        });
+        return true;
     }
     public synchronized boolean toggleLive() {
         if (state == State.LIVE) {
@@ -141,10 +211,15 @@ public final class DiagnosticController implements AutoCloseable {
         final HondaClient current = client;
         publish(State.DISCOVERING, "Mendeteksi ulang sensor ECU...");
         executor.execute(() -> {
-            try { installProfile(LiveProfile.detect(current, () -> cancelled(token, op)), token, op); }
+            try { installProfile(LiveProfile.detect(current, () -> cancelled(token, op), log, message -> progress(token, op, State.DISCOVERING, message)), token, op); }
             catch (InterruptedIOException ignored) { }
             catch (IOException | RuntimeException error) {
-                synchronized (DiagnosticController.this) { if (!cancelled(token, op)) publish(State.PAUSED, error.getMessage()); }
+                synchronized (DiagnosticController.this) {
+                    if (!cancelled(token, op)) {
+                        if (log != null) log.error("REDETECT", error);
+                        publish(State.PAUSED, errorMessage(error));
+                    }
+                }
             }
         });
         return true;
@@ -170,8 +245,10 @@ public final class DiagnosticController implements AutoCloseable {
             catch (IOException | RuntimeException error) {
                 synchronized (DiagnosticController.this) {
                     if (cancelled(token, op)) return;
-                    listener.onDtcError(token, op, error.getMessage());
-                    if (resume) startLive(); else publish(State.PAUSED, "DTC belum terbaca. " + error.getMessage());
+                    if (log != null) log.error("DTC", error);
+                    listener.onDtcError(token, op, errorMessage(error));
+                    if (cancelled(token, op)) return;
+                    if (resume) startLive(); else publish(State.PAUSED, "DTC belum terbaca. " + errorMessage(error));
                 }
             }
         });

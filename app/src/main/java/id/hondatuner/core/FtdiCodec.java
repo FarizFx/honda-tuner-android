@@ -22,7 +22,9 @@ public final class FtdiCodec {
         for (int offset = 0; offset < count; offset += packetSize) {
             int length = Math.min(packetSize, count - offset);
             if (length < 2) throw new ProtocolException("Status USB FTDI terpotong.");
-            if ((buffer[offset + 1] & 0x1e) != 0) throw new ProtocolException("FTDI melaporkan kesalahan UART; sampel tidak digunakan.");
+            // A status-only packet carries no UART sample. A previous wake-up
+            // BREAK indication in it must not reject a later, valid reply.
+            if (length > 2 && (buffer[offset + 1] & 0x1e) != 0) throw new ProtocolException("FTDI melaporkan kesalahan UART (LSR 0x" + Integer.toHexString(buffer[offset + 1] & 255) + "); sampel tidak digunakan.");
             data.write(buffer, offset + 2, length - 2);
         }
         return data.toByteArray();

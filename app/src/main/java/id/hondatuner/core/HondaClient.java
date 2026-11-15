@@ -7,20 +7,57 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 /** Normal Honda diagnostic session. This client exposes no ECU write command. */
 public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
+    public interface Progress { void onStage(String message); }
     private final KLineTransport transport;
+    private final DiagnosticLog log;
     private boolean connected;
     private String identifier = "";
-    public HondaClient(KLineTransport transport) { this.transport = transport; }
+    public HondaClient(KLineTransport transport) { this(transport, null); }
+    public HondaClient(KLineTransport transport, DiagnosticLog log) { this.transport = Objects.requireNonNull(transport); this.log = log; }
 
     public String connect(CancelSignal cancel) throws IOException {
+        return connect(cancel, message -> {}, 1);
+    }
+    public String connect(CancelSignal cancel, Progress progress, int attempts) throws IOException {
+        if (attempts < 1 || attempts > 3) throw new IllegalArgumentException("Scan attempts must be 1..3.");
         connected = false;
         identifier = "";
-        transport.initialize(cancel);
-        transport.exchange(0xfe, new byte[]{(byte) 0xff}, true, cancel);
-        transport.exchange(0x72, new byte[]{0, (byte) 0xf0}, false, cancel);
+        String stage = "inisialisasi K-Line";
+        for (int attempt = 1; attempt <= attempts; attempt++) {
+            cancel.check();
+            try {
+                stage = "inisialisasi K-Line";
+                progress.onStage("Menyiapkan K-Line · percobaan " + attempt + "/" + attempts);
+                if (log != null) log.info("SCAN", "Percobaan " + attempt + "/" + attempts + ": " + stage);
+                transport.initialize(cancel);
+                stage = "wake-up ECU";
+                progress.onStage("Membangunkan ECU · percobaan " + attempt + "/" + attempts);
+                transport.exchange(0xfe, new byte[]{(byte) 0xff}, true, cancel);
+                stage = "diagnostic entry";
+                progress.onStage("Menunggu balasan ECU · percobaan " + attempt + "/" + attempts);
+                transport.exchange(0x72, new byte[]{0, (byte) 0xf0}, false, cancel);
+                if (log != null) log.info("SCAN", "Diagnostic entry mendapat balasan valid dari ECU.");
+                break;
+            } catch (InterruptedIOException error) { throw error; }
+            catch (IOException error) {
+                if (log != null) log.warn("SCAN", "Gagal pada " + stage + ": " + error.getMessage());
+                if (attempt == attempts) {
+                    ProtocolException failed = new ProtocolException("Gagal pada " + stage + " setelah " + attempts + " percobaan. " + error.getMessage());
+                    failed.initCause(error); throw failed;
+                }
+                long until = System.nanoTime() + 150000000L;
+                while (System.nanoTime() < until) {
+                    cancel.check();
+                    try { Thread.sleep(10); }
+                    catch (InterruptedException stopped) { Thread.currentThread().interrupt(); throw new InterruptedIOException("Scan ECU dibatalkan."); }
+                }
+            }
+        }
+        progress.onStage("ECU merespons. Membaca identitas ECU...");
         try {
             KLineTransport.Packet reply = transport.exchange(0x72, new byte[]{0x72, 0, 0, 5}, false, cancel);
             byte[] data = reply.payload();
@@ -28,9 +65,12 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
                 StringBuilder value = new StringBuilder();
                 for (int i = 3; i < 8; i++) value.append(String.format(Locale.ROOT, "%02X", data[i] & 255));
                 identifier = value.toString();
+                if (log != null) log.info("ECU ID", identifier);
+            } else {
+                if (log != null) log.warn("ECU ID", "Balasan ID memiliki layout berbeda: total=" + reply.totalLength + ", payload=" + data.length);
             }
         } catch (InterruptedIOException error) { throw error; }
-        catch (IOException ignored) { /* normal diagnostics can work without identity */ }
+        catch (IOException error) { if (log != null) log.warn("ECU ID", "ID opsional belum terbaca: " + error.getMessage()); }
         cancel.check();
         connected = true;
         return identifier;
@@ -44,7 +84,9 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
         requireConnection();
         byte[] payload = transport.exchange(0x72, new byte[]{0x71, (byte) table}, false, cancel).payload();
         if (payload.length < 2 || payload[0] != 0x71) throw new ProtocolException("Balasan live data tidak cocok.");
-        return SensorDecoder.decode(payload[1] & 255, Arrays.copyOfRange(payload, 2, payload.length));
+        SensorDecoder.Result decoded = SensorDecoder.decode(payload[1] & 255, Arrays.copyOfRange(payload, 2, payload.length));
+        if (log != null) log.debug("SENSOR", "Request 0x" + Integer.toHexString(table) + " -> tabel 0x" + Integer.toHexString(decoded.tableId) + ", body=" + decoded.bodyLength + ", fields=" + decoded.named().size());
+        return decoded;
     }
 
     public static final class DtcCode {
@@ -78,7 +120,9 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
 
     public DtcReport readDtcs(CancelSignal cancel) throws IOException {
         requireConnection();
-        return new DtcReport(readDtcGroup(0x74, cancel), readDtcGroup(0x73, cancel));
+        DtcReport result = new DtcReport(readDtcGroup(0x74, cancel), readDtcGroup(0x73, cancel));
+        if (log != null) log.info("DTC", "current=" + result.current.size() + ", stored=" + result.stored.size());
+        return result;
     }
 
     private List<DtcCode> readDtcGroup(int command, CancelSignal cancel) throws IOException {
@@ -90,6 +134,7 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
                 throw new ProtocolException("Halaman DTC bukan balasan perintah saat ini.");
             }
             DtcPage result = DtcPage.parse(payload);
+            if (log != null) log.debug("DTC", "command=0x" + Integer.toHexString(command) + ", page=" + page + ", codes=" + result.codes.size() + ", more=" + result.more);
             codes.addAll(result.codes);
             if (!result.more) return codes;
         }

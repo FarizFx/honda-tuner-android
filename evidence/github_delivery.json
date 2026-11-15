@@ -1,66 +1,15 @@
 {
-    "checked_at_utc":  "2026-11-15T06:03:07Z",
-    "stage":  "verified_apk_downloaded",
-    "owner":  "FarizFx",
+    "checked_at_utc":  "2026-11-15T14:09:59Z",
+    "stage":  "connection_debug_update_pending_build",
     "repository_full_name":  "FarizFx/honda-tuner-android",
-    "repository_url":  "https://github.com/FarizFx/honda-tuner-android",
-    "repository_visibility":  "public",
-    "github_repository_created":  true,
-    "source_pushed":  true,
-    "source_commit":  "22a4bba94ddd020e2325b388b5f09e3af3e03797",
-    "github_actions_run":  "https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038",
-    "github_actions_conclusion":  "success",
+    "version_name":  "1.1.0-debug",
+    "source_pushed":  false,
+    "apk_built":  false,
+    "apk_downloaded":  false,
     "runner_name":  "KillerCoda",
-    "runner_id":  24,
+    "runner_id":  26,
     "runner_os":  "Linux",
-    "laptop_used_for_final_build":  false,
-    "apk_built":  true,
-    "apk_downloaded":  true,
-    "apk_relative_path":  "dist/HondaTuner-Android-debug.apk",
-    "apk_sha256":  "6bf9159335a26a7d8c81ac061e9c70065ee27cd6354a67623689f13b769c6d2e",
-    "apk_bytes":  61358,
-    "downloaded_apk_hash_matches_sidecar_and_report":  true,
-    "downloaded_zip_crc_verified":  true,
-    "release_tag":  "android-debug-43683216038-1",
-    "release_url":  "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-d4cd86f485282c42a592",
-    "release_is_draft":  true,
-    "release_is_prerelease":  true,
-    "release_assets_verified":  [
-                                    {
-                                        "name":  "apk_verification.json",
-                                        "bytes":  2366,
-                                        "sha256":  "86c6122ccd9a058b2b14b7a7fcbd7406b402a2e99715ff5d773f891491874dd5"
-                                    },
-                                    {
-                                        "name":  "core_tests.txt",
-                                        "bytes":  1903,
-                                        "sha256":  "f7f18a02d208aa92c2b7aa5e0e95439120d61195005d1564b4f40a608b3aab2d"
-                                    },
-                                    {
-                                        "name":  "core_verification.json",
-                                        "bytes":  2446,
-                                        "sha256":  "22a88013f6bda5c32f0ea41bbacd6420220ac7b760f637f790427e426b034f86"
-                                    },
-                                    {
-                                        "name":  "HondaTuner-Android-debug.apk",
-                                        "bytes":  61358,
-                                        "sha256":  "6bf9159335a26a7d8c81ac061e9c70065ee27cd6354a67623689f13b769c6d2e"
-                                    },
-                                    {
-                                        "name":  "HondaTuner-Android-debug.apk.sha256",
-                                        "bytes":  95,
-                                        "sha256":  "4a57c4a80e0ebb18146849705be01ed79fd2ca0453d37ee761ccbab097d33726"
-                                    },
-                                    {
-                                        "name":  "project_verification.json",
-                                        "bytes":  3927,
-                                        "sha256":  "2b953c49cf756d88fa51e1467e9d3072777dc74419d74a38b0a545cd57d19942"
-                                    },
-                                    {
-                                        "name":  "reference_provenance.json",
-                                        "bytes":  1539,
-                                        "sha256":  "a41fa04314bf2ed02013c7e2537b26c2c61d40ad9a9f4dbaad08efb5faf29c5a"
-                                    }
-                                ],
-    "physical_android_usb_or_ecu_test":  false
+    "laptop_used_for_build":  false,
+    "physical_ecu_success_verified":  false,
+    "previous_delivery_preserved":  "dist/baseline-1.0.0/github_delivery.json"
 }

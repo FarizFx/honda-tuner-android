@@ -1,16 +1,10 @@
 {
-  "result": "passed",
-  "apk_sha256": "6bf9159335a26a7d8c81ac061e9c70065ee27cd6354a67623689f13b769c6d2e",
-  "apk_bytes": 61358,
-  "android_sdk_compilation": true,
-  "apk_signature_verified": true,
-  "zip_integrity_verified": true,
-  "application_id": "id.hondatuner.android",
-  "minimum_android_api": 26,
-  "target_android_api": 35,
-  "variant": "debug",
-  "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: C=US, O=Android, CN=Android Debug\nSigner #1 certificate SHA-256 digest: f950d93b5f8afcf06e1b75d4aacfc290ca77341ebbb390fdfabb80ce3f30ae51\nSigner #1 certificate SHA-1 digest: 714f46620d6bd93ee9b1b648bfd7c2738233c4c6\nSigner #1 certificate MD5 digest: c2df8221156902a0764cf86d1d4bc528\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: 928a1406101176b57904ebc3f39ec4f91c619d7e0f89722a007d5cf13b47f029\nSigner #1 public key SHA-1 digest: 8b9d2bbbe2736c36fbf98dbc509e672a9c87219b\nSigner #1 public key MD5 digest: f2e74d810f96f60694d3857019579ce5\n",
-  "manifest_badging": "package: name='id.hondatuner.android' versionCode='1' versionName='1.0.0' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'\nminSdkVersion:'26'\ntargetSdkVersion:'35'\napplication-label:'Honda Tuner'\napplication-icon-160:'res/drawable/ic_launcher.xml'\napplication: label='Honda Tuner' icon='res/drawable/ic_launcher.xml'\napplication-debuggable\nlaunchable-activity: name='id.hondatuner.android.MainActivity'  label='' icon=''\nfeature-group: label=''\n  uses-feature: name='android.hardware.usb.host'\n  uses-feature: name='android.hardware.faketouch'\n  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'\nmain\nsupports-screens: 'small' 'normal' 'large' 'xlarge'\nsupports-any-density: 'true'\nlocales: '--_--'\ndensities: '160'\n",
-  "physical_android_usb_or_ecu_test": false,
-  "github_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038"
+    "result":  "pending_server_build",
+    "version_code":  2,
+    "version_name":  "1.1.0-debug",
+    "android_sdk_compilation":  false,
+    "apk_signature_verified":  false,
+    "zip_integrity_verified":  false,
+    "physical_android_usb_or_ecu_test":  false,
+    "scope":  "Updated APK not built yet. The verified 1.0.0 APK is preserved in ignored dist/baseline-1.0.0."
 }

@@ -27,11 +27,14 @@ public final class LiveProfile {
         public final long completedNanos;
         public final long completedMillis;
         Sample(Map<String, Object> values, Map<Integer, String> failures, int validGroups) {
+            this(values, failures, validGroups, System.nanoTime(), System.currentTimeMillis());
+        }
+        Sample(Map<String, Object> values, Map<Integer, String> failures, int validGroups, long completedNanos, long completedMillis) {
             this.values = Collections.unmodifiableMap(new LinkedHashMap<>(values));
             this.failures = Collections.unmodifiableMap(new LinkedHashMap<>(failures));
             this.validGroups = validGroups;
-            completedNanos = System.nanoTime();
-            completedMillis = System.currentTimeMillis();
+            this.completedNanos = completedNanos;
+            this.completedMillis = completedMillis;
         }
     }
 
@@ -45,12 +48,18 @@ public final class LiveProfile {
     }
 
     public static LiveProfile detect(Reader reader, CancelSignal cancel) throws IOException {
+        return detect(reader, cancel, null, message -> {});
+    }
+    public static LiveProfile detect(Reader reader, CancelSignal cancel, DiagnosticLog log, HondaClient.Progress progress) throws IOException {
         List<Table> tables = new ArrayList<>();
         Map<String, Object> values = new LinkedHashMap<>();
         Map<Integer, String> failures = new LinkedHashMap<>();
         for (int[] group : GROUPS) {
+            Map<Integer, String> groupFailures = new LinkedHashMap<>();
+            boolean found = false;
             for (int request : group) {
                 cancel.check();
+                progress.onStage("ECU merespons · deteksi sensor 0x" + Integer.toHexString(request) + " · " + values.size() + " sensor ditemukan");
                 try {
                     SensorDecoder.Result result = reader.readTable(request, cancel);
                     boolean correctGroup = false;
@@ -58,12 +67,22 @@ public final class LiveProfile {
                     if (!correctGroup || result.named().isEmpty()) throw new ProtocolException("Grup sensor yang dibalas ECU berbeda.");
                     tables.add(new Table(request, result));
                     mergeFirst(values, result.named());
+                    found = true;
+                    if (log != null) log.info("DETECT", "Request 0x" + Integer.toHexString(request) + " berhasil: tabel=0x" + Integer.toHexString(result.tableId) + ", bytes=" + result.bodyLength + ", sensors=" + result.named().size());
                     break;
                 } catch (InterruptedIOException error) { throw error; }
-                catch (IOException error) { failures.put(request, error.getMessage()); }
+                catch (IOException error) {
+                    groupFailures.put(request, error.getMessage());
+                    if (log != null) log.warn("DETECT", "Request 0x" + Integer.toHexString(request) + ": " + error.getMessage());
+                }
             }
+            // A failed candidate is not a missing sensor after a fallback succeeds.
+            if (!found) failures.putAll(groupFailures);
         }
-        if (tables.isEmpty()) throw new ProtocolException("ECU belum membalas sensor yang didukung. Periksa kontak dan coba deteksi lagi.");
+        if (tables.isEmpty()) {
+            String last = failures.isEmpty() ? "" : failures.values().iterator().next();
+            throw new ProtocolException("ECU merespons sesi diagnostik, tetapi tabel sensor belum cocok. " + last + " Buka Debug untuk detail TX/RX.");
+        }
         return new LiveProfile(tables, values, failures);
     }
 

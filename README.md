@@ -1,107 +1,102 @@
 # Honda Tuner Android
 
-Aplikasi Android tahap pengembangan untuk koneksi ECU Honda lewat adaptor
-FT232R/FT232RL K-Line dan USB OTG, live data otomatis, serta baca DTC saat ini
-dan tersimpan.
+Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**Status verifikasi per 15 November 2026:** build APK di GitHub Actions dan tes
-core sudah lulus di runner server Linux **KillerCoda**. Tanda tangan, metadata
-Android dan integritas ZIP APK sudah diperiksa.
-Pengujian pada HP, adaptor USB, dan ECU fisik belum dilakukan.
+**v1.1.0-debug:** source lulus **57 tes regresi JVM**, **312 vektor dekoder** dan
+**5.616 nilai field**. Build APK pembaruan sedang disiapkan di server KillerCoda.
+Pada APK 1.0.0, pengguna berhasil mendeteksi USB, tetapi scan ECU belum berhasil
+dan log debug belum tersedia di UI. Pembaruan ini memperbaiki penanganan echo,
+status FTDI, retry dan izin USB serta menambahkan trace yang bisa disalin.
+Komunikasi ECU masih perlu diuji ulang pada HP.
 
-Setelah izin USB diberikan, **Hubungkan** menjalankan inisialisasi K-Line dan
-sesi diagnostik, membaca identitas ECU bila tersedia, mendeteksi sensor,
-lalu memulai live data jika deteksi sensor berhasil. **Jeda live** menghentikan
-pembacaan otomatis dan mempertahankan sampel terakhir.
-**Baca DTC** menjeda live selama pembacaan; live dilanjutkan hanya jika
-sebelumnya aktif.
-Pergantian tab mempertahankan sampel. Saat aplikasi meninggalkan layar atau
-adaptor dilepas, koneksi ditutup; tekan **Hubungkan** lagi untuk melanjutkan.
+## Hubungkan
 
-Live menargetkan satu putaran setiap **500 ms**. Putaran yang lambat menunggu
-balasan ECU sampai selesai sebelum putaran berikutnya; pembacaan tidak saling
-tumpang tindih. Sensor yang gagal dibaca ditampilkan **Belum terbaca**.
-Live berhenti setelah tiga putaran berturut-turut tanpa grup data yang berhasil
-dibaca.
-Grafik memuat maksimal 50 titik pembacaan, termasuk celah saat RPM tidak terbaca.
-Ukuran/versi tabel dipilih dari balasan ECU. ID katalog yang ambigu tetap
-ditampilkan sebagai beberapa definisi yang cocok.
+Pasang adaptor lewat OTG, hidupkan kontak, pilih USB lalu tekan **Hubungkan**.
+Izinkan akses USB di dialog Android. Tahap koneksi tampil di layar: membuka USB,
+wake-up, menunggu ECU, ID dan deteksi sensor.
+**USB terdeteksi** hanya menyatakan adaptor ditemukan. **ECU terhubung** baru
+ditampilkan setelah diagnostic entry mendapat frame ECU yang valid.
+Scan mencoba maksimal tiga kali; ID opsional yang tidak terbaca tidak menghalangi
+sensor atau DTC.
 
-Driver diimplementasikan untuk USB **0403:6001**, revisi FT232R **0600**, satu kanal,
-pada **10.400 baud**. Gunakan adaptor dengan rangkaian K-Line serta kabel/pinout
-ECU yang sesuai. Kecocokan adaptor dan model ECU perlu diuji pada perangkat fisik.
-Adaptor CH340, CP210x, Bluetooth, dan FTDI multikanal belum diimplementasikan.
-Fitur BIN/XDF, remap, hapus DTC, dan pemrograman ECU belum tersedia dalam versi ini.
+Driver: USB **0403:6001**, revisi FT232R **0600**, satu UART, **10400 baud / 8N1**,
+tanpa flow control. Adaptor harus memiliki rangkaian K-Line dan pinout yang sesuai.
+CH340, CP210x, Bluetooth dan FTDI multikanal belum didukung.
+Panel **Detail** dapat dilipat untuk layar pendek/landscape.
+Meninggalkan layar atau melepas adaptor menutup komunikasi ECU. Hubungkan kembali
+untuk melanjutkan. Hasil izin USB dapat diselesaikan saat kembali dari dialog.
 
-## Build APK di GitHub
+## Live, Grafik dan DTC
+
+- **Live:** seluruh sensor bernama dari tabel ECU, pencarian, kategori, kualitas,
+  usia sampel, min/maks/rata-rata dan frekuensi aktual.
+- **Jeda/Mulai live**, **Baca sekali** saat dijeda, serta target interval
+  250/500/1000/2000 ms. Baca sekali tetap dijeda setelah selesai.
+- **Grafik:** pilih sensor numerik; 120 sampel terakhir memakai waktu pembacaan
+  sebenarnya. Data kosong memutus garis.
+- **Simpan CSV:** maksimal 600 sampel, waktu UTC/epoch, nilai, jumlah grup valid
+  dan detail kegagalan. **Reset statistik & riwayat** memulai akumulasi baru.
+- **DTC:** kode saat ini dan tersimpan; live dijeda selama operasi dan dilanjutkan
+  jika sebelumnya aktif.
+
+Putaran lambat selesai dahulu sebelum putaran berikutnya; I/O tidak tumpang tindih.
+Data yang hilang ditandai **Belum terbaca**, tanpa menyalin angka lama.
+Saat dijeda/terputus, data ditandai **Sampel terakhir**.
+Live berhenti setelah tiga putaran berturut-turut tanpa grup valid.
+Ukuran tabel mengikuti balasan ECU. ID katalog ambigu tetap menampilkan jumlah
+definisi yang cocok.
+
+RPM, V, °C dan ° memakai skala source referensi. Tekanan, VSS, injektor dan sinyal
+lain yang belum memiliki skala terverifikasi tetap raw; kPa/km/h/ms tidak ditebak.
+Riwayat sensor berada dalam memori Activity. Simpan CSV sebelum menutup atau
+memutar layar. Tab dan putus koneksi mempertahankan riwayat selama Activity hidup.
+Pemilih lokasi simpan menutup koneksi; snapshot ekspor sudah diambil sebelumnya.
+BIN/XDF, remap, hapus DTC dan pemrograman ECU belum tersedia.
+
+## Debug jika ECU belum terbaca
+
+Biarkan **Detail TX/RX USB & K-Line** aktif di **Debug**, lalu coba **Hubungkan**.
+Kegagalan koneksi membuka Debug otomatis. **Salin log** atau **Simpan .txt**
+mengekspor trace yang tersimpan tanpa izin storage tambahan.
+
+Log mencatat perangkat/Android, izin, descriptor/endpoint, control FTDI, tahap
+scan, TX/RX mentah dan UART, echo, timeout, checksum, tabel, serta stack trace.
+Pesan membedakan tidak ada RX, echo tanpa balasan ECU dan balasan terpotong.
+Waktu pulsa di log adalah pengukuran host, bukan pengukuran pin fisik.
+**Error terakhir** menyimpan snapshot privat yang dapat dibuka setelah aplikasi
+dijalankan ulang. **Bersihkan log sekarang** mempertahankan arsip error terakhir.
+Trace aktif dibatasi 2.000 entri / sekitar 256 KiB karakter. Layar menampilkan 240
+entri terbaru; salin/simpan mencakup trace tersimpan. Logcat: `adb logcat -s HondaTuner`.
+
+Default: **Echo otomatis**, timeout **1000 ms**. Auto menerima echo lengkap lalu
+balasan atau balasan ECU langsung; header, panjang dan checksum tetap diperiksa.
+Wake/echo saja tidak dianggap ACK. Echo wajib/tanpa echo dan timeout dapat dipilih
+untuk diagnosis saat koneksi terputus.
+
+## Build di GitHub
 
 Repo: [FarizFx/honda-tuner-android](https://github.com/FarizFx/honda-tuner-android).
-Workflow ada di [.github/workflows/build-android.yml](.github/workflows/build-android.yml).
+Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.yml).
+Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
+→ **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Build berjalan otomatis pada push/PR yang sesuai filter perubahan source di workflow.
-Untuk menjalankan build manual, buka [Actions](https://github.com/FarizFx/honda-tuner-android/actions),
-pilih **Build Android APK → Run workflow**, lalu pilih branch **main**.
-Perubahan README saja tidak memicu build otomatis.
+Runner default `self-hosted` harus online. Build pengguna memakai server Linux
+**KillerCoda**. Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
+Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
+build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
+kemudian memeriksa signature, versi/manifest dan ZIP.
 
-Input `runner` memilih label runner; nilai default adalah `self-hosted`.
-Runner dengan label itu harus online. Workflow memakai Python 3.12 dan perintah
-yang dapat dijalankan pada Windows maupun Linux. **Android CI** adalah pintasan
-manual ke workflow utama.
-Job berjalan pada mesin runner yang dipilih. Untuk menjalankan build di server,
-pasang dan jalankan runner di server tersebut; build terverifikasi di bawah
-memakai **KillerCoda**, bukan laptop.
+Hasil main menjadi **draft prerelease** untuk pemilik repo, berisi APK
+`HondaTuner-Android-debug.apk`, sidecar SHA-256, `apk_verification.json`,
+`core_verification.json`, `core_tests.txt`, `project_verification.json` dan
+`reference_provenance.json`. Bandingkan hash APK dengan sidecar/laporan.
+APK memakai sertifikat debug runner. Actions artifacts opsional melalui input
+`upload_actions_artifacts` jika kuota tersedia. `dist/` dan toolchain tidak masuk Git.
 
-Workflow memasang Python/PyYAML, Java 17, Gradle 8.9, Android platform 35 dan
-build-tools 35.0.0; menjalankan
-verifikasi source dan tes protokol; lalu menjalankan `:app:assembleDebug`.
-APK yang berhasil dibuat harus lulus pemeriksaan tanda tangan, metadata dan
-integritas ZIP sebelum disimpan sebagai **HondaTuner-Android-debug.apk**.
+## Tes dan build mandiri
 
-Pada branch `main`, hasil build disimpan sebagai **draft release**. Setelah run
-sukses, buka tautan draft release di ringkasan job atau halaman **Releases** repo.
-Pemilik repo dapat mengunduh berkas berikut:
-
-- `HondaTuner-Android-debug.apk`
-- `HondaTuner-Android-debug.apk.sha256`
-- `apk_verification.json`
-- laporan tes core, pemeriksaan proyek, dan asal fixture
-
-Bandingkan SHA-256 APK dengan sidecar dan laporan verifikasi.
-APK memakai tanda tangan debug dari runner untuk pengujian pemasangan.
-Draft release menyediakan file hasil build ketika kuota Actions artifact penuh.
-
-Input `upload_actions_artifacts` dapat diaktifkan untuk menambahkan artifact
-**HondaTuner-Android-debug** dan **HondaTuner-Android-verification** di Actions
-dengan retensi 14 hari. Nilai defaultnya `false`; aktifkan saat kuota penyimpanan
-Actions tersedia.
-
-Folder `dist/` diabaikan Git; APK dan arsip source di folder itu tidak disertakan
-dalam repo. Status build terbaru tersedia di Actions. Catatan lokal ada di
-[evidence/build_status.json](evidence/build_status.json).
-
-## Build APK lokal
-
-Build APK membutuhkan **JDK 17**, **Gradle 8.9**, **Android platform 35**, dan
-**build-tools 35.0.0**. Tentukan lokasi SDK melalui `ANDROID_HOME` atau
-`sdk.dir` dalam `local.properties`. Repo belum menyertakan Gradle Wrapper;
-perintah berikut memakai Gradle yang sudah terpasang:
-
-```sh
-gradle --no-daemon --console=plain :app:assembleDebug
-```
-
-Hasil build berada di `app/build/outputs/apk/debug/app-debug.apk`.
-Untuk memverifikasi dan menyalin APK ke `dist/`, gunakan Python 3:
-
-```sh
-python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sdk "/path/to/android-sdk" --java-home "/path/to/jdk-17"
-```
-
-## Tes core tanpa SDK
-
-Tes protokol tidak membutuhkan SDK Android atau ECU. Pemeriksaan workflow
-membutuhkan PyYAML:
+Tes core membutuhkan JDK yang sudah tersedia, tanpa SDK/ECU:
 
 ```sh
 python -m pip install PyYAML==6.0.2
@@ -109,32 +104,20 @@ python tools/verify_project.py
 python tools/test_core.py --java-home /path/to/jdk
 ```
 
-`tools/test_core.py` mengompilasi source Java core yang dipakai aplikasi, lalu
-menjalankan koneksi, framing/echo, dekoder, DTC, loop live dan controller sesi.
-312 fixture dekoder dibandingkan dengan keluaran source desktop, meliputi
-13 varian tabel dan 5.616 nilai field. Fixture adalah input terkontrol.
-`tools/sync_reference.py` memperbarui schema, katalog dan fixture bila sibling
-`../honda_tuner` tersedia; build GitHub memakai ekspor yang sudah disertakan.
+Suite mencakup framing/echo, retry, FTDI status, DTC, live/cancel/session, logging,
+riwayat dan CSV. Fixture mencakup 13 varian tabel; input terkontrol, bukan rekaman
+kendaraan. `tools/sync_reference.py` memperbarui ekspor referensi bila source
+desktop tersedia; CI memakai ekspor yang disertakan.
+Build mandiri membutuhkan JDK 17, Gradle 8.9 dan SDK 35; tentukan `ANDROID_HOME`
+atau `sdk.dir` dalam `local.properties`:
 
-`tools/prepare_repo.py` dapat membuat ZIP source lokal di `dist/` beserta
-manifest hash setelah tes serta verifikasi source sesuai dengan berkas saat ini.
-Folder build, SDK, runtime
-Windows dan native engine tidak masuk paket repo.
+```sh
+gradle --no-daemon --console=plain :app:assembleDebug :app:lintDebug
+python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sdk /path/to/android-sdk --java-home /path/to/jdk-17
+```
 
-## Status verifikasi
-
-Per 15 November 2026, **33 tes regresi JVM** dan pemeriksaan struktur source
-telah lulus lokal dan di CI. Validasi dekoder mencakup **312 vektor / 5.616 nilai field**.
-[Run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038)
-berhasil mengompilasi dan memverifikasi APK debug dari commit `22a4bba` pada
-runner server Linux **KillerCoda**.
-APK, sidecar SHA-256 dan laporan CI tersedia dalam
-[draft release](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-d4cd86f485282c42a592)
-untuk pemilik repo. Ketujuh berkas release telah diunduh dan digest-nya cocok
-dengan GitHub; hash APK juga cocok dengan sidecar dan laporan verifikasi.
-Catatan hasil ada di [evidence/apk_verification.json](evidence/apk_verification.json)
-dan [evidence/github_delivery.json](evidence/github_delivery.json).
-
-Driver USB Android, waktu pulsa aktual, koneksi dingin, perubahan sensor,
-dan DTC pada HP/ECU fisik belum diuji. Fixture memakai input terkontrol.
-Laporan hasil, hash source yang diuji, dan asal schema ada di `evidence/`.
+Repo belum menyertakan Gradle Wrapper.
+Status: [evidence/build_status.json](evidence/build_status.json).
+Baseline 1.0.0 dibangun pada
+[run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
+Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

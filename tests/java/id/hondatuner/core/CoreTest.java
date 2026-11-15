@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,6 +56,30 @@ public final class CoreTest {
         run("failed DTC never becomes an empty successful report", CoreTest::controllerDtcFailure);
         run("diagnostic connection without supported sensors can still read DTC", CoreTest::controllerNoSensors);
         run("failed rediscovery revokes the previous sensor profile", CoreTest::controllerFailedRediscovery);
+        run("AUTO receives fragmented ECU replies without adapter echo", CoreTest::autoDirect);
+        run("AUTO recognizes echo independently on each transaction", CoreTest::autoMixed);
+        run("AUTO reports echo-only and completely absent RX distinctly", CoreTest::autoMissing);
+        run("AUTO still rejects malformed frames and damaged echo", CoreTest::autoMalformed);
+        run("forced echo modes enforce the selected receive format", CoreTest::forcedEcho);
+        run("no-echo wake is one-way and never becomes a connection ACK", CoreTest::autoWake);
+        run("scan retries full wake after a failed diagnostic entry", CoreTest::scanRetry);
+        run("failed scan stops at the configured attempt limit", CoreTest::scanBounded);
+        run("cancellation during scan retry prevents another wake", CoreTest::scanCancelled);
+        run("successful fallback removes obsolete discovery failures", CoreTest::fallbackFailures);
+        run("status-only BREAK is ignored while UART data errors are rejected", CoreTest::usbStatusOnly);
+        run("diagnostic trace stays bounded and retains ordered recent entries", CoreTest::logBounds);
+        run("trace observers run outside the lock and cannot break exchanges", CoreTest::logObserver);
+        run("detail toggle hides wire bytes but keeps errors and stack traces", CoreTest::logDetail);
+        run("bounded history preserves real timestamps, gaps and total counts", CoreTest::historyBounds);
+        run("CSV escapes error text and leaves missing/nonfinite cells empty", CoreTest::historyCsv);
+        run("statistics ignore missing and boolean values and reset by session", CoreTest::historyStatistics);
+        run("manual sensor read completes once and remains paused", CoreTest::controllerManual);
+        run("disconnect revokes a queued manual-read result", CoreTest::controllerManualStale);
+        run("changing live interval takes effect without overlapping reads", CoreTest::dynamicInterval);
+        run("transport factory failure closes its unowned USB channel", CoreTest::controllerFactoryFailure);
+        run("cancelled open failure cannot become a new session error", CoreTest::controllerCancelledError);
+        run("logged app controller scans and reads DTC without echo", CoreTest::controllerDirect);
+        run("runtime polling failures produce unread samples and stop visibly", CoreTest::runtimeLoss);
         System.out.println("PASS: " + passed + " core regression tests");
     }
     private static void run(String name, Checked test) throws Exception { test.run(); passed++; System.out.println("OK " + name); }
@@ -79,6 +105,7 @@ public final class CoreTest {
         final Deque<byte[]> pieces = new ArrayDeque<>();
         Function<byte[], byte[]> responder = request -> reply((byte) 0, (byte) 0xf0);
         int fragment = 512, initializations, purges;
+        boolean echo = true;
         long time;
         volatile boolean closed;
         Runnable duringRead;
@@ -89,7 +116,7 @@ public final class CoreTest {
             cancel.check(); writes.add(data.clone()); time += 1000000L;
             byte[] wire = data.clone();
             byte[] response = responder.apply(wire);
-            byte[] combined = response == null ? wire : join(wire, response);
+            byte[] combined = echo ? response == null ? wire : join(wire, response) : response == null ? new byte[0] : response;
             for (int offset = 0; offset < combined.length; offset += fragment) pieces.add(Arrays.copyOfRange(combined, offset, Math.min(combined.length, offset + fragment)));
         }
         @Override public byte[] read(int max, int timeout) {
@@ -266,11 +293,12 @@ public final class CoreTest {
         volatile HondaClient.DtcReport dtc;
         volatile String dtcError;
         volatile long generation;
+        volatile LiveProfile.Sample lastSample;
         final AtomicInteger samples = new AtomicInteger();
         Runnable whenProfile;
         @Override public void onState(DiagnosticController.Snapshot value) { snapshot = value; }
         @Override public void onProfile(long session, LiveProfile profile) { if (whenProfile != null) whenProfile.run(); }
-        @Override public void onSample(long session, long run, LiveProfile.Sample sample) { generation = run; samples.incrementAndGet(); }
+        @Override public void onSample(long session, long run, LiveProfile.Sample sample) { generation = run; lastSample = sample; samples.incrementAndGet(); }
         @Override public void onDtc(long session, long operation, HondaClient.DtcReport result) { dtc = result; }
         @Override public void onDtcError(long session, long operation, String reason) { dtcError = reason; }
     }
@@ -370,5 +398,225 @@ public final class CoreTest {
             check(app.detectAgain(), "Rediscovery refused"); await(() -> app.snapshot().state == DiagnosticController.State.PAUSED);
             check(!app.snapshot().hasSensors, "Old profile survived failed detection"); check(!app.toggleLive(), "Old live profile resumed"); check(app.readDtcs(), "Diagnostic session was lost"); await(() -> probe.dtc != null);
         } finally { app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static KLineTransport auto(FakeChannel channel, DiagnosticLog log) {
+        return new KLineTransport(channel, channel, 1000, KLineTransport.EchoMode.AUTO, log);
+    }
+    private static void autoDirect() throws Exception {
+        FakeChannel c = new FakeChannel(); c.echo = false; c.fragment = 1;
+        byte[] payload = {0x71, 0x13, 1, 2, 3}; c.responder = request -> reply(payload);
+        bytes(payload, auto(c, null).exchange(0x72, new byte[]{0x71, 0x10}, false, CancelSignal.NEVER).payload());
+        eq(1, c.writes.size());
+    }
+    private static void autoMixed() throws Exception {
+        FakeChannel c = new FakeChannel(); c.fragment = 1; DiagnosticLog trace = new DiagnosticLog();
+        KLineTransport transport = auto(c, trace);
+        transport.exchange(0x72, new byte[]{0, (byte) 0xf0}, false, CancelSignal.NEVER);
+        c.echo = false; transport.exchange(0x72, new byte[]{0, (byte) 0xf0}, false, CancelSignal.NEVER);
+        eq(2, c.writes.size()); check(trace.text(0).contains("Echo terdeteksi: true") && trace.text(0).contains("Echo terdeteksi: false"), "Echo mode was cached across transactions");
+    }
+    private static void autoMissing() throws Exception {
+        for (boolean echo : new boolean[]{true, false}) {
+            FakeChannel c = new FakeChannel(); c.echo = echo; c.responder = request -> null;
+            try { auto(c, null).exchange(0x72, new byte[]{0, (byte) 0xf0}, false, CancelSignal.NEVER); throw new AssertionError("Missing ECU reply accepted"); }
+            catch (ProtocolException error) { check(error.getMessage().contains(echo ? "ECU belum membalas" : "Tidak ada RX"), "Timeout reason lost receive detail"); }
+            eq(2, c.writes.size());
+        }
+    }
+    private static void autoMalformed() throws Exception {
+        byte[][] bad = {new byte[]{3, 3, (byte) 0xfa}, new byte[]{2, 3, 0}, new byte[]{2, 2, (byte) 0xfc}, new byte[]{2, 5, 1}};
+        for (byte[] response : bad) {
+            FakeChannel c = new FakeChannel(); c.echo = false; c.responder = request -> response;
+            io(() -> auto(c, null).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
+        }
+        FakeChannel c = new FakeChannel(); c.responder = request -> { request[2] ^= 1; return reply((byte) 0); };
+        io(() -> auto(c, null).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
+    }
+    private static void forcedEcho() throws Exception {
+        FakeChannel c = new FakeChannel(); c.echo = false;
+        KLineTransport none = new KLineTransport(c, c, 500, KLineTransport.EchoMode.NONE, null);
+        none.exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER);
+        c.echo = true; io(() -> none.exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
+        c.echo = false; io(() -> c.transport().exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER));
+    }
+    private static void autoWake() throws Exception {
+        FakeChannel c = new FakeChannel(); c.echo = false; c.responder = request -> null;
+        check(auto(c, null).exchange(0xfe, new byte[]{(byte) 0xff}, true, CancelSignal.NEVER) == null, "Wake inferred an ACK");
+        eq(1, c.writes.size()); check(c.time <= 60000000L, "No-echo wake waited for an ECU reply");
+        HondaClient client = new HondaClient(auto(c, null)); io(() -> client.connect(CancelSignal.NEVER));
+        io(() -> client.readTable(0x10, CancelSignal.NEVER)); eq(4, c.writes.size());
+    }
+    private static void scanRetry() throws Exception {
+        FakeChannel c = new FakeChannel(); c.standard(); c.echo = false;
+        Function<byte[], byte[]> original = c.responder;
+        c.responder = request -> c.initializations < 2 && (request[0] & 255) == 0x72 && request[2] == 0 ? null : original.apply(request);
+        DiagnosticLog trace = new DiagnosticLog(); List<String> progress = new ArrayList<>();
+        HondaClient client = new HondaClient(auto(c, trace), trace);
+        eq("0102030405", client.connect(CancelSignal.NEVER, progress::add, 3));
+        eq(2, c.initializations); eq(6, c.writes.size()); check(progress.stream().anyMatch(message -> message.contains("2/3")), "Retry progress missing");
+    }
+    private static void scanBounded() throws Exception {
+        FakeChannel c = new FakeChannel(); c.echo = false; c.responder = request -> null;
+        HondaClient client = new HondaClient(auto(c, null));
+        io(() -> client.connect(CancelSignal.NEVER, message -> {}, 3)); eq(3, c.initializations); eq(9, c.writes.size());
+        io(() -> client.readTable(0x10, CancelSignal.NEVER));
+    }
+    private static void scanCancelled() throws Exception {
+        FakeChannel c = new FakeChannel(); c.echo = false; c.responder = request -> null;
+        DiagnosticLog trace = new DiagnosticLog(); AtomicBoolean cancelled = new AtomicBoolean();
+        trace.setSink(entry -> { if (entry.source.equals("SCAN") && entry.level.equals("WARN")) cancelled.set(true); });
+        HondaClient client = new HondaClient(auto(c, trace), trace);
+        try { client.connect(cancelled::get, message -> {}, 3); throw new AssertionError("Scan cancellation ignored"); }
+        catch (InterruptedIOException expected) { eq(1, c.initializations); eq(3, c.writes.size()); }
+    }
+    private static void fallbackFailures() throws Exception {
+        LiveProfile found = LiveProfile.detect((request, cancel) -> {
+            if (request == 0x11) return mainResult(1900); throw new IOException("unsupported");
+        }, CancelSignal.NEVER);
+        check(!found.initial.failures.containsKey(0x10), "A successful group's failed candidate became a missing sensor");
+        check(found.initial.failures.containsKey(0x20), "An unavailable group disappeared");
+    }
+    private static void usbStatusOnly() throws Exception {
+        for (int flags : new int[]{0x62, 0x64, 0x68, 0x70, 0x7e}) {
+            eq(0, FtdiCodec.stripStatus(new byte[]{0, (byte) flags}, 2, 64).length);
+            io(() -> FtdiCodec.stripStatus(new byte[]{0, (byte) flags, 2}, 3, 64));
+        }
+        byte[] raw = new byte[66]; raw[1] = 0x60; raw[65] = 0x70;
+        eq(62, FtdiCodec.stripStatus(raw, raw.length, 64).length);
+    }
+    private static void logBounds() {
+        DiagnosticLog trace = new DiagnosticLog(3, 512);
+        for (int i = 0; i < 100; i++) trace.info("TEST", "entry " + i);
+        check(trace.size() <= 3 && trace.droppedEntries() > 0, "Unbounded log");
+        long sequence = 0; int cost = 0;
+        for (DiagnosticLog.Entry entry : trace.snapshot()) { check(entry.sequence > sequence, "Log sequence regressed"); sequence = entry.sequence; cost += entry.message.length() + entry.source.length() + 96; }
+        check(cost <= 512, "Log exceeded character budget"); check(trace.text(0).contains("entry 99"), "Latest trace lost");
+        trace.clear(); eq(0, trace.size()); eq(0L, trace.droppedEntries());
+    }
+    private static void logObserver() throws Exception {
+        DiagnosticLog trace = new DiagnosticLog(); AtomicBoolean outside = new AtomicBoolean();
+        trace.setSink(entry -> {
+            CountDownLatch inspected = new CountDownLatch(1);
+            Thread reader = new Thread(() -> { trace.snapshot(); inspected.countDown(); }); reader.start();
+            try { outside.set(inspected.await(1, TimeUnit.SECONDS)); } catch (InterruptedException error) { throw new IllegalStateException(error); }
+            throw new IllegalStateException("observer failed");
+        });
+        trace.info("TEST", "probe"); check(outside.get(), "Observer held the log lock");
+        FakeChannel c = new FakeChannel(); c.echo = false;
+        auto(c, trace).exchange(0x72, new byte[]{0}, false, CancelSignal.NEVER); eq(1, c.writes.size());
+    }
+    private static void logDetail() {
+        DiagnosticLog trace = new DiagnosticLog(); trace.setDetailed(false);
+        trace.wire("USB", "RX", new byte[]{0x72}, 1); trace.debug("USB", "hidden"); trace.info("STATE", "visible");
+        trace.error("TEST", new IllegalStateException("failure")); eq(2, trace.size());
+        check(trace.text(0).contains("IllegalStateException: failure") && !trace.text(0).contains("RX 1 byte"), "Detail toggle suppressed errors or leaked wire data");
+    }
+    private static LiveProfile.Sample historySample(Object rpm, Object voltage, Object flag, String error, long nanos, long millis) {
+        Map<String, Object> values = new LinkedHashMap<>(); values.put("engine_speed", rpm); values.put("name,odd", voltage); values.put("switch", flag);
+        Map<Integer, String> failures = new LinkedHashMap<>(); if (error != null) failures.put(0x20, error);
+        return new LiveProfile.Sample(values, failures, rpm == null ? 0 : 1, nanos, millis);
+    }
+    private static void historyBounds() {
+        TelemetryHistory history = new TelemetryHistory(2); history.reset(Arrays.asList("engine_speed", "name,odd", "switch"));
+        history.add(historySample(1000, 12.0, true, null, 1000000000L, 1000));
+        history.add(historySample(2000, 13.0, false, null, 2000000000L, 2000));
+        history.add(historySample(null, null, null, "lost", 4000000000L, 4000));
+        eq(2, history.size()); eq(3L, history.totalSamples()); eq(.5, history.updatesPerSecond());
+        List<TelemetryHistory.Point> points = history.points("engine_speed", 120); eq(2, points.size()); eq(2000000000L, points.get(0).timestampNanos);
+        check(points.get(1).value == null, "Graph interpolated an unread value"); eq(1000.0, history.statistics("engine_speed").minimum);
+    }
+    private static void historyCsv() {
+        TelemetryHistory history = new TelemetryHistory(2); history.reset(Arrays.asList("engine_speed", "name,odd", "switch"));
+        history.add(historySample(2000, Double.NaN, true, "lost, \"quote\"\nline", 1000000000L, 1000));
+        eq("sample,epoch_ms,utc_time,valid_groups,engine_speed,\"name,odd\",switch,error_details\r\n" +
+            "1,1000,1970-01-01T00:00:01Z,1,2000,,true,\"0x20: lost, \"\"quote\"\"\nline\"\r\n", history.csv());
+    }
+    private static void historyStatistics() {
+        TelemetryHistory history = new TelemetryHistory(5); history.reset(Arrays.asList("engine_speed", "name,odd", "switch"));
+        history.add(historySample(1000, Double.POSITIVE_INFINITY, true, null, 1, 1));
+        history.add(historySample(null, 12.0, false, "lost", 2, 2)); history.add(historySample(2000, 14.0, null, null, 3, 3));
+        TelemetryHistory.Statistics rpm = history.statistics("engine_speed"); eq(2L, rpm.readings); eq(1500.0, rpm.average); eq(2000.0, rpm.maximum);
+        eq(2L, history.statistics("name,odd").readings); eq(0L, history.statistics("switch").readings);
+        history.reset(Arrays.asList("battery_voltage")); eq(0, history.size()); eq(0L, history.totalSamples()); check(history.statistics("engine_speed").minimum == null, "Previous session statistics survived reset");
+    }
+    private static void controllerManual() throws Exception {
+        FakeChannel c = new FakeChannel(); allDiagnostics(c); ControllerProbe probe = new ControllerProbe();
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = controller(probe, worker);
+        CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
+        try {
+            app.connect(cancel -> c); await(() -> probe.samples.get() >= 1); app.toggleLive(); worker.submit(() -> {}).get(2, TimeUnit.SECONDS);
+            int count = probe.samples.get(); long session = app.snapshot().session, old = probe.generation;
+            c.duringRead = () -> { entered.countDown(); gate(release); };
+            check(app.readOnce(), "Paused manual read refused"); check(entered.await(2, TimeUnit.SECONDS), "Manual read not started");
+            eq(DiagnosticController.State.READING_SAMPLE, app.snapshot().state); check(!app.readOnce() && !app.readDtcs() && !app.toggleLive(), "Busy manual read accepted overlapping work");
+            release.countDown(); await(() -> probe.samples.get() == count + 1 && app.snapshot().state == DiagnosticController.State.PAUSED);
+            check(!app.isCurrentLive(session, old) && app.isCurrentLive(session, probe.generation), "Manual generation gate incorrect");
+            worker.submit(() -> {}).get(2, TimeUnit.SECONDS); Thread.sleep(35); eq(count + 1, probe.samples.get());
+        } finally { release.countDown(); app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static void controllerManualStale() throws Exception {
+        FakeChannel c = new FakeChannel(); allDiagnostics(c); ControllerProbe probe = new ControllerProbe();
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = controller(probe, worker);
+        CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
+        try {
+            app.connect(cancel -> c); await(() -> probe.samples.get() >= 1); app.toggleLive(); worker.submit(() -> {}).get(2, TimeUnit.SECONDS);
+            int count = probe.samples.get(); c.duringRead = () -> { entered.countDown(); gate(release); };
+            app.readOnce(); check(entered.await(2, TimeUnit.SECONDS), "Manual read not started"); app.disconnect("detached"); release.countDown();
+            worker.submit(() -> {}).get(2, TimeUnit.SECONDS); eq(count, probe.samples.get()); check(c.closed, "Manual-read channel survived disconnect");
+        } finally { release.countDown(); app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static void dynamicInterval() throws Exception {
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); CountDownLatch enough = new CountDownLatch(3);
+        AtomicInteger calls = new AtomicInteger(), active = new AtomicInteger(), maximum = new AtomicInteger(); LiveAcquisition[] ref = new LiveAcquisition[1];
+        ref[0] = new LiveAcquisition(worker, (request, cancel) -> { int n = active.incrementAndGet(); maximum.accumulateAndGet(n, Math::max);
+            try { calls.incrementAndGet(); return mainResult(2000); } finally { active.decrementAndGet(); }
+        }, new LiveAcquisition.Listener() {
+            @Override public void onSample(long generation, LiveProfile.Sample sample) { ref[0].setIntervalMillis(10); enough.countDown(); }
+            @Override public void onStopped(long generation, String reason) { }
+        }, 5000);
+        try { ref[0].start(profile()); check(enough.await(2, TimeUnit.SECONDS), "New interval did not affect the next poll"); ref[0].stop(); check(calls.get() >= 3, "Live samples missing"); eq(1, maximum.get()); }
+        finally { ref[0].stop(); worker.shutdownNow(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static void controllerFactoryFailure() throws Exception {
+        for (boolean returnNull : new boolean[]{false, true}) {
+            FakeChannel c = new FakeChannel(); ControllerProbe probe = new ControllerProbe(); DiagnosticLog trace = new DiagnosticLog();
+            ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor();
+            DiagnosticController app = new DiagnosticController(probe, worker, 15, KLineTransport::new, trace);
+            try {
+                app.connect(cancel -> c, channel -> { if (returnNull) return null; throw new IllegalStateException(); });
+                worker.submit(() -> {}).get(2, TimeUnit.SECONDS); check(c.closed, "Unowned channel leaked");
+                eq(DiagnosticController.State.DISCONNECTED, app.snapshot().state); check(app.snapshot().message != null && !app.snapshot().message.isEmpty(), "Exception with no message was invisible");
+                check(trace.snapshot().stream().anyMatch(entry -> entry.level.equals("ERROR") && entry.source.equals("CONNECT")), "Connection failure was not logged");
+            } finally { app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+        }
+    }
+    private static void controllerCancelledError() throws Exception {
+        ControllerProbe probe = new ControllerProbe(); DiagnosticLog trace = new DiagnosticLog();
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = new DiagnosticController(probe, worker, 15, KLineTransport::new, trace);
+        CountDownLatch entered = new CountDownLatch(1), release = new CountDownLatch(1);
+        try {
+            app.connect(cancel -> { entered.countDown(); gate(release); throw new IOException("old open failed"); }); check(entered.await(2, TimeUnit.SECONDS), "Open not started");
+            app.disconnect("cancelled"); release.countDown(); worker.submit(() -> {}).get(2, TimeUnit.SECONDS);
+            check(trace.snapshot().stream().noneMatch(entry -> entry.level.equals("ERROR")), "Cancelled failure became a visible new error");
+        } finally { release.countDown(); app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static void controllerDirect() throws Exception {
+        FakeChannel c = new FakeChannel(); allDiagnostics(c); c.echo = false; c.fragment = 1; ControllerProbe probe = new ControllerProbe(); DiagnosticLog trace = new DiagnosticLog();
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = new DiagnosticController(probe, worker, 15, channel -> auto((FakeChannel) channel, trace), trace);
+        try {
+            app.connect(cancel -> c); await(() -> probe.samples.get() >= 2); eq(DiagnosticController.State.LIVE, app.snapshot().state);
+            check(probe.lastSample.validGroups > 0, "No-echo live did not decode");
+            app.readDtcs(); await(() -> probe.dtc != null); eq(1, probe.dtc.current.size());
+            check(trace.text(0).contains("RX UART") && trace.text(0).contains("Diagnostic entry mendapat balasan valid"), "Wire/session evidence missing");
+        } finally { app.close(); worker.awaitTermination(2, TimeUnit.SECONDS); }
+    }
+    private static void runtimeLoss() throws Exception {
+        ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); Samples samples = new Samples(3); DiagnosticLog trace = new DiagnosticLog();
+        LiveAcquisition live = new LiveAcquisition(worker, (request, cancel) -> { throw new IllegalStateException("decoder failed"); }, samples, 10, trace);
+        try {
+            live.start(profile()); check(samples.stopped.await(2, TimeUnit.SECONDS), "Runtime failure silently stranded live");
+            eq(3, samples.values.size()); for (LiveProfile.Sample sample : samples.values) { eq(0, sample.validGroups); check(sample.values.get("engine_speed") == null, "Runtime failure reused an old value"); }
+            check(trace.text(0).contains("IllegalStateException: decoder failed") && trace.text(0).contains("Live berhenti"), "Runtime failure trace missing");
+        } finally { live.stop(); worker.shutdownNow(); worker.awaitTermination(2, TimeUnit.SECONDS); }
     }
 }

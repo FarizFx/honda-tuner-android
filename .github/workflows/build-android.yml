@@ -136,8 +136,8 @@ jobs:
           gradle-version: '8.9'
           cache-disabled: true
 
-      - name: Compile and sign debug APK
-        run: gradle -p "${{ steps.project.outputs.dir }}" --no-daemon --console=plain :app:assembleDebug
+      - name: Compile, lint and sign debug APK
+        run: gradle -p "${{ steps.project.outputs.dir }}" --no-daemon --console=plain :app:assembleDebug :app:lintDebug
 
       - name: Verify and package APK
         run: python "${{ steps.project.outputs.dir }}/tools/package_apk.py" --apk "${{ steps.project.outputs.dir }}/app/build/outputs/apk/debug/app-debug.apk"
@@ -173,7 +173,7 @@ jobs:
               name: 'Honda Tuner Android debug - ' + context.runId,
               body: 'Verified debug APK from Actions run ' + context.runId +
                 '.\n\nSHA-256: ' + digest +
-                '\n\nPhysical Android USB and ECU testing has not been performed.',
+                '\n\nThis CI build verifies compilation, Android lint and APK integrity. Physical USB/ECU behavior requires device retesting; use Debug to capture the connection trace.',
               draft: true,
               prerelease: true
             })).data;

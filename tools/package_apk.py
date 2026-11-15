@@ -3,11 +3,13 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import zipfile
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from toolchain import ROOT, find_java_home, find_sdk, java_bin
@@ -38,7 +40,10 @@ def main():
         raise RuntimeError("Install Android SDK build-tools 35.0.0 first")
     signature = checked([java_bin(home, "java"), "-jar", str(signer), "verify", "--verbose", "--print-certs", str(apk)])
     badging = checked([str(aapt), "dump", "badging", str(apk)])
-    for expected in ("name='id.hondatuner.android'", "minSdkVersion:'26'", "targetSdkVersion:'35'", "name='id.hondatuner.android.MainActivity'", "name='android.hardware.usb.host'"):
+    app_config = (ROOT / "app/build.gradle").read_text(encoding="utf-8")
+    version_code = re.search(r"^\s*versionCode\s+(\d+)\s*$", app_config, re.MULTILINE).group(1)
+    version_name = re.search(r"^\s*versionName\s+'([^']+)'\s*$", app_config, re.MULTILINE).group(1)
+    for expected in ("name='id.hondatuner.android'", "versionCode='%s'" % version_code, "versionName='%s'" % version_name, "minSdkVersion:'26'", "targetSdkVersion:'35'", "name='id.hondatuner.android.MainActivity'", "name='android.hardware.usb.host'"):
         if expected not in badging:
             raise RuntimeError("APK metadata is not the expected app: " + expected + "\n" + badging)
     if "uses-permission:" in badging:
@@ -62,11 +67,23 @@ def main():
         "result": "passed", "apk_sha256": digest, "apk_bytes": exported.stat().st_size,
         "android_sdk_compilation": True, "apk_signature_verified": True, "zip_integrity_verified": True,
         "application_id": "id.hondatuner.android", "minimum_android_api": 26, "target_android_api": 35,
+        "version_code": int(version_code), "version_name": version_name,
         "variant": "debug", "signature_verification": signature, "manifest_badging": badging,
         "physical_android_usb_or_ecu_test": False,
     }
     if os.environ.get("GITHUB_ACTIONS") == "true":
         report["github_run"] = "https://github.com/%s/actions/runs/%s" % (os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_RUN_ID"])
+        report["source_commit"] = os.environ["GITHUB_SHA"]
+        lint_path = ROOT / "app/build/reports/lint-results-debug.xml"
+        if not lint_path.is_file():
+            raise RuntimeError("The required Android lint report is missing")
+        lint = ET.parse(lint_path).getroot().findall("issue")
+        errors = [issue for issue in lint if issue.get("severity") in ("Error", "Fatal")]
+        if errors:
+            raise RuntimeError("Android lint reported errors: " + ", ".join(issue.get("id", "") for issue in errors))
+        report["android_lint_report_verified"] = True
+        report["android_lint_errors"] = 0
+        report["android_lint_warnings"] = sum(issue.get("severity") == "Warning" for issue in lint)
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
     (evidence / "apk_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
