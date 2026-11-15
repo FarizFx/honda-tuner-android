@@ -9,16 +9,16 @@
       "bytes": 640
     },
     ".github/workflows/build-android.yml": {
-      "sha256": "3680589e18dc900345f90e3a90bf2bd615073f510219667dcbd228f559348b79",
-      "bytes": 9522
+      "sha256": "946326fe006b33482c47fa0426f7cead508e9c648a89a2e1c222f2a9c68b9da2",
+      "bytes": 9663
     },
     ".gitignore": {
       "sha256": "80a70a2babf1673b68a2f1aeb51bcd98d88be6cd922c1eb9c5d8fb88bc9430c4",
       "bytes": 94
     },
     "app/build.gradle": {
-      "sha256": "2607ca4b73813dd208fb37ec81745244cbdd4feeaddf2a3abf6b063d56eefaef",
-      "bytes": 439
+      "sha256": "d0879dbae6e606f5cc2013634768fb98674320e0e6b3611641e9b2c5ee22e9eb",
+      "bytes": 546
     },
     "app/src/main/AndroidManifest.xml": {
       "sha256": "fd39faead10d5f70d79816dfa0021eea36b83eeb4accbe32c406b12d0904973a",
@@ -109,8 +109,8 @@
       "bytes": 1205
     },
     "app/src/main/res/values/styles.xml": {
-      "sha256": "ce860f9ac55dfe4a3063cd283445891cf86ab35b747491372d806f3c582ab629",
-      "bytes": 576
+      "sha256": "cf30b5c6a4eab246ea8d7a4bc8ba7670ddd9e1f975c5eaa95c38a289313604b0",
+      "bytes": 509
     },
     "app/src/main/res/xml/device_filter.xml": {
       "sha256": "cc9785726b1ae08c60385f0221f6d152b760b61e4ce429dfb086dc4bc63a557b",
@@ -133,8 +133,8 @@
       "bytes": 2810
     },
     "evidence/project_verification.json": {
-      "sha256": "9631f1e915c5a9be00ddb469d2b020d846b859f3c1c8c20313d8001e8360977e",
-      "bytes": 4323
+      "sha256": "785daa971cf1a8774f7cc3fb3daf04c8ff44af58527c7fe72daeb2b754278efc",
+      "bytes": 4419
     },
     "evidence/reference_provenance.json": {
       "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4",
@@ -179,6 +179,10 @@
     "tools/prepare_repo.py": {
       "sha256": "fbcfe898b84392a0e7ca47cfaabd4a663d190ca157558522883127821b246331",
       "bytes": 4112
+    },
+    "tools/report_lint.py": {
+      "sha256": "b02f4c70dfff7addc4d312d3516da1055a0c1215274a50f9732c86bc196a654b",
+      "bytes": 2192
     },
     "tools/sync_reference.py": {
       "sha256": "a920b6490d7aecf04ce1c3debe6229f162faec2c96981e56367797f5a34a8656",
