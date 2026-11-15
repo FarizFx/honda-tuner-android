@@ -8,12 +8,11 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import id.hondatuner.core.ByteChannel;
 import id.hondatuner.core.CancelSignal;
 import id.hondatuner.core.DiagnosticLog;
-import id.hondatuner.core.FtdiCodec;
+import id.hondatuner.core.FtdiUart;
 import id.hondatuner.core.ProtocolException;
 
 /** Direct Android USB-host driver for the single-channel FT232R (0403:6001). */
@@ -21,10 +20,9 @@ public final class FtdiChannel implements ByteChannel {
     public static final int VENDOR_ID = 0x0403, PRODUCT_ID = 0x6001;
     private final UsbDeviceConnection connection;
     private final UsbInterface uart;
-    private final UsbEndpoint input, output;
     private final DiagnosticLog log;
     private final AtomicBoolean closed = new AtomicBoolean();
-    private byte[] pending = new byte[0];
+    private final FtdiUart driver;
 
     public static boolean matches(UsbDevice device) {
         return device.getVendorId() == VENDOR_ID && device.getProductId() == PRODUCT_ID;
@@ -70,115 +68,34 @@ public final class FtdiChannel implements ByteChannel {
         }
     }
     private FtdiChannel(UsbDeviceConnection connection, UsbInterface uart, UsbEndpoint input, UsbEndpoint output, DiagnosticLog log) {
-        this.connection = connection; this.uart = uart; this.input = input; this.output = output;
+        this.connection = connection; this.uart = uart;
         this.log = log;
+        driver = new FtdiUart(new FtdiUart.UsbIo() {
+            @Override public int controlOut(int request, int value, int index, int timeoutMillis) {
+                return connection.controlTransfer(0x40, request, value, index, null, 0, timeoutMillis);
+            }
+            @Override public int controlIn(int request, int value, int index, byte[] buffer, int timeoutMillis) {
+                return connection.controlTransfer(0xc0, request, value, index, buffer, buffer.length, timeoutMillis);
+            }
+            @Override public int write(byte[] data, int offset, int count, int timeoutMillis) {
+                return connection.bulkTransfer(output, data, offset, count, timeoutMillis);
+            }
+            @Override public int read(byte[] buffer, int timeoutMillis) {
+                return connection.bulkTransfer(input, buffer, buffer.length, timeoutMillis);
+            }
+            @Override public void close() { closeConnection(); }
+        }, uart.getId() + 1, input.getMaxPacketSize(), log);
     }
-    private void requireOpen() throws ProtocolException {
-        if (closed.get()) throw new ProtocolException("Adaptor USB sudah ditutup atau dilepas.");
-    }
-    private void control(int request, int value, int index) throws IOException {
-        requireOpen();
-        long began = System.nanoTime();
-        int result = connection.controlTransfer(0x40, request, value, index, null, 0, 500);
-        if (log != null) log.debug("FTDI", "CTRL req=" + request + " value=0x" + Integer.toHexString(value) + " index=" + index + " result=" + result + " elapsed=" + DiagnosticLog.elapsed(began));
-        requireOpen();
-        if (result != 0) throw new ProtocolException("Pengaturan FT232R gagal (USB request " + request + ").");
-    }
-    private void control(int request, int value) throws IOException { control(request, value, uart.getId() + 1); }
-    private void baud10400() throws IOException {
-        int divisor = FtdiCodec.baudDivisor(10400);
-        // FT232R baud uses the divisor high bit in wIndex, unlike port controls.
-        control(3, divisor & 0xffff, (divisor >> 16) & 1);
-    }
-    @Override public void initialize(CancelSignal cancel) throws IOException {
-        cancel.check();
-        control(0, 0); // reset UART
-        purge();
-        control(11, 0); // UART mode
-        control(2, 0); // explicitly disable RTS/CTS, DSR/DTR and software flow control
-        control(4, 8); // 8 data bits, no parity, one stop bit
-        baud10400();
-        control(9, 12); // latency timer
-        control(11, 0x0101); // asynchronous bit-bang, TXD output
-        write(new byte[]{0}, 500, cancel);
-        long lowBegan = System.nanoTime();
-        pause(70, cancel);
-        write(new byte[]{1}, 500, cancel);
-        if (log != null) log.info("WAKE", "LOW hold requested 70 ms, host elapsed=" + DiagnosticLog.elapsed(lowBegan));
-        pause(3, cancel); // allow the queued HIGH bit-bang byte to reach the pins before switching modes
-        control(11, 0);
-        baud10400();
-        long highBegan = System.nanoTime();
-        pause(130, cancel);
-        purge();
-        control(9, 8);
-        if (log != null) log.info("WAKE", "UART 10400 8N1, flow=none; HIGH settling host elapsed=" + DiagnosticLog.elapsed(highBegan));
-        if (log != null && log.isDetailed()) {
-            byte[] modem = new byte[2];
-            int received = connection.controlTransfer(0xc0, 5, 0, uart.getId() + 1, modem, modem.length, 100);
-            if (received == 2) log.wire("FTDI", "MODEM/LSR", modem, received);
-            else log.warn("FTDI", "Modem status unavailable (" + received + "); diagnostic entry continues.");
-        }
-        cancel.check();
-    }
-    @Override public void purge() throws IOException {
-        pending = new byte[0];
-        if (log != null) log.debug("FTDI", "Purge RX/TX");
-        control(0, 1); // RX purge
-        control(0, 2); // TX purge
-    }
-    private static void pause(long millis, CancelSignal cancel) throws InterruptedIOException {
-        long deadline = System.nanoTime() + millis * 1000000L;
-        while (System.nanoTime() < deadline) {
-            cancel.check();
-            try { Thread.sleep(Math.min(10, Math.max(1, (deadline - System.nanoTime()) / 1000000L))); }
-            catch (InterruptedException error) { Thread.currentThread().interrupt(); throw new InterruptedIOException("Inisialisasi USB dibatalkan."); }
-        }
-        cancel.check();
-    }
+    @Override public void initialize(CancelSignal cancel) throws IOException { driver.initialize(cancel); }
+    @Override public void purge() throws IOException { driver.purge(); }
     @Override public void write(byte[] data, int timeoutMillis, CancelSignal cancel) throws IOException {
-        requireOpen();
-        long began = System.nanoTime();
-        long deadline = System.nanoTime() + timeoutMillis * 1000000L;
-        int sent = 0;
-        while (sent < data.length) {
-            cancel.check();
-            long remaining = deadline - System.nanoTime();
-            if (remaining <= 0) throw new ProtocolException("Batas waktu kirim USB habis.");
-            int timeout = (int) Math.min(50, Math.max(1, (remaining + 999999) / 1000000));
-            int count = connection.bulkTransfer(output, data, sent, data.length - sent, timeout);
-            if (log != null) log.debug("USB TX", "bulk requested=" + (data.length - sent) + " result=" + count + " elapsed=" + DiagnosticLog.elapsed(began));
-            requireOpen();
-            if (count <= 0 || count > data.length - sent) throw new ProtocolException("USB tidak menyelesaikan pengiriman.");
-            sent += count;
-        }
-        cancel.check();
+        driver.write(data, timeoutMillis, cancel);
     }
     @Override public byte[] read(int maximumBytes, int timeoutMillis) throws IOException {
-        requireOpen();
-        if (maximumBytes <= 0) return new byte[0];
-        if (pending.length != 0) return takePending(maximumBytes);
-        int packetSize = input.getMaxPacketSize();
-        byte[] raw = new byte[packetSize * Math.max(1, Math.min(4, maximumBytes / (packetSize - 2)))];
-        long began = System.nanoTime();
-        int count = connection.bulkTransfer(input, raw, raw.length, Math.max(1, timeoutMillis));
-        requireOpen();
-        if (count <= 0) {
-            if (log != null) log.debug("USB RX", "bulk result=" + count + ", wait=" + timeoutMillis + " ms, elapsed=" + DiagnosticLog.elapsed(began) + " (empty/timeout or USB error)");
-            return new byte[0];
-        }
-        if (log != null) log.wire("USB RX", "RAW", raw, count);
-        pending = FtdiCodec.stripStatus(raw, count, packetSize);
-        if (log != null && pending.length == 0) log.debug("USB RX", "Status-only packet; no UART data.");
-        return takePending(maximumBytes);
+        return driver.read(maximumBytes, timeoutMillis);
     }
-    private byte[] takePending(int maximumBytes) {
-        int count = Math.min(maximumBytes, pending.length);
-        byte[] result = Arrays.copyOfRange(pending, 0, count);
-        pending = Arrays.copyOfRange(pending, count, pending.length);
-        return result;
-    }
-    @Override public void close() {
+    @Override public void close() { driver.close(); }
+    private void closeConnection() {
         if (closed.compareAndSet(false, true)) {
             if (log != null) log.info("USB", "Menutup adaptor");
             try { connection.releaseInterface(uart); }

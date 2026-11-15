@@ -62,6 +62,8 @@ public final class CoreTest {
         run("AUTO still rejects malformed frames and damaged echo", CoreTest::autoMalformed);
         run("forced echo modes enforce the selected receive format", CoreTest::forcedEcho);
         run("no-echo wake is one-way and never becomes a connection ACK", CoreTest::autoWake);
+        run("wake UART framing error is discarded before a strict diagnostic reply", CoreTest::wakeUartError);
+        run("damaged first wake byte cannot end the receive drain early", CoreTest::wakeTail);
         run("scan retries full wake after a failed diagnostic entry", CoreTest::scanRetry);
         run("failed scan stops at the configured attempt limit", CoreTest::scanBounded);
         run("cancellation during scan retry prevents another wake", CoreTest::scanCancelled);
@@ -80,6 +82,7 @@ public final class CoreTest {
         run("cancelled open failure cannot become a new session error", CoreTest::controllerCancelledError);
         run("logged app controller scans and reads DTC without echo", CoreTest::controllerDirect);
         run("runtime polling failures produce unread samples and stop visibly", CoreTest::runtimeLoss);
+        passed += FtdiUartTest.runAll();
         System.out.println("PASS: " + passed + " core regression tests");
     }
     private static void run(String name, Checked test) throws Exception { test.run(); passed++; System.out.println("OK " + name); }
@@ -442,9 +445,57 @@ public final class CoreTest {
     private static void autoWake() throws Exception {
         FakeChannel c = new FakeChannel(); c.echo = false; c.responder = request -> null;
         check(auto(c, null).exchange(0xfe, new byte[]{(byte) 0xff}, true, CancelSignal.NEVER) == null, "Wake inferred an ACK");
-        eq(1, c.writes.size()); check(c.time <= 60000000L, "No-echo wake waited for an ECU reply");
+        eq(1, c.writes.size()); check(c.time <= 61000000L, "No-echo wake waited beyond its 60 ms RX window after TX");
         HondaClient client = new HondaClient(auto(c, null)); io(() -> client.connect(CancelSignal.NEVER));
         io(() -> client.readTable(0x10, CancelSignal.NEVER)); eq(4, c.writes.size());
+    }
+    private static void wakeUartError() throws Exception {
+        FakeChannel c = new FakeChannel(); c.standard(); c.echo = false;
+        DiagnosticLog trace = new DiagnosticLog();
+        ByteChannel channel = new ByteChannel() {
+            boolean wakeFault;
+            @Override public void initialize(CancelSignal cancel) throws IOException { c.initialize(cancel); }
+            @Override public void purge() { c.purge(); }
+            @Override public void write(byte[] data, int timeout, CancelSignal cancel) throws IOException {
+                c.write(data, timeout, cancel); wakeFault = (data[0] & 255) == 0xfe;
+            }
+            @Override public byte[] read(int max, int timeout) throws IOException {
+                if (wakeFault) {
+                    wakeFault = false; c.time += 1000000L;
+                    // Exact packet from the reported FT232RL trace; no ECU ACK is present.
+                    return FtdiCodec.stripStatus(new byte[]{1, 0x68, (byte) 0xfc, 0}, 4, 64);
+                }
+                return c.read(max, timeout);
+            }
+            @Override public void close() { c.close(); }
+        };
+        HondaClient client = new HondaClient(new KLineTransport(channel, c, 1000, KLineTransport.EchoMode.AUTO, trace), trace);
+        eq("0102030405", client.connect(CancelSignal.NEVER));
+        eq(3, c.writes.size()); check(trace.text(0).contains("0x68"), "Wake framing error disappeared from the trace");
+    }
+    private static void wakeTail() throws Exception {
+        FakeChannel c = new FakeChannel(); c.standard(); c.echo = false;
+        ByteChannel channel = new ByteChannel() {
+            long wakeBegan = -1;
+            boolean firstByte;
+            @Override public void initialize(CancelSignal cancel) throws IOException { c.initialize(cancel); }
+            @Override public void purge() {
+                check(wakeBegan < 0 || c.time - wakeBegan >= 60000000L, "Wake RX was purged before its bounded drain finished");
+                c.purge();
+            }
+            @Override public void write(byte[] data, int timeout, CancelSignal cancel) throws IOException {
+                c.write(data, timeout, cancel);
+                wakeBegan = (data[0] & 255) == 0xfe ? c.time : -1;
+                firstByte = wakeBegan >= 0;
+            }
+            @Override public byte[] read(int max, int timeout) {
+                if (firstByte) { firstByte = false; c.time += 1000000L; return new byte[]{(byte) 0xfc}; }
+                return c.read(max, timeout);
+            }
+            @Override public void close() { c.close(); }
+        };
+        HondaClient client = new HondaClient(new KLineTransport(channel, c, 1000, KLineTransport.EchoMode.AUTO, null));
+        eq("0102030405", client.connect(CancelSignal.NEVER)); eq(3, c.writes.size());
     }
     private static void scanRetry() throws Exception {
         FakeChannel c = new FakeChannel(); c.standard(); c.echo = false;

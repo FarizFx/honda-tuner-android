@@ -83,12 +83,17 @@ public final class KLineTransport implements AutoCloseable {
 
     private Packet exchangeOnce(int target, byte[] request, boolean noReturn, CancelSignal cancel) throws IOException {
         channel.purge();
-        // A one-way wake has no ECU ACK. Auto/no-echo mode only waits briefly
-        // to collect/drain optional loopback; diagnostic entry still needs a real reply.
         int receiveTimeout = noReturn && echoMode != EchoMode.REQUIRED ? Math.min(60, timeoutMillis) : timeoutMillis;
-        long began = clock.now(), deadline = began + receiveTimeout * 1000000L;
+        long began = clock.now();
         if (log != null) log.wire("KLINE", "TX", request, request.length);
         channel.write(request, timeoutMillis, cancel);
+        // USB acceptance is not UART completion. The channel drains TX before
+        // returning, then the reply gets its entire receive window.
+        long deadline = clock.now() + receiveTimeout * 1000000L;
+        if (noReturn && echoMode != EchoMode.REQUIRED) {
+            drainWake(deadline, cancel);
+            return null;
+        }
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
         Boolean echoed = echoMode == EchoMode.REQUIRED ? Boolean.TRUE : echoMode == EchoMode.NONE ? Boolean.FALSE : null;
         while (clock.now() < deadline) {
@@ -104,13 +109,6 @@ public final class KLineTransport implements AutoCloseable {
             captured.write(piece, 0, piece.length);
             if (captured.size() > 510) throw new ProtocolException("Balasan ECU melebihi batas frame.");
             byte[] bytes = captured.toByteArray();
-            if (noReturn && echoMode != EchoMode.REQUIRED) {
-                if (bytes.length >= request.length || (bytes[0] & 255) != (request[0] & 255)) {
-                    channel.purge();
-                    if (log != null) log.debug("KLINE", "Wake TX selesai; RX opsional dibuang, tidak dianggap ACK ECU.");
-                    return null;
-                }
-            }
             if (echoed == null) {
                 if ((bytes[0] & 255) == (request[0] & 255)) echoed = Boolean.TRUE;
                 else if ((bytes[0] & 255) == (target & 15)) echoed = Boolean.FALSE;
@@ -143,16 +141,36 @@ public final class KLineTransport implements AutoCloseable {
         cancel.check();
         byte[] bytes = captured.toByteArray();
         channel.purge();
-        if (noReturn && echoMode != EchoMode.REQUIRED) {
-            if (log != null) log.debug("KLINE", "Wake TX selesai tanpa echo lengkap; menunggu ACK pada diagnostic entry berikutnya.");
-            return null;
-        }
         String detail;
         if (bytes.length == 0) detail = "Tidak ada RX dari adaptor/ECU";
         else if (Boolean.TRUE.equals(echoed) && bytes.length == request.length) detail = "Echo TX diterima, tetapi ECU belum membalas";
         else if (Boolean.TRUE.equals(echoed) && bytes.length < request.length) detail = "Echo TX terpotong (" + bytes.length + "/" + request.length + " byte)";
         else detail = "Balasan ECU terpotong (RX " + bytes.length + " byte)";
         throw new ProtocolException(detail + " dalam " + receiveTimeout + " ms. Periksa kontak, daya dan kabel K-Line.");
+    }
+
+    private void drainWake(long deadline, CancelSignal cancel) throws IOException {
+        // FE/FF is a one-way wake, not a sensor reply. Consume its whole bounded
+        // RX window even if the first loopback byte is FC or has a framing error.
+        // Data errors stay strict on the subsequent diagnostic entry and reads.
+        while (clock.now() < deadline) {
+            cancel.check();
+            long remaining = deadline - clock.now();
+            if (remaining <= 0) break;
+            int wait = (int) Math.min(50, Math.max(1, (remaining + 999999) / 1000000));
+            try {
+                byte[] piece = channel.read(256, wait);
+                cancel.check();
+                if (log != null && piece.length != 0) log.wire("WAKE", "RX opsional dibuang", piece, piece.length);
+            } catch (InterruptedIOException error) { throw error; }
+            catch (FtdiCodec.UartException error) {
+                cancel.check();
+                if (log != null) log.warn("WAKE", "RX wake dibuang: " + error.getMessage());
+            }
+        }
+        cancel.check();
+        channel.purge();
+        if (log != null) log.debug("KLINE", "Wake TX selesai dan RX dibuang; ACK ECU wajib pada diagnostic entry berikutnya.");
     }
 
     @Override public void close() { channel.close(); }

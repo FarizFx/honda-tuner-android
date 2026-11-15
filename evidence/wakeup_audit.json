@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-16",
+  "scope": "1.1.1-debug FT232RL wake and UART transmission repair",
+  "baseline_checkout_commit": "65781ad2087b2b7e009a9a1bf71e4b8aa20491fa",
+  "user_observations": {
+    "tested_apk": "1.1.0-debug",
+    "android_api": 37,
+    "phone_model": "Xiaomi 2311DRK48G",
+    "adapter": "FT232RL, VID 0403 PID 6001, bcdDevice 0600",
+    "usb_permission": true,
+    "ecu_vendor": "Shindengen",
+    "same_adapter_and_ecu_connect_directly_in_hondaeculite_on_pc": true,
+    "exact_motor_and_ecu_code": "unknown",
+    "requested_scan_scope": "Honda K-Line Keihin and Shindengen without requiring a catalog ID",
+    "wake_tx": "FE 04 FF FF",
+    "wake_rx_examples": ["01 60 FC", "01 68 FC 00"],
+    "entry_tx": "72 05 00 F0 99",
+    "entry_rx_example": "01 68 60 00",
+    "line_status_0x68_has_framing_error": true
+  },
+  "source_findings": [
+    "The previous optional wake returned on its first unexpected byte and purged RX/TX before UART completion was established.",
+    "USB bulk acceptance did not establish completion on the 10400-baud UART.",
+    "Data UART faults from an optional one-way wake incorrectly aborted the scan before diagnostic entry."
+  ],
+  "changes": [
+    "FTDI USB protocol is now exercised directly by JVM fixtures, with Android acting as an endpoint adapter.",
+    "Confirm asynchronous bit-bang TXD LOW/HIGH with SIO_READ_PINS before hold timing and switching back to UART.",
+    "Preserve 70 ms LOW and 130 ms HIGH settling; restore UART idle on cancelled/failed setup and close.",
+    "Apply 10400 baud, 8N1, no flow control and the correct FT232R divisor index after mode changes.",
+    "Wait a conservative complete-frame wire duration, then poll fresh THRE/TEMT modem status within the write timeout.",
+    "A failed or uncertain transmission cannot append another frame until full reinitialization.",
+    "Ordinary purge discards RX only; initialization and teardown reset the UART deliberately.",
+    "Optional one-way wake drains its full receive window up to 60 ms, recording discarded UART data errors.",
+    "USB transport errors and diagnostic entry/sensor/DTC data faults remain fatal or subject to the existing bounded retry.",
+    "ECU connection still requires a real valid diagnostic reply; identity is optional and does not restrict scan by vendor."
+  ],
+  "red_regression": {
+    "result": "reproduced",
+    "input_usb_packet": "01 68 FC 00",
+    "baseline_failure": "Gagal pada wake-up ECU setelah 1 percobaan. FTDI melaporkan kesalahan UART (LSR 0x68); sampel tidak digunakan.",
+    "fixture_is_physical_vehicle_recording": false,
+    "packet_bytes_origin": "User-supplied physical failure trace"
+  },
+  "verification": {
+    "core_regression_tests": 76,
+    "reference_decoder_vectors": 312,
+    "reference_field_values": 5616,
+    "offline_java_and_project_checks": "passed",
+    "android_sdk_compilation": false,
+    "android_lint_for_new_source": "pending server build",
+    "physical_android_usb_or_ecu_test_of_fix": false
+  },
+  "reference_evidence": {
+    "kind": "Reused original-extension scripted FTDI observation and ordinary shell/source inspection; no new REA Evidence claimed",
+    "retained_oracle": "honda_tuner/re/linux_transport_oracle.json in the local REMAP workspace",
+    "original_honda_extension_sha256": "710b0cdeee868dfe5ff8432e3af7a9659a373265d8f5386ec0b54e7da814a08b",
+    "original_base_extension_sha256": "1d2452013ae4e15422a08742779e68eaebd5b8da67bade1bf178d18b46794c72",
+    "retained_honda_artifact_identity_matches": true,
+    "original_init_observed": "70 ms between LOW/HIGH writes and 130 ms before final purge, bit-bang mask/mode 1/1, 10400 baud",
+    "rea_cli_doctor": "6.8.0: no active REA MCP registration; retained observations reused without configuration repair",
+    "new_native_execution_or_physical_hardware_access": false
+  },
+  "remaining_unknowns": [
+    "Physical cause of FE being observed as FC is not proven by the trace or scripted fixtures.",
+    "FTDI pin/status reports do not measure K-Line voltage or timing at the ECU connector.",
+    "Physical operation on the user's Shindengen and on every Keihin/Honda K-Line model requires device retesting.",
+    "An installable 1.1.1-debug APK requires the authorized Linux server runner to be online and CI to pass."
+  ]
+}

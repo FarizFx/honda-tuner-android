@@ -3,20 +3,24 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.0-debug:** APK sudah dibangun di server Linux **KC** pada
-[run 43730532722](https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722).
-Build, lint (**0 error**), signature dan ZIP lulus; **57 tes regresi JVM**,
-**312 vektor dekoder** dan **5.616 nilai field** juga lulus.
-Pada APK 1.0.0, pengguna berhasil mendeteksi USB, tetapi scan ECU belum berhasil
-dan log debug belum tersedia di UI. Pembaruan ini memperbaiki penanganan echo,
-status FTDI, retry dan izin USB serta menambahkan trace yang bisa disalin.
-Komunikasi ECU masih perlu diuji ulang pada HP.
+**v1.1.1-debug / versionCode 3:** perbaikan wake FT232RL sudah lulus
+**76 tes regresi JVM**, **312 vektor dekoder** dan **5.616 nilai field**.
+Build APK baru memakai runner server `self-hosted`. Kompilasi SDK, lint,
+signature dan pengujian fisik versi ini belum selesai.
 
-APK tersedia di [draft release untuk pemilik repo](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1)
-dan `dist/HondaTuner-Android-debug.apk` pada folder proyek lokal.
-Sertifikat debug runner KC berbeda dari APK 1.0.0: simpan data yang dibutuhkan,
-uninstall versi lama, lalu instal APK baru. Uninstall menghapus data privat aplikasi.
-Versi **1.1.0-debug** tampil di bagian atas aplikasi.
+Pada 1.1.0-debug, USB terdeteksi tetapi scan gagal dengan `LSR 0x68` dan RX `FC`
+setelah TX `FE`. Adaptor FT232RL dan ECU Shindengen yang sama dilaporkan pengguna
+langsung terhubung di HondaECU Lite pada PC. Pembaruan ini mengonfirmasi pin
+LOW/HIGH sebelum mengganti mode, menunggu UART TX selesai, dan membersihkan RX
+tanpa memotong TX. RX wake yang rusak tetap dicatat dan dibuang; diagnostic entry,
+sensor dan DTC tetap menolak framing error, echo, header, panjang dan checksum salah.
+Detail bukti dan batas pengujian: [evidence/wakeup_audit.json](evidence/wakeup_audit.json).
+
+APK terakhir yang sudah dibangun masih **1.1.0-debug**, dari
+[run 43730532722](https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722),
+dengan lint 0 error. [Draft release lama](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1)
+dan `dist/HondaTuner-Android-debug.apk` lokal masih berisi versi tersebut.
+Gunakan **1.1.1-debug** untuk pengujian perbaikan ini setelah APK barunya tersedia.
 
 ## Hubungkan
 
@@ -27,6 +31,11 @@ wake-up, menunggu ECU, ID dan deteksi sensor.
 ditampilkan setelah diagnostic entry mendapat frame ECU yang valid.
 Scan mencoba maksimal tiga kali; ID opsional yang tidak terbaca tidak menghalangi
 sensor atau DTC.
+
+Scan menggunakan diagnostik Honda untuk Keihin dan Shindengen, tanpa pilihan
+vendor atau syarat ID harus masuk katalog. Sensor dipilih dari tabel balasan ECU.
+Katalog nama dan ID bukan bukti bahwa setiap model ECU fisik sudah diuji; K-Line
+sendiri tidak menjamin semua kendaraan memakai protokol diagnostik Honda ini.
 
 Driver: USB **0403:6001**, revisi FT232R **0600**, satu UART, **10400 baud / 8N1**,
 tanpa flow control. Adaptor harus memiliki rangkaian K-Line dan pinout yang sesuai.
@@ -71,7 +80,8 @@ mengekspor trace yang tersimpan tanpa izin storage tambahan.
 Log mencatat perangkat/Android, izin, descriptor/endpoint, control FTDI, tahap
 scan, TX/RX mentah dan UART, echo, timeout, checksum, tabel, serta stack trace.
 Pesan membedakan tidak ada RX, echo tanpa balasan ECU dan balasan terpotong.
-Waktu pulsa di log adalah pengukuran host, bukan pengukuran pin fisik.
+Log pin FTDI mengonfirmasi TXD LOW/HIGH dan log modem menunjukkan TX kosong.
+Durasi pulsa tetap diukur host; level/timing pada pin K-Line ECU belum diukur.
 **Error terakhir** menyimpan snapshot privat yang dapat dibuka setelah aplikasi
 dijalankan ulang. **Bersihkan log sekarang** mempertahankan arsip error terakhir.
 Trace aktif dibatasi 2.000 entri / sekitar 256 KiB karakter. Layar menampilkan 240
@@ -79,7 +89,9 @@ entri terbaru; salin/simpan mencakup trace tersimpan. Logcat: `adb logcat -s Hon
 
 Default: **Echo otomatis**, timeout **1000 ms**. Auto menerima echo lengkap lalu
 balasan atau balasan ECU langsung; header, panjang dan checksum tetap diperiksa.
-Wake/echo saja tidak dianggap ACK. Echo wajib/tanpa echo dan timeout dapat dipilih
+Wake memakai drain RX hingga 60 ms setelah UART selesai mengirim. Hanya kesalahan
+data UART pada wake opsional yang dibuang; error transport USB tetap menggagalkan
+koneksi. Wake/echo saja tidak dianggap ACK. Echo wajib/tanpa echo dan timeout dapat dipilih
 untuk diagnosis saat koneksi terputus.
 
 ## Build di GitHub
@@ -89,8 +101,9 @@ Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.
 Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Runner default `self-hosted` harus online. Build pengguna memakai server Linux
-**KC (runner ID 27)**. Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
+Runner default `self-hosted` harus online. Build sebelumnya memakai server Linux
+**KC (runner ID 27)**; pembaruan memakai runner Linux **1 (ID 28)** yang kini online.
+Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
 kemudian memeriksa signature, versi/manifest dan ZIP.
@@ -114,7 +127,7 @@ python tools/verify_project.py
 python tools/test_core.py --java-home /path/to/jdk
 ```
 
-Suite mencakup framing/echo, retry, FTDI status, DTC, live/cancel/session, logging,
+Suite mencakup framing/echo, retry, FTDI pin/FIFO/drain/status, DTC, live/cancel/session, logging,
 riwayat dan CSV. Fixture mencakup 13 varian tabel; input terkontrol, bukan rekaman
 kendaraan. `tools/sync_reference.py` memperbarui ekspor referensi bila source
 desktop tersedia; CI memakai ekspor yang disertakan.
@@ -128,7 +141,7 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
-APK terbaru dibangun dari source `9913287bb961ceb45131950b7ef0c437805d2da6`.
+APK 1.1.0-debug terakhir dibangun dari source `9913287bb961ceb45131950b7ef0c437805d2da6`.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

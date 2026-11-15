@@ -1,79 +1,96 @@
 {
-  "checked_at_utc": "2026-11-15T15:39:10Z",
-  "stage": "verified_apk_downloaded",
-  "owner": "FarizFx",
+  "checked_at_utc": "2026-11-15T21:11:24Z",
+  "stage": "source_verified_waiting_push",
   "repository_full_name": "FarizFx/honda-tuner-android",
   "repository_url": "https://github.com/FarizFx/honda-tuner-android",
-  "repository_visibility": "public",
-  "github_repository_created": true,
-  "source_pushed": true,
-  "source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6",
-  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722",
-  "github_actions_conclusion": "success",
-  "runner_name": "KC",
-  "runner_id": 27,
-  "runner_os": "Linux",
-  "laptop_used_for_final_build": false,
-  "apk_built": true,
-  "apk_downloaded": true,
-  "apk_relative_path": "dist/HondaTuner-Android-debug.apk",
-  "apk_sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8",
-  "apk_bytes": 97142,
-  "downloaded_apk_hash_matches_sidecar_and_report": true,
-  "downloaded_zip_crc_verified": true,
-  "release_tag": "android-debug-43730532722-1",
-  "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1",
-  "release_is_draft": true,
-  "release_is_prerelease": true,
-  "release_assets_verified": [
-    {
-      "name": "apk_verification.json",
-      "bytes": 2588,
-      "sha256": "8315cfc78f73107d2729b268f12cc13a2341e85fe5d8c2fb64966de5b064f8d3"
-    },
-    {
-      "name": "core_tests.txt",
-      "bytes": 3378,
-      "sha256": "93cd38e76f7f51afea00f8d47403cd5653b81a1f6dff2556d26ca2dc0a994463"
-    },
-    {
-      "name": "core_verification.json",
-      "bytes": 2839,
-      "sha256": "fbc2797d41ec980de456b418bcb39af6034b86dc4b8f4e61d618f2f215e81ae2"
-    },
-    {
-      "name": "HondaTuner-Android-debug.apk",
-      "bytes": 97142,
-      "sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8"
-    },
-    {
-      "name": "HondaTuner-Android-debug.apk.sha256",
-      "bytes": 95,
-      "sha256": "b874129a13a395fa287a8471dd1905a8120f6c56d0a029bdeb2b2ccffdd33078"
-    },
-    {
-      "name": "project_verification.json",
-      "bytes": 4419,
-      "sha256": "c4239681e2a9a79138415f135f74d868dcdf55cd4684977637cd71c71354d44f"
-    },
-    {
-      "name": "reference_provenance.json",
-      "bytes": 1963,
-      "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4"
-    }
-  ],
-  "physical_android_usb_or_ecu_test": false,
-  "result": "passed",
-  "release_id": 446160544,
-  "ci_source_hashes_match_checkout": true,
-  "signer_sha256": "f348ce46260b58314a30b2029e238759758041648f9f6c1556f5fed7e453527a",
-  "baseline_signer_sha256": "f950d93b5f8afcf06e1b75d4aacfc290ca77341ebbb390fdfabb80ce3f30ae51",
-  "same_signer_as_baseline": false,
-  "version_code": 2,
-  "version_name": "1.1.0-debug",
+  "source_pushed": false,
+  "source_commit": null,
+  "version_name": "1.1.1-debug",
+  "version_code": 3,
+  "github_actions_run": null,
+  "github_actions_conclusion": null,
+  "apk_built": false,
+  "apk_downloaded": false,
   "laptop_used_for_build": false,
-  "previous_delivery_preserved": "dist/baseline-1.0.0/github_delivery.json",
-  "uninstall_previous_app_required": true,
-  "private_app_data_removed_by_uninstall": true,
-  "physical_ecu_success_verified": false
+  "physical_ecu_success_verified": false,
+  "previous_delivery_preserved": "dist/baseline-1.1.0/github_delivery.json",
+  "previous_verified_delivery": {
+    "checked_at_utc": "2026-11-15T15:39:10Z",
+    "stage": "verified_apk_downloaded",
+    "owner": "FarizFx",
+    "repository_full_name": "FarizFx/honda-tuner-android",
+    "repository_url": "https://github.com/FarizFx/honda-tuner-android",
+    "repository_visibility": "public",
+    "github_repository_created": true,
+    "source_pushed": true,
+    "source_commit": "9913287bb961ceb45131950b7ef0c437805d2da6",
+    "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43730532722",
+    "github_actions_conclusion": "success",
+    "runner_name": "KC",
+    "runner_id": 27,
+    "runner_os": "Linux",
+    "laptop_used_for_final_build": false,
+    "apk_built": true,
+    "apk_downloaded": true,
+    "apk_relative_path": "dist/HondaTuner-Android-debug.apk",
+    "apk_sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8",
+    "apk_bytes": 97142,
+    "downloaded_apk_hash_matches_sidecar_and_report": true,
+    "downloaded_zip_crc_verified": true,
+    "release_tag": "android-debug-43730532722-1",
+    "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-6ec9611160a1c9158ec1",
+    "release_is_draft": true,
+    "release_is_prerelease": true,
+    "release_assets_verified": [
+      {
+        "name": "apk_verification.json",
+        "bytes": 2588,
+        "sha256": "8315cfc78f73107d2729b268f12cc13a2341e85fe5d8c2fb64966de5b064f8d3"
+      },
+      {
+        "name": "core_tests.txt",
+        "bytes": 3378,
+        "sha256": "93cd38e76f7f51afea00f8d47403cd5653b81a1f6dff2556d26ca2dc0a994463"
+      },
+      {
+        "name": "core_verification.json",
+        "bytes": 2839,
+        "sha256": "fbc2797d41ec980de456b418bcb39af6034b86dc4b8f4e61d618f2f215e81ae2"
+      },
+      {
+        "name": "HondaTuner-Android-debug.apk",
+        "bytes": 97142,
+        "sha256": "79cf396aa7bbad2d252158ea983c013c30d55c04c04731897c352bc0d21406f8"
+      },
+      {
+        "name": "HondaTuner-Android-debug.apk.sha256",
+        "bytes": 95,
+        "sha256": "b874129a13a395fa287a8471dd1905a8120f6c56d0a029bdeb2b2ccffdd33078"
+      },
+      {
+        "name": "project_verification.json",
+        "bytes": 4419,
+        "sha256": "c4239681e2a9a79138415f135f74d868dcdf55cd4684977637cd71c71354d44f"
+      },
+      {
+        "name": "reference_provenance.json",
+        "bytes": 1963,
+        "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4"
+      }
+    ],
+    "physical_android_usb_or_ecu_test": false,
+    "result": "passed",
+    "release_id": 446160544,
+    "ci_source_hashes_match_checkout": true,
+    "signer_sha256": "f348ce46260b58314a30b2029e238759758041648f9f6c1556f5fed7e453527a",
+    "baseline_signer_sha256": "f950d93b5f8afcf06e1b75d4aacfc290ca77341ebbb390fdfabb80ce3f30ae51",
+    "same_signer_as_baseline": false,
+    "version_code": 2,
+    "version_name": "1.1.0-debug",
+    "laptop_used_for_build": false,
+    "previous_delivery_preserved": "dist/baseline-1.0.0/github_delivery.json",
+    "uninstall_previous_app_required": true,
+    "private_app_data_removed_by_uninstall": true,
+    "physical_ecu_success_verified": false
+  }
 }

@@ -7,6 +7,15 @@ public final class FtdiCodec {
     private static final int[] FRACTIONS = {0, 3, 2, 4, 1, 5, 6, 7};
     private FtdiCodec() {}
 
+    public static final class UartException extends ProtocolException {
+        private static final long serialVersionUID = 1L;
+        public final int lineStatus;
+        private UartException(int lineStatus) {
+            super("FTDI melaporkan kesalahan UART (LSR 0x" + Integer.toHexString(lineStatus) + "); sampel tidak digunakan.");
+            this.lineStatus = lineStatus;
+        }
+    }
+
     public static int baudDivisor(int baud) {
         if (baud < 183 || baud > 3000000) throw new IllegalArgumentException("Baud FT232R tidak didukung.");
         int eighths = (24000000 + baud / 2) / baud;
@@ -24,7 +33,7 @@ public final class FtdiCodec {
             if (length < 2) throw new ProtocolException("Status USB FTDI terpotong.");
             // A status-only packet carries no UART sample. A previous wake-up
             // BREAK indication in it must not reject a later, valid reply.
-            if (length > 2 && (buffer[offset + 1] & 0x1e) != 0) throw new ProtocolException("FTDI melaporkan kesalahan UART (LSR 0x" + Integer.toHexString(buffer[offset + 1] & 255) + "); sampel tidak digunakan.");
+            if (length > 2 && (buffer[offset + 1] & 0x1e) != 0) throw new UartException(buffer[offset + 1] & 255);
             data.write(buffer, offset + 2, length - 2);
         }
         return data.toByteArray();
