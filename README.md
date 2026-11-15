@@ -20,9 +20,15 @@ hanya menerima frame langsung. Bukti dan batas perbandingan dengan modul asli
 
 Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1 dan BREAK
 minimum 70/130 ms. Pembersihan sebelum wake tetap tenang 24 ms / batas 250 ms.
-Source telah diuji dengan JVM dan 312 vektor dekoder / 5.616 nilai; build APK
-1.1.3 di runner Linux `2` sedang disiapkan. APK di `dist/` masih baseline 1.1.2
-sampai hasil server baru diunduh dan diperiksa.
+**141 tes regresi**, termasuk **24 fixture transport Lite**, **312 vektor
+dekoder / 5.616 nilai**, kompilasi Android dan lint lulus pada runner Linux
+**2 / ID 29**. Lint: 0 error / 35 warning. Semua tujuh aset unduhan cocok dengan
+digest GitHub dan laporan CI; APK memuat class perbaikan transport.
+[Unduh APK 1.1.3](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-f766d1589a3cafb27ef6).
+APK lokal: `dist/HondaTuner-1.1.3-debug.apk`.
+
+Runner baru menggunakan sertifikat debug berbeda: simpan log yang dibutuhkan,
+copot 1.1.2, lalu pasang 1.1.3. Pencopotan menghapus data lokal aplikasi.
 
 **1.1.2 telah diuji pengguna dan masih gagal konek.** Log aslinya disimpan di
 `evidence/phone-1.1.2-trace.txt`; source, APK dan laporan sebelumnya tetap di
@@ -109,8 +115,8 @@ Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.
 Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Runner default `self-hosted` harus online. Build sebelumnya memakai server Linux
-**KC (runner ID 27)**; pembaruan memakai runner Linux **1 (ID 28)** yang kini online.
+Runner default `self-hosted` harus online. APK 1.1.3 dibangun di server Linux
+**2 (runner ID 29)**. Registrasi 1/28, KC/27 dan KillerCoda/26 tetap dipertahankan.
 Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
@@ -149,7 +155,7 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
-APK 1.1.2-debug terakhir dibangun dari source `dc6736d83b4bc06c1979235efe609bb1aa7cc501`.
+APK 1.1.3-debug dibangun dari source `b9f0a189c4617596e7e8e85504a8a72dabc18975`.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

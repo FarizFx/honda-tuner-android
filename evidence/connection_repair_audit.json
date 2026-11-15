@@ -95,7 +95,11 @@
     "UI close revokes immediately; per-device worker cleanup finishes before reopening"
   ],
   "retained_driver": "usb-serial-for-android 3.12.0, 10400/8N1, BREAK minimum 70/130 ms, RX-only purge",
-  "android_sdk_compilation": false,
+  "android_sdk_compilation": true,
   "physical_ecu_success_verified": false,
-  "remaining": "Build on existing Linux runner 2/ID29, verify/download APK, then physical connection/reconnect/20 live rounds/DTC"
+  "remaining": "User physical direct OTG connection, reconnect, at least 20 live rounds with real changes, pause/resume and DTC; asynchronous question is pending",
+  "android_lint_errors": 0,
+  "android_lint_warnings": 35,
+  "verified_delivery": "evidence/delivery_verification.json",
+  "built_source_commit": "b9f0a189c4617596e7e8e85504a8a72dabc18975"
 }

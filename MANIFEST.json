@@ -25,12 +25,12 @@
       "bytes": 1796
     },
     "README.md": {
-      "sha256": "9d7069921c22ad3a84c80d7443d024bcd8e006a060ce0cdcf043fc78825de413",
-      "bytes": 8763
+      "sha256": "7c41fb89405399a621e583ad19dab03430d3f781d3aa2706027263b932b7d2d5",
+      "bytes": 9151
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "2495580e41e6ab26b8cab9331145aad1dd1eb2f09de72bf555dc5592ffcdfe2a",
-      "bytes": 2729
+      "sha256": "db61142c4a2f10af34a3fc6aeb93b68be68de18dc9cce61eb81924804c5fc770",
+      "bytes": 3723
     },
     "app/build.gradle": {
       "sha256": "7b18e271f2052d4381324955822ccc4536824c9951d601f0afa2fb8c8af55972",
@@ -149,36 +149,40 @@
       "bytes": 73
     },
     "evidence/apk_verification.json": {
-      "sha256": "5378716128b83cb36cbb55725a90d2b8049705fba1d3890046c22f49f9c2f6e1",
+      "sha256": "99265ff1d3c79c2c3e3380af088cdc81ac6ffd59e1ce3e247f0f64c560bc7dfe",
       "bytes": 2862
     },
     "evidence/build_status.json": {
-      "sha256": "ec9dd782e835c00dce120a8819aa17a18fd509df3a11259e1a2b2f056d5a37e2",
-      "bytes": 2807
+      "sha256": "e61136a1a6bef0a30d098b5f4e96e880c509260e7d77e02d903e726b4ed9fea6",
+      "bytes": 3458
     },
     "evidence/connection_debug_audit.json": {
       "sha256": "c366d6f6f20f6c4cc735336fbf073a9d646accbf4d7f38458e26fc1f297b273e",
       "bytes": 1443
     },
     "evidence/connection_repair_audit.json": {
-      "sha256": "7fdd9a7d100fdea9a04e0dd62513d53d9949bbe5bcc8555bb80937221987249e",
-      "bytes": 8374
+      "sha256": "bb79a106d8b255d082d49f779bd3131679be0d7494a2e879bea272b084c5c458",
+      "bytes": 8595
     },
     "evidence/core_tests.txt": {
-      "sha256": "6579c45d1d0bf9d5835f10bd1677855eea442b0d22fcefb4d7ff8d5f633c7a04",
-      "bytes": 9206
+      "sha256": "92b766fbaa1bfcf4950dbc37c42210e77f85daa69186d4617395865dd9fa7ad5",
+      "bytes": 8938
     },
     "evidence/core_verification.json": {
-      "sha256": "7932646ea5e414b8f161403e1edc2da5e5c2887bcac5af364890aefb9ad4797e",
-      "bytes": 9998
+      "sha256": "6f30562f66a1c0a17ff8eaea70aae63f9f0cdafeb21b42ff320d75d1e04bd27d",
+      "bytes": 10027
+    },
+    "evidence/delivery_verification.json": {
+      "sha256": "c0d76725fa66fb2dd4faaeccb554fe6b15bbe58c400e721249327504bf46866e",
+      "bytes": 3219
     },
     "evidence/ftdi_driver_reference.json": {
       "sha256": "173295ef1fdcf6554c5eafdc01803206dbab4b3db5c3864daf1c2bfb3914892b",
       "bytes": 4182
     },
     "evidence/github_delivery.json": {
-      "sha256": "5626b34573571b85a7bc841af160209116c330b55214e10376cd3cadb07de988",
-      "bytes": 3375
+      "sha256": "b9cbf01733aa699fad45a469065989d31b2d198a861e7e2e01405ca8d87873a5",
+      "bytes": 6523
     },
     "evidence/lite_transport_reference.json": {
       "sha256": "f447e814ffcafaa3518ba07cba03246281e25415c4f35312024d990bdacf4591",
@@ -269,12 +273,14 @@
       "bytes": 5428
     }
   },
-  "scope": "1.1.3-debug source repair verified locally; server APK pending",
-  "android_sdk_compilation": false,
-  "apk_included": false,
+  "scope": "1.1.3-debug reply/cancellation repair; verified Linux server APK, physical tests pending",
+  "android_sdk_compilation": true,
+  "apk_included": true,
   "version_name": "1.1.3-debug",
-  "github_actions_run": null,
-  "pushed_source_commit": null,
-  "built_source_commit": null,
-  "physical_ecu_success_verified": false
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43776385671",
+  "pushed_source_commit": "b9f0a189c4617596e7e8e85504a8a72dabc18975",
+  "built_source_commit": "b9f0a189c4617596e7e8e85504a8a72dabc18975",
+  "physical_ecu_success_verified": false,
+  "apk_relative_path": "dist/HondaTuner-1.1.3-debug.apk",
+  "apk_sha256": "b4e356e4637e0538e07dc401d9f7196150c7e8c5d96da7830b2bd614fc2e0983"
 }

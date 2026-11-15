@@ -3,7 +3,18 @@
 1.1.3-debug / versionCode 5 source is implemented and locally verified: 141 JVM
 regressions (83 existing, 21 transport, 13 lifecycle, 24 Lite fixtures), 312
 decoder vectors / 5,616 values and project XML/YAML/source checks passed.
-Source is not pushed yet; 1.1.3 APK is not built. Current dist APK remains 1.1.2.
+Source is pushed and APK is built/verified on Linux runner 2 / ID29.
+Source: b9f0a189c4617596e7e8e85504a8a72dabc18975
+Run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43776385671
+Release: https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-f766d1589a3cafb27ef6
+APK: honda_tuner_android/dist/HondaTuner-1.1.3-debug.apk (991,509 bytes)
+SHA-256: b4e356e4637e0538e07dc401d9f7196150c7e8c5d96da7830b2bd614fc2e0983
+All 7 GitHub assets/digests, sidecar, reports, ZIP CRC, actual repair DEX classes,
+62 source-hash checks and all 50 preserved baseline/ZIP fingerprints passed.
+Server SDK/lint passed: 0 errors, 35 warnings. Core reports in evidence are exact
+downloaded CI originals; local JVM reports remain in build/local-1.1.3-verification.
+Debug signer differs from 1.1.2; save needed logs, uninstall 1.1.2, then install
+1.1.3. Uninstall removes private app data. No app was installed/uninstalled here.
 
 AUTO validates direct frames or full frames after exactly TX-length echo,
 including damaged 60 00 00 E0 10 and 02 00 00 E0 10. REQUIRED checks exact echo,
@@ -33,8 +44,10 @@ the historical ZIP and all baselines. Git identity can be per-command Codex /
 codex@localhost. Metadata from the prior interrupted 1.1.2 delivery was present
 before this continuation and is now corrected to include its physical failure.
 
-Next: push this source, monitor the single 1.1.3 server build, download/verify
-all seven release assets and compare installation signer with 1.1.2, then sync
-the mirror and deliver APK. PHYSICAL_TEST.md covers direct OTG connection,
-reconnect, at least 20 live rounds responding to real changes, pause/resume and
-DTC. Physical success remains unverified until the user performs those tests.
+Source repair, push, single-version server build and APK delivery are complete.
+An asynchronous user question is pending for physical retest. PHYSICAL_TEST.md
+covers direct OTG connection, reconnect, at least 20 live rounds responding to
+real changes, pause/resume and DTC. Physical success remains unverified; do not
+infer success from elapsed time, simulator tests, build, or APK integrity.
+Historical source ZIP/baselines are untouched. New source snapshot is
+dist/source-1.1.3-b9f0a18.zip; never reset from an older historical ZIP.

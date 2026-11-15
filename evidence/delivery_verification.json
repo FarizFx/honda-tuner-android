@@ -1,0 +1,83 @@
+{
+  "result": "passed",
+  "run_id": 43776385671,
+  "source_commit": "b9f0a189c4617596e7e8e85504a8a72dabc18975",
+  "run_url": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43776385671",
+  "runner_id": 29,
+  "runner_name": "2",
+  "runner_os": "Linux",
+  "release_id": 446456388,
+  "release_tag": "android-debug-43776385671-1",
+  "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-f766d1589a3cafb27ef6",
+  "release_is_draft": true,
+  "release_is_prerelease": true,
+  "verified_assets": [
+    {
+      "name": "apk_verification.json",
+      "bytes": 2862,
+      "sha256": "99265ff1d3c79c2c3e3380af088cdc81ac6ffd59e1ce3e247f0f64c560bc7dfe"
+    },
+    {
+      "name": "core_tests.txt",
+      "bytes": 8938,
+      "sha256": "92b766fbaa1bfcf4950dbc37c42210e77f85daa69186d4617395865dd9fa7ad5"
+    },
+    {
+      "name": "core_verification.json",
+      "bytes": 10027,
+      "sha256": "6f30562f66a1c0a17ff8eaea70aae63f9f0cdafeb21b42ff320d75d1e04bd27d"
+    },
+    {
+      "name": "HondaTuner-Android-debug.apk",
+      "bytes": 991509,
+      "sha256": "b4e356e4637e0538e07dc401d9f7196150c7e8c5d96da7830b2bd614fc2e0983"
+    },
+    {
+      "name": "HondaTuner-Android-debug.apk.sha256",
+      "bytes": 95,
+      "sha256": "2bae2ae08541c5b0029b1d8a94ed268c63d6e650f1b293f1265054d92df5e054"
+    },
+    {
+      "name": "project_verification.json",
+      "bytes": 5012,
+      "sha256": "296a6a5a0951019ff5a603ecb439bc6e90c9ef4270ad47cd0480afabc711c876"
+    },
+    {
+      "name": "reference_provenance.json",
+      "bytes": 1963,
+      "sha256": "66f88068dd5b2b5be7bc1b9e9f63e0cee5ee581f2e0df1e33df6224dcbac2ee4"
+    }
+  ],
+  "apk_sha256": "b4e356e4637e0538e07dc401d9f7196150c7e8c5d96da7830b2bd614fc2e0983",
+  "apk_bytes": 991509,
+  "signer_sha256": "764ff636cf91220f3b275cd0e2a03a44062b6824eaf6f9989174e834caada453",
+  "previous_signer_sha256": "3e754a6e53eea394bb69c62aa4faea575316a2105c88f04f4b8da49c21dbff20",
+  "same_signer_as_previous": false,
+  "ci_source_hash_checks": 62,
+  "core_regression_tests": 141,
+  "lite_transport_fixtures": 24,
+  "reference_decoder_vectors": 312,
+  "reference_field_values": 5616,
+  "android_sdk_compilation": true,
+  "android_lint_errors": 0,
+  "android_lint_warnings": 35,
+  "downloaded_zip_crc_verified": true,
+  "driver_and_repair_classes_verified": [
+    "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver$FtdiSerialPort;",
+    "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver;",
+    "Lid/hondatuner/android/usb/FtdiChannel;",
+    "Lid/hondatuner/core/DiagnosticController;",
+    "Lid/hondatuner/core/KLineTransport$ReplyChoice;",
+    "Lid/hondatuner/core/KLineTransport$TransactionTrace;",
+    "Lid/hondatuner/core/KLineTransport;",
+    "Lid/hondatuner/core/TransportException;"
+  ],
+  "preserved_baseline_files_verified": 50,
+  "physical_ecu_success_verified": false,
+  "verified_at_utc": "2026-11-15T23:52:14.369530+00:00",
+  "version_name": "1.1.3-debug",
+  "version_code": 5,
+  "apk_relative_path": "dist/HondaTuner-1.1.3-debug.apk",
+  "uninstall_previous_app_required": true,
+  "installation_note": "Runner 2 has a different debug signer; preserve needed logs, uninstall 1.1.2, then install 1.1.3. Uninstall removes private app data."
+}

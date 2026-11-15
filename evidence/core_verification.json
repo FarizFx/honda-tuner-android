@@ -1,7 +1,7 @@
 {
   "result": "passed",
-  "java_home": "D:\\Tools\\jre25\\jdk-25.0.4.1+1",
-  "java_version": "openjdk version \"25.0.4.1\" 2026-08-18 LTS\nOpenJDK Runtime Environment Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS)\nOpenJDK 64-Bit Server VM Temurin-25.0.4.1+1 (build 25.0.4.1+1-LTS, mixed mode, sharing)",
+  "java_home": "/home/ubuntu/actions-runner/_work/_tool/Java_Temurin-Hotspot_jdk/17.0.21-9/x64",
+  "java_version": "openjdk version \"17.0.21\" 2026-10-20\nOpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)\nOpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)",
   "java_release": 8,
   "core_regression_tests": 141,
   "regression_suites": {
@@ -231,7 +231,7 @@
   "lite_transport_fixture_sha256": "7dd622a1b0abbcdc9df92c03de3210bf7083afda242e2048e9b44e768a42aa7e",
   "reference_decoder_vectors": 312,
   "reference_field_values": 5616,
-  "elapsed_seconds": 4.262,
+  "elapsed_seconds": 4.914,
   "source_sha256": {
     "app/src/main/java/id/hondatuner/core/ByteChannel.java": "33ce1193efc77a5f5240826877a240f357ea8763b047cd4d179fd384a00770ef",
     "app/src/main/java/id/hondatuner/core/CancelSignal.java": "2128bf532f7f5e29707e25db18eb6febe364f12be600c89c7ae55ca1d9f1a057",
