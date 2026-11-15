@@ -7,14 +7,20 @@ The user then explicitly requested a **new repo in their own GitHub account**,
 source upload and APK build through GitHub. Do not ask those scope/creation
 authorization questions again.
 
-The proposed new repo name is `honda-tuner-android`, private by default. No repo
-has been created, no source has been pushed, no Actions run has been started,
-and no APK has been built. GitHub tools are absent from this session's tool list,
-`gh` was not found on PATH or in the inspected tool locations, and the shell
-cannot reach the configured network proxy. A final request to `api.github.com`
-failed through proxy 127.0.0.1 as well.
+The delivery record names `FarizFx/honda-tuner-android` at
+`https://github.com/FarizFx/honda-tuner-android` and records successful repository
+creation and source upload at commit `fc392c3f2bd83399abfc90789c8c913cd5997765`.
+Private visibility was requested; current visibility has not been independently
+verified. Do not recreate the repo or describe the recorded upload as unperformed.
+Actions runs and APK results remain unverified, and no APK is present locally.
+GitHub tools are absent, `gh` was not found, and direct Git/API requests fail at
+the configured network proxy `127.0.0.1:9`.
 Local SDK searches found no Android SDK; the JDK and offline JVM tests work.
 These are external access/build-host blockers, not a request to pause work.
+
+The publishing checkout is `honda_tuner_android/build/github-repo` relative to
+the workspace root. The user explicitly requires plain `git` commands in the
+terminal, without Python wrappers. Repository upload/build authorization persists.
 
 ## Implemented source
 
@@ -25,10 +31,12 @@ These are external access/build-host blockers, not a request to pause work.
 - Original source-backed FE/FF plus diagnostic entry and optional identity;
   automatic ECU-returned sensor schema discovery and repeated 500-ms acquisition.
 - Exact current echo and checksum/length/header validation; one-way wake sends
-  once. Failed groups become unread; three total failures stop live.
+  once. Failed groups become unread; three consecutive cycles without a valid
+  group stop live.
 - Core controller serializes connection/discovery/live/DTC. Stop, replacement
   session, detach and lifecycle changes invalidate queued/in-flight UI callbacks.
-  Failed rediscovery revokes the old profile. DTC temporarily pauses/resumes live.
+  Failed rediscovery revokes the old profile. DTC resumes live only if it was
+  running before the read.
 - Dark phone UI with sensor cards, measured RPM graph, current/stored DTC and
   catalog ID labels preserving ambiguity. No ECU write/clear command is exposed.
 - `.github/workflows/build-android.yml` installs the toolchain, runs offline tests,
@@ -44,19 +52,22 @@ source hashes are in `evidence/core_verification.json` and `core_tests.txt`.
 `tools/verify_project.py` checks manifest/resource/configuration consistency and
 parses workflow YAML when PyYAML is available. This is not Android API compilation.
 
-`tools/prepare_repo.py` packages current, verified source as a root-ready ZIP at
-`dist/honda-tuner-android-repo-20261115.zip`, with manifest and SHA-256 sidecar.
-The external `evidence/repo_package_verification.json` verifies exact source-copy
-hashes and archive integrity. Desktop application/engine source is unchanged.
+`tools/prepare_repo.py` can package verified source as a root-ready ZIP in
+`dist/`, with manifest and SHA-256 sidecar. The original source ZIP in the
+development folder remains a snapshot from before the documentation corrections;
+`dist/` is not tracked in the publishing checkout. The corrected README explains
+the unverified build status, SDK requirements, artifact paths, DTC resume rule,
+failure threshold, and the graph's 50-entry limit. The application source is
+unchanged by these corrections.
 
 ## Next authorized actions when GitHub access is available
 
-Create the new private repository in the authenticated user's account; check
-name availability before choosing the final name. Upload only this Android
-project's repo-ready source, including `.github` at repository root. Dispatch
-`build-android.yml`, monitor the run, fix any actual Android/Gradle build failures,
-and rerun as needed. Download and retain `HondaTuner-Android-debug` plus its
-verification artifact; give the user the real repo/run/APK links.
+Push the pending documentation corrections directly with Git. Inspect the
+existing Actions runs for the recorded source commit; dispatch `build-android.yml`
+if needed. Monitor the build, fix actual Android/Gradle failures, and rerun as
+needed. Download and retain `HondaTuner-Android-debug` plus its verification
+artifact; give the user the real repo/run/APK links. README changes alone do not
+match the workflow's automatic push filter.
 
 Actual SDK/Android GUI compilation and FT232R control transfers still need their
 first build/device validation. Existing JVM/fixture tests do not prove physical
