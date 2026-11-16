@@ -1,10 +1,10 @@
 {
-  "recorded_at_utc": "2026-11-16T06:26:34.517996+00:00",
+  "recorded_at_utc": "2026-11-16T06:36:35.114806+00:00",
   "version_name": "1.1.7-debug",
   "version_code": 9,
-  "stage": "source prepared; Android server build pending",
-  "source_pushed": false,
-  "apk_built": false,
+  "stage": "source pushed; verified Linux server APK delivered locally",
+  "source_pushed": true,
+  "apk_built": true,
   "user_request": "Each HUD box can be freely moved and resized; fullscreen speedometer controls must not occupy a fixed top row",
   "features": {
     "independently_movable_and_resizable_blocks": [
@@ -94,16 +94,38 @@
       "tests/java/id/hondatuner/core/TransportTest.java": "dd8a6e8997b33ce89eb0ebbbe602da051662bbe82119e80fd91072f45d25caf5",
       "tests/java/id/hondatuner/core/UartReplyTest.java": "a47396fa00333530ac16068847076379975901e44d95485c513690c51e4901ea"
     },
-    "android_sdk_compilation": false,
+    "android_sdk_compilation": true,
     "physical_android_touch_usb_or_ecu_test": false,
-    "preserved_baseline_files_verified": 373
+    "preserved_baseline_files_verified": 373,
+    "android_lint_errors": 0,
+    "android_lint_warnings": 35,
+    "apk_signature_verified": true,
+    "release_assets_verified": 7,
+    "source_hash_checks": 58
   },
   "synthetic_preview_count": 6,
   "latest_verified_apk": {
+    "version_name": "1.1.7-debug",
+    "source_commit": "6fbbec0de7a048ee560bd68c836e35edacf55c54",
+    "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43816932505",
+    "relative_path": "dist/HondaTuner-1.1.7-debug.apk",
+    "sha256": "7eb8c0d74c24ba0b36f6ee75c7fc01001186210aa236acb00f035f62f44933f1",
+    "installation_note": "Simpan CSV/log yang diperlukan, uninstall 1.1.6, lalu pasang 1.1.7. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi."
+  },
+  "source_commit": "6fbbec0de7a048ee560bd68c836e35edacf55c54",
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43816932505",
+  "previous_verified_apk": {
     "version_name": "1.1.6-debug",
     "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
     "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
     "relative_path": "dist/HondaTuner-1.1.6-debug.apk",
     "sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179"
+  },
+  "build": {
+    "runner_name": "6",
+    "runner_id": 33,
+    "runner_os": "Linux",
+    "status": "success",
+    "laptop_used_for_apk_build": false
   }
 }

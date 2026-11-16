@@ -132,7 +132,19 @@ OK HUD polling includes selected and RPM-bar fields once and omits absent signal
 OK focused HUD reads one real group and leaves unpolled O2 data unread
 OK unread VSS differs from a measured zero and retains its unverified raw unit
 OK LCD drawing fits portrait/landscape and compact/large digits without clipping
-PASS: 134 core regression tests
+OK all HUD blocks have valid defaults in both orientations
+OK dragging clamps to canvas edges without changing size
+OK all four resize corners retain the opposite corner
+OK oversized and inverted resize gestures stay usable and inside the canvas
+OK portrait and landscape placements are independent
+OK saved positions, dimensions and stacking order survive serialization
+OK corrupt saved coordinates cannot hide valid neighboring HUD blocks
+OK draft changes and reset leave the previous immutable layout untouched
+OK overlapping HUD blocks select the topmost layer
+OK hidden auxiliary slots retain their positions and sensor identity
+OK moving and resizing HUD boxes does not alter ECU polling choices
+OK custom resized cards fit compact, tall and wide canvases without clipped drawing
+PASS: 146 core regression tests
 OK damaged echo waits for delayed ECU reply with one TX
 OK header-like damaged echo cannot select the wrong receive layout
 OK extra RX in a later USB fragment cannot complete a frame
@@ -234,6 +246,6 @@ OK Phone replay phone-1.1.3-transaction-7046 (valid, 1 TX, 3 fields, 42 simulate
 OK Phone replay phone-1.1.3-transaction-7063 (valid, 1 TX, 3 fields, 41 simulated ms)
 OK Phone replay phone-1.1.3-transaction-7079 (valid, 1 TX, 3 fields, 43 simulated ms)
 
-PASS: 231 total regression tests
+PASS: 243 total regression tests
 PASS: 312 reference decoder vectors, 5616 field values
 PASS: 16 recorded decoder vectors, 166 field values

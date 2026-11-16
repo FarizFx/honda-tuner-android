@@ -1,3 +1,55 @@
+# Honda Tuner 1.1.7 free HUD editor APK delivered - 16 November 2026
+
+The user's per-box drag/resize request and fullscreen HUD control complaint are
+implemented, locally tested, built on Linux and delivered. The single source
+push-triggered run succeeded; no duplicate workflow was dispatched.
+
+Built source: 6fbbec0de7a048ee560bd68c836e35edacf55c54
+Run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43816932505
+Actual runner: Linux 6 / ID33
+Draft release: https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-80ca984ba24273fd9bd6
+APK: dist/HondaTuner-1.1.7-debug.apk (1030433 bytes)
+SHA-256: 7eb8c0d74c24ba0b36f6ee75c7fc01001186210aa236acb00f035f62f44933f1
+Signer: c5db3c42e75a461bbb59205c03f081e4084e745bd87e72c34833312011af81f2
+Same signer as 1.1.6: False
+Installation: Simpan CSV/log yang diperlukan, uninstall 1.1.6, lalu pasang 1.1.7. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.
+
+243 regressions, 312 reference vectors / 5,616 values, 16 recorded vectors /
+166 values passed on exact built source. SDK compile, signature, ZIP and lint
+(0 errors / 35 warnings) passed on the server. Seven asset digests, 58
+source hashes, actual geometry/editor/HUD/FTDI classes, catalog/license and
+certificate versus 1.1.6 were independently inspected without an SDK locally.
+All 373 immutable baseline/archive fingerprints remain preserved.
+
+Open Live > Speedometer LCD, tap the canvas, then Atur HUD > Edit tata letak
+or choose Edit tata letak directly. All nine blocks can move/resize, including
+primary/three auxiliary cards, RPM bar, brand, status, refresh and VSS info.
+Four handles resize width/height; blocks stay on canvas and can overlap. Kotak
+menu selects covered blocks, changes card sensor and resets one block/current
+orientation. Save commits position/size/layers/sensors; Cancel/Back restores
+the draft. Portrait/landscape positions are separate and follow canvas size.
+Editor is unmirrored; normal mirror returns on exit. Tap-only controls overlay
+the normal fullscreen canvas and hide after 4 s, without moving its boxes.
+Back leaves the editor first, then returns to Live without disconnecting USB.
+Rotation keeps session statistics and completed draft placements. Six previews
+use synthetic values with the real shared renderer. Physical touch/HP/ECU
+behavior remains untested here and requires user retest. VSS stays RAW; no GPS,
+inferred km/h or new wire mapping was added. Existing FTDI checks, records,
+refresh semantics and strict data validation remain intact.
+
+Authoritative checkout: honda_tuner_android/build/github-repo. Mirror:
+honda_tuner_android. Private proof/helpers: build/ui-1.1.7/server-delivery.
+Exact built archive: dist/source-1.1.7-6fbbec0.zip (267025 bytes),
+SHA-256 59427191d7f011a8f75d7e34358df1b7cd48e89a314f7cd16798c583f2153249.
+87 source files and 86 manifest entries are synchronized. CI reports are exact
+server originals; delivery metadata is separate from the built source archive.
+Keep previous ZIPs/versioned APKs/baselines, including baseline-1.1.6. Use direct
+terminal Git/gh; never Python Git wrappers or prepare_repo.py. APK builds remain
+server-only: no local Android SDK/Gradle toolchain or laptop runner; preserve
+runner credentials/configuration. Existing JDK may run offline JVM checks.
+
+Earlier notes below are historical.
+
 # Honda Tuner 1.1.7 free HUD layout editor prepared - 16 November 2026
 
 The user requested per-box drag and resize, continuing the complaint about fixed

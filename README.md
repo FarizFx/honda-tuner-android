@@ -3,11 +3,12 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**Source v1.1.7-debug / versionCode 9 sudah disiapkan; build Android sedang disiapkan.**
-APK terakhir yang terverifikasi tetap `dist/HondaTuner-1.1.6-debug.apk` dari
-[Actions 43807510648](https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648).
-Laporan CI saat ini merupakan hasil asli build 1.1.6. Source, APK, dan laporan
-versi lama disimpan dalam baseline/arsip; baseline 1.1.6 juga sudah dipertahankan.
+**v1.1.7-debug / versionCode 9 sudah dibangun dan terverifikasi.**
+[Build Actions 1.1.7](https://github.com/FarizFx/honda-tuner-android/actions/runs/43816932505) berhasil pada Linux
+6 / ID33. APK: `dist/HondaTuner-1.1.7-debug.apk`.
+Simpan CSV/log yang diperlukan, uninstall 1.1.6, lalu pasang 1.1.7. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.
+Laporan CI yang disertakan merupakan hasil asli build 1.1.7. APK, source, dan
+laporan 1.1.6 serta versi sebelumnya tetap disimpan dalam baseline/arsip.
 
 **Edit tata letak** membuka kanvas HUD. Pilih kotak lalu seret untuk memindahkan;
 tarik salah satu dari empat titik sudut untuk mengubah lebar dan tinggi.
@@ -83,10 +84,11 @@ Perbaikan GET_STATUS dan parser ID dari 1.1.5 juga tetap disertakan; kedua
 kecocokan Vario 150 dalam katalog tidak dihilangkan.
 
 **243 tes regresi JVM**, **312 vektor referensi / 5.616 nilai**, dan
-**16 vektor rekaman / 166 nilai** lulus lokal pada source core 1.1.7.
+**16 vektor rekaman / 166 nilai** lulus pada server untuk source core 1.1.7.
 Tes baru mencakup batas gerak, empat sudut resize, penyimpanan lapisan,
 orientasi terpisah, layout rusak, slot tersembunyi, dan gambar kotak yang di-resize.
-Kompilasi SDK, lint, dan signature 1.1.7 memerlukan build server.
+Kompilasi SDK, lint (0 error / 35 warning), signature, ZIP, ketujuh digest aset,
+kelas editor/HUD/USB, katalog, dan 58 hash source terverifikasi.
 Pengujian sentuhan langsung pada HP/ECU 1.1.7 masih memerlukan retest pengguna.
 Baseline 1.1.5 dan versi sebelumnya dipertahankan. Bukti pembaruan:
 [evidence/dashboard_1_1_6.json](evidence/dashboard_1_1_6.json).

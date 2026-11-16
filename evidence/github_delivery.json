@@ -1,49 +1,49 @@
 {
   "result": "passed",
-  "verified_at_utc": "2026-11-16T05:06:47.245781+00:00",
-  "run_id": 43807510648,
-  "run_url": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
-  "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
-  "runner_name": "5",
-  "runner_id": 32,
+  "verified_at_utc": "2026-11-16T06:33:33.017393+00:00",
+  "run_id": 43816932505,
+  "run_url": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43816932505",
+  "source_commit": "6fbbec0de7a048ee560bd68c836e35edacf55c54",
+  "runner_name": "6",
+  "runner_id": 33,
   "runner_os": "Linux",
-  "version_name": "1.1.6-debug",
-  "version_code": 8,
-  "release_id": 446627054,
-  "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-075c4938459d03ec5a68",
-  "release_tag": "android-debug-43807510648-1",
+  "version_name": "1.1.7-debug",
+  "version_code": 9,
+  "release_id": 446681646,
+  "release_url": "https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-80ca984ba24273fd9bd6",
+  "release_tag": "android-debug-43816932505-1",
   "release_is_draft": true,
   "release_is_prerelease": true,
   "verified_assets": [
     {
       "name": "apk_verification.json",
-      "bytes": 3372,
-      "sha256": "87784721b9b88f6da62dba47854f3cca8bffefd7b0a4c54b7ee52db54232e418"
+      "bytes": 3456,
+      "sha256": "10c085405b34fcf7cf37fb66c9dc177a34db2287dfb973a3d2ab2e9918c1f94b"
     },
     {
       "name": "core_tests.txt",
-      "bytes": 15453,
-      "sha256": "f75af25abb3691b70c467f2a42e41f315b2e1997cf1e5bd32b4bdccd357ec462"
+      "bytes": 16239,
+      "sha256": "8ffaa9e9e04238e63923d8380556cf8c8b2cfbd3fb201faf767f1a200cf12182"
     },
     {
       "name": "core_verification.json",
-      "bytes": 16085,
-      "sha256": "fd3ebb24f91b9f7669431e347093bddb8a6037c91beb41e97060034715a28eaa"
+      "bytes": 16340,
+      "sha256": "b70fa85d3e32922b6a948fbb3fc4b153cb4ec14891cf7e7c782ebbedd6e2e9a0"
     },
     {
       "name": "HondaTuner-Android-debug.apk",
-      "bytes": 1017693,
-      "sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179"
+      "bytes": 1030433,
+      "sha256": "7eb8c0d74c24ba0b36f6ee75c7fc01001186210aa236acb00f035f62f44933f1"
     },
     {
       "name": "HondaTuner-Android-debug.apk.sha256",
       "bytes": 95,
-      "sha256": "ed0c0234c971c1778fdfbcc4df403bd8df007ee9a47fd8e6e7136a4abd45a6ac"
+      "sha256": "4c57c74f77598980afbc4e8efcd2c253a167855dcbaea66cbc0e18ef72e0a063"
     },
     {
       "name": "project_verification.json",
-      "bytes": 5827,
-      "sha256": "91346af783d0df2c2afaaf1c3b75d8d2f0cab98e1b2b21cf5f3e43fab3b32e07"
+      "bytes": 5956,
+      "sha256": "54e71a8f21bee517d60d664302224934cc3e17df24f5e655a34263aa643029c2"
     },
     {
       "name": "reference_provenance.json",
@@ -51,16 +51,16 @@
       "sha256": "f1bcd4912b19450aeef88de6c54f0dcc43dd3ac951b1e074a50c8e883b0c5d9a"
     }
   ],
-  "apk_bytes": 1017693,
-  "apk_sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179",
+  "apk_bytes": 1030433,
+  "apk_sha256": "7eb8c0d74c24ba0b36f6ee75c7fc01001186210aa236acb00f035f62f44933f1",
   "ci_signature_verified": true,
   "apk_v2_certificate_fingerprint_verified": true,
-  "signer_sha256": "5d2c94c478d466ffec7757e65289a7493507120c8959ceb0b2081fa3d5bcf7b7",
-  "previous_version_name": "1.1.5-debug",
-  "previous_signer_sha256": "0539cdb817a2ae5e81c94dc27c0d30890eea1cbf224cc079dd2d7ef3b5b192dd",
+  "signer_sha256": "c5db3c42e75a461bbb59205c03f081e4084e745bd87e72c34833312011af81f2",
+  "previous_version_name": "1.1.6-debug",
+  "previous_signer_sha256": "5d2c94c478d466ffec7757e65289a7493507120c8959ceb0b2081fa3d5bcf7b7",
   "same_signer_as_previous": false,
   "uninstall_previous_app_required": true,
-  "ci_source_hash_checks": 56,
+  "ci_source_hash_checks": 58,
   "downloaded_zip_crc_verified": true,
   "driver_and_application_classes_verified": [
     "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver$FtdiSerialPort;",
@@ -72,6 +72,8 @@
     "Lid/hondatuner/core/DiagnosticLog;",
     "Lid/hondatuner/core/FtdiCodec$RxData;",
     "Lid/hondatuner/core/FtdiUart;",
+    "Lid/hondatuner/core/HudGeometry$Box;",
+    "Lid/hondatuner/core/HudGeometry;",
     "Lid/hondatuner/core/HudLayout;",
     "Lid/hondatuner/core/KLineTransport$TransactionTrace;",
     "Lid/hondatuner/core/LcdDashboard;",
@@ -84,26 +86,28 @@
   "catalog_unique_ids": 244,
   "android_lint_errors": 0,
   "android_lint_warnings": 35,
-  "preserved_baseline_files_verified": 190,
-  "physical_1_1_6_ecu_success_verified": false,
-  "core_regression_tests": 231,
-  "lite_transport_fixtures": 24,
-  "phone_packet_replay_fixtures": 17,
+  "preserved_baseline_files_verified": 373,
+  "physical_1_1_7_ecu_success_verified": false,
+  "core_regression_tests": 243,
+  "regression_suites": {
+    "CoreTest": 146,
+    "TransportTest": 21,
+    "ControllerHealthTest": 13,
+    "UartReplyTest": 22
+  },
   "reference_decoder_vectors": 312,
   "reference_field_values": 5616,
   "phone_decoder_vectors": 16,
   "phone_decoder_field_values": 166,
+  "lite_transport_fixtures": 24,
+  "phone_packet_replay_fixtures": 17,
+  "apk_relative_path": "dist/HondaTuner-1.1.7-debug.apk",
+  "source_archive_relative_path": "dist/source-1.1.7-6fbbec0.zip",
+  "source_archive_sha256": "59427191d7f011a8f75d7e34358df1b7cd48e89a314f7cd16798c583f2153249",
+  "source_mirror_files_verified": 87,
   "android_sdk_compilation": true,
-  "apk_relative_path": "dist/HondaTuner-1.1.6-debug.apk",
-  "installation_note": "Simpan CSV/log yang diperlukan, uninstall 1.1.5, lalu pasang 1.1.6. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.",
-  "source_mirror_files_verified": 84,
-  "physical_ecu_success_verified": false,
+  "installation_note": "Simpan CSV/log yang diperlukan, uninstall 1.1.6, lalu pasang 1.1.7. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.",
   "laptop_used_for_apk_build": false,
-  "source_archive_relative_path": "dist/source-1.1.6-e410957.zip",
-  "preserved_latest_alias_original_locations": {
-    "honda_tuner_android\\dist\\HondaTuner-Android-debug.apk": "honda_tuner_android\\dist\\baseline-1.1.5\\HondaTuner-Android-debug.apk",
-    "honda_tuner_android\\dist\\HondaTuner-Android-debug.apk.sha256": "honda_tuner_android\\dist\\baseline-1.1.5\\HondaTuner-Android-debug.apk.sha256",
-    "honda_tuner_android\\build\\github-repo\\dist\\HondaTuner-Android-debug.apk": "honda_tuner_android\\build\\github-repo\\dist\\baseline-1.1.5\\HondaTuner-Android-debug.apk",
-    "honda_tuner_android\\build\\github-repo\\dist\\HondaTuner-Android-debug.apk.sha256": "honda_tuner_android\\build\\github-repo\\dist\\baseline-1.1.5\\HondaTuner-Android-debug.apk.sha256"
-  }
+  "physical_android_touch_usb_or_ecu_test": false,
+  "physical_ecu_success_verified": false
 }
