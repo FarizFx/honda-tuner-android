@@ -3,45 +3,73 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.5-debug / versionCode 7:** Live menyediakan **Pilih & urutkan sensor**.
-Centang sensor yang ingin ditampilkan, ubah urutan dengan tombol naik/turun,
-lalu Simpan. Pilihan bertahan setelah aplikasi dibuka ulang dan saat tabel ECU
-berubah; sensor baru tetap tampil. Mengatur tampilan tidak mereset riwayat.
+**Source v1.1.6-debug / versionCode 8 sudah disiapkan. APK 1.1.6 belum dibangun.**
+Build ditahan sesuai permintaan pengguna setelah laporan error; seluruh runner
+Linux yang terdaftar sedang offline. APK terakhir yang terverifikasi tetap
+`dist/HondaTuner-1.1.5-debug.apk` dari
+[Actions 43793080151](https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151).
+Laporan CI yang disertakan masih merupakan hasil asli build 1.1.5.
 
-Target **Secepatnya** tidak menambah jeda setelah satu putaran pembacaan selesai.
-Pilihan lain: 50/100/Secepatnya atau 50/100/250/500/1000/2000 ms. Waktu aktual mengikuti balasan ECU dan
-jumlah grup, tetap tampil sebagai Hz aktual. **Baca hanya grup sensor pilihan**
-mengurangi jumlah transaksi; sensor satu grup tetap dibaca bersama, sedangkan
-grup yang tidak dipilih menjadi belum terbaca di grafik/CSV. Pencarian dan
-kategori hanya menyaring tampilan. Interval yang tersimpan dari versi lama
-dipertahankan; pemasangan baru memakai Secepatnya.
+**Speedometer LCD** membuka layar instrumen dengan angka segmen, bar RPM, dan
+tiga sensor pendamping. **Atur HUD** menyimpan pilihan sensor, warna, ukuran
+angka, skala bar RPM, landscape, cermin untuk HUD, dan fokus pembacaan.
+Tombol **Mode miring / Mode tegak** juga tersedia pada Live. Rotasi layar
+mempertahankan koneksi USB, sampel, dan statistik selama Activity tetap hidup.
 
-Timer latensi FT232R kini 1 ms. Pemeriksaan koneksi USB pada pembacaan kosong
-yang kembali terlalu cepat memakai status vendor FTDI, menggantikan USB
-GET_STATUS generik yang gagal pada laporan 1.1.4. Status pendek/gagal serta
-kesalahan USB/TX tetap menghentikan sesi. Pemeriksaan target, panjang, checksum,
-UART ECU, overrun, echo ambigu, dan jendela tenang frame 24 ms tetap berlaku.
+**Min / Avg / Max** di bawah nilai sensor menghitung seluruh sampel numerik
+valid sepanjang sesi, termasuk nilai 0; batas grafik/CSV 600 sampel tidak
+membatasi statistik. Sampel kosong, boolean, dan nonfinite tidak ikut dihitung.
+Putus koneksi mereset statistik. Jeda, pergantian tampilan, urutan sensor,
+dan deteksi ulang dalam sesi yang sama mempertahankannya. `n=` dihapus.
 
-Pada log pengguna, **1.1.4 berhasil terhubung dan membaca 29 sensor dalam empat
-grup**, dengan tiga putaran lengkap sekitar 235–259 ms. Satu balasan utama
-terpotong menjadi 22/24 byte, lalu dipulihkan oleh retry. Log berhenti di tengah
-baris sebelum transaksi USB yang gagal, sehingga penyebab fisik error kontrol
-USB belum diketahui. Header ID `72 00 00` berisi **0102450F01** kini diterima
-bersama varian `72 00 05`, dengan syarat frame lengkap 11 byte dan checksum valid.
-Katalog berisi **245 definisi / 244 ID unik**; ID tersebut cocok dengan dua
-Vario 150 (K59F-A01 dan K59A-A11), dan keduanya tetap ditampilkan.
+Target refresh ditampilkan sebagai **0/50/100/250/500/1000/2000 ms**.
+**Refresh aktual** mengukur selisih waktu monotonic antarpenyelesaian putaran
+dalam ms; rata-rata memakai delapan interval terbaru. Durasi putaran dan
+interval terakhir juga ditampilkan. Target 0 ms tidak menambah jeda penjadwalan;
+durasi aktual mengikuti jumlah grup, balasan ECU, dan retry. Jeda dan deteksi
+ulang tidak ikut dihitung sebagai interval live.
 
-**200 tes regresi lokal**, **312 vektor referensi / 5.616 nilai**, dan
-**16 vektor rekaman / 166 nilai** lulus. [Build Actions 1.1.5](https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151)
-berhasil pada server Linux 4. Kompilasi SDK, signature dan ZIP APK lulus;
-lint: 0 error / 36 warning. APK: `dist/HondaTuner-1.1.5-debug.apk`.
-Pasang 1.1.5 sebagai pembaruan 1.1.4; sertifikat debug sama.
-APK/laporan 1.1.4
-dipertahankan di `dist/baseline-1.1.4`; semua versi sebelumnya juga dipertahankan.
-Bukti: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).
-Perbandingan transport sebelumnya: [evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).
-Pengujian HP/ECU: [PHYSICAL_TEST.md](PHYSICAL_TEST.md). Hasil versi baru pada
-perangkat dan latensi aktual masih perlu diuji.
+**Baca hanya grup sensor pilihan** dan fokus HUD mengurangi transaksi.
+Sensor satu grup tetap dibaca bersama; grup yang tidak dipilih menjadi belum
+terbaca di grafik/CSV. Kembali dari LCD memulihkan pilihan pembacaan Live.
+Pencarian dan kategori menyaring tampilan. Pilihan sensor dan interval tersimpan.
+Grafik RPM, TPS, tegangan, dan VSS dimulai dari 0 dengan label nol yang terlihat.
+Suhu dan pengapian mempertahankan nilai negatif yang memang terbaca.
+
+**Speed / VSS** tersedia hanya jika tabel ECU menyediakannya. Skala km/h belum
+terverifikasi, sehingga VSS memakai **RAW**. Tabel 0x17 pada rekaman pengguna
+tidak memuat VSS; LCD memakai RPM secara default ketika VSS tidak tersedia.
+Nilai sensor yang belum terbaca ditampilkan sebagai tanda pisah.
+
+Log terbaru **1.1.5** melaporkan **Status RX FT232R tidak tersedia (-1)**.
+ID **0102450F01** sudah terbaca; empat grup / 29 sensor menghasilkan satu
+putaran lengkap **220,5 ms**. Cuplikan memuat 219 paket status tanpa data dan
+berhenti di tengah entri 84883 sebelum pemeriksaan yang gagal. Penyebab fisik
+hasil kontrol -1 belum diketahui, tetapi source sebelumnya langsung memutus
+sesi pada satu hasil tersebut.
+
+Pada 1.1.6, paket FTDI yang valid atau status TX yang baru berhasil diterima
+menjadi bukti koneksi USB selama 100 ms; pemeriksaan RX tambahan tidak dikirim
+selama bukti itu masih baru. Hasil kontrol **-1** yang tersendiri memberi
+kesempatan membaca USB lagi. Tiga pemeriksaan gagal berturut-turut, berjarak
+minimal 50 ms dan tanpa bukti USB baru, tetap memutus sesi. Status pendek atau
+tidak valid, exception USB, TX yang tidak pasti, UART ECU, overrun, target,
+panjang, checksum, echo ambigu, dan jendela tenang 24 ms tetap diperiksa.
+Probe memakai sisa anggaran timeout baca. Timer latensi FTDI tetap 1 ms.
+Paket status tanpa data diringkas dengan jumlah dan flag terakhir; seluruh
+paket yang membawa data UART tetap dicatat utuh. **Salin akhir log** menjaga
+header versi/error dan entri terakhir, sementara **Simpan .txt** tetap lengkap.
+Perbaikan GET_STATUS dan parser ID dari 1.1.5 juga tetap disertakan; kedua
+kecocokan Vario 150 dalam katalog tidak dihilangkan.
+
+**231 tes regresi JVM**, **312 vektor referensi / 5.616 nilai**, dan
+**16 vektor rekaman / 166 nilai** lulus pada source core 1.1.6.
+Pemeriksaan XML, YAML, dan sintaks alat dilakukan tanpa SDK Android lokal.
+Kompilasi Android, lint, signature, dan pengujian HP/ECU 1.1.6 masih menunggu build.
+Baseline 1.1.5 dan versi sebelumnya dipertahankan. Bukti pembaruan:
+[evidence/dashboard_1_1_6.json](evidence/dashboard_1_1_6.json).
+Audit perbaikan sebelumnya: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).
+Pengujian HP/ECU: [PHYSICAL_TEST.md](PHYSICAL_TEST.md).
 
 ## Hubungkan
 
@@ -68,9 +96,9 @@ untuk melanjutkan. Hasil izin USB dapat diselesaikan saat kembali dari dialog.
 ## Live, Grafik dan DTC
 
 - **Live:** seluruh sensor bernama dari tabel ECU, pencarian, kategori, kualitas,
-  usia sampel, min/maks/rata-rata dan frekuensi aktual.
+  usia sampel, Min / Avg / Max dan refresh aktual dalam ms.
 - **Jeda/Mulai live**, **Baca sekali** saat dijeda, serta target interval
-  Secepatnya atau 50/100/250/500/1000/2000 ms. Baca sekali tetap dijeda setelah selesai.
+  0/50/100/250/500/1000/2000 ms. Baca sekali tetap dijeda setelah selesai.
 - **Grafik:** pilih sensor numerik; 120 sampel terakhir memakai waktu pembacaan
   sebenarnya. Data kosong memutus garis.
 - **Simpan CSV:** maksimal 600 sampel, waktu UTC/epoch, nilai, jumlah grup valid
@@ -87,16 +115,18 @@ definisi yang cocok.
 
 RPM, V, °C dan ° memakai skala source referensi. Tekanan, VSS, injektor dan sinyal
 lain yang belum memiliki skala terverifikasi tetap raw; kPa/km/h/ms tidak ditebak.
-Riwayat sensor berada dalam memori Activity. Simpan CSV sebelum menutup atau
-memutar layar. Tab dan putus koneksi mempertahankan riwayat selama Activity hidup.
+Riwayat sensor berada dalam memori Activity. Simpan CSV sebelum menutup aplikasi.
+Rotasi dan tab mempertahankan riwayat serta statistik. Putus koneksi mereset
+statistik dan mempertahankan sampel grafik/CSV sampai sesi baru dimulai.
 Pemilih lokasi simpan menutup koneksi; snapshot ekspor sudah diambil sebelumnya.
 BIN/XDF, remap, hapus DTC dan pemrograman ECU belum tersedia.
 
 ## Debug jika ECU belum terbaca
 
 Biarkan **Detail TX/RX USB & K-Line** aktif di **Debug**, lalu coba **Hubungkan**.
-Kegagalan koneksi membuka Debug otomatis. **Salin log** atau **Simpan .txt**
-mengekspor trace yang tersimpan tanpa izin storage tambahan.
+Kegagalan koneksi membuka Debug otomatis. **Salin akhir log** mengambil header
+versi/error dan maksimal 120 entri terakhir / 32 KiB karakter. **Simpan .txt**
+mengekspor seluruh trace yang tersimpan tanpa izin storage tambahan.
 
 Log mencatat perangkat/Android, izin, descriptor/endpoint, control FTDI, tahap
 scan, TX/RX mentah dan UART, echo, timeout, checksum, tabel, serta stack trace.
@@ -108,7 +138,8 @@ Header Debug mempertahankan hasil pembacaan ID, model dan jumlah entri katalog.
 **Error terakhir** menyimpan snapshot privat yang dapat dibuka setelah aplikasi
 dijalankan ulang. **Bersihkan log sekarang** mempertahankan arsip error terakhir.
 Trace aktif dibatasi 2.000 entri / sekitar 256 KiB karakter. Layar menampilkan 240
-entri terbaru; salin/simpan mencakup trace tersimpan. Logcat: `adb logcat -s HondaTuner`.
+entri terbaru; salin mengambil bagian akhir dan simpan mencakup trace tersimpan.
+Logcat: `adb logcat -s HondaTuner`.
 
 Default: **Echo otomatis**, timeout **1000 ms**. Auto menerima echo lengkap lalu
 balasan atau balasan ECU langsung; header, panjang dan checksum tetap diperiksa.
@@ -125,9 +156,9 @@ Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.
 Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Runner default `self-hosted` harus online. **Server Linux 4 (ID 31)**
-membangun 1.1.4 dan masih online saat source 1.1.5 disiapkan. Registrasi runner
-dipertahankan. Laptop tidak dipakai untuk APK.
+Runner default `self-hosted` harus online. **Server Linux 4 (ID 31)** membangun
+1.1.4 dan 1.1.5. Seluruh runner terdaftar sedang offline saat kelanjutan 1.1.6;
+build baru ditahan. Registrasi runner dipertahankan. Laptop tidak dipakai untuk APK.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
 kemudian memeriksa signature, versi/manifest dan ZIP.
@@ -152,7 +183,8 @@ python tools/test_core.py --java-home /path/to/jdk
 ```
 
 Suite mencakup framing/echo, retry, FTDI BREAK/FIFO/drain/status, DTC, live/cancel/session,
-identitas, logging, riwayat dan CSV. Vektor referensi mencakup 13 varian tabel dengan
+identitas, logging, statistik sepanjang sesi, refresh monotonic, skala grafik,
+layout LCD portrait/landscape, fokus HUD, riwayat dan CSV. Vektor referensi mencakup 13 varian tabel dengan
 input terkontrol. Fixture telepon memuat 17 transaksi rekaman USB; replay tidak
 melakukan I/O pada kendaraan. `--output-dir PATH` menyimpan laporan tes lokal
 terpisah dari bukti CI. `tools/sync_reference.py` memperbarui ekspor referensi bila source
@@ -166,9 +198,10 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 ```
 
 Repo belum menyertakan Gradle Wrapper.
-Status: [evidence/build_status.json](evidence/build_status.json).
-Source 1.1.4: `7ae1d6b07e8281ee1d163b61e4c7de74c809574d`. Build dan APK belum
-terverifikasi karena job masih mengantre untuk runner Linux yang offline.
+Status source 1.1.6: [evidence/dashboard_1_1_6.json](evidence/dashboard_1_1_6.json).
+Build terakhir yang selesai: [evidence/build_status.json](evidence/build_status.json),
+source 1.1.5 `443d36cc52ca282faeaadaebb2264682bb6602d1`, run 43793080151.
+Source 1.1.6 belum dipush dan belum memiliki job Actions atau APK.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

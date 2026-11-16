@@ -31,6 +31,7 @@ public final class LiveProfile {
         public final int validGroups;
         public final long completedNanos;
         public final long completedMillis;
+        private final long readDurationNanos;
         Sample(Map<String, Object> values, Map<Integer, String> failures, int validGroups) {
             this(values, failures, validGroups, System.nanoTime(), System.currentTimeMillis());
         }
@@ -40,7 +41,17 @@ public final class LiveProfile {
             this.validGroups = validGroups;
             this.completedNanos = completedNanos;
             this.completedMillis = completedMillis;
+            this.readDurationNanos = -1;
         }
+        private Sample(Sample sample, long readDurationNanos) {
+            values = sample.values; failures = sample.failures; validGroups = sample.validGroups;
+            completedNanos = sample.completedNanos; completedMillis = sample.completedMillis;
+            this.readDurationNanos = readDurationNanos;
+        }
+        Sample withReadingStarted(long startedNanos) {
+            return new Sample(this, Math.max(0, completedNanos - startedNanos));
+        }
+        public Double readDurationMillis() { return readDurationNanos < 0 ? null : readDurationNanos / 1000000.0; }
     }
 
     public final List<Table> tables;

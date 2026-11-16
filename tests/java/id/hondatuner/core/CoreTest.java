@@ -87,7 +87,9 @@ public final class CoreTest {
         run("logged app controller scans and reads DTC without echo", CoreTest::controllerDirect);
         run("runtime polling failures produce unread samples and stop visibly", CoreTest::runtimeLoss);
         passed += FtdiUartTest.runAll();
+        passed += DiagnosticTraceTest.runAll();
         passed += SensorSelectionTest.runAll();
+        passed += DashboardTest.runAll();
         System.out.println("PASS: " + passed + " core regression tests");
     }
     private static void run(String name, Checked test) throws Exception { test.run(); passed++; System.out.println("OK " + name); }

@@ -3,11 +3,13 @@
     <uses-feature android:name="android.hardware.usb.host" android:required="true" />
     <application
         android:allowBackup="false"
+        android:enableOnBackInvokedCallback="true"
         android:label="@string/app_name"
         android:icon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="id.hondatuner.android.MainActivity" android:exported="true">
+        <activity android:name="id.hondatuner.android.MainActivity" android:exported="true"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

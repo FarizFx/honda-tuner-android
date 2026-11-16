@@ -204,7 +204,7 @@ public final class DiagnosticController implements AutoCloseable {
         publish(State.LIVE, liveMessage());
     }
     private String liveMessage() {
-        return liveInterval == 0 ? "Live data aktif. Secepatnya, tanpa jeda tambahan." : "Live data aktif. Target pembacaan setiap " + liveInterval + " ms.";
+        return "Live data aktif. Target refresh " + liveInterval + " ms." + (liveInterval == 0 ? " Tanpa jeda tambahan." : "");
     }
     public synchronized long liveIntervalMillis() { return liveInterval; }
     public synchronized void setLiveIntervalMillis(long interval) {
@@ -232,8 +232,9 @@ public final class DiagnosticController implements AutoCloseable {
         final Set<String> currentFields = fieldsFor(currentProfile);
         publish(State.READING_SAMPLE, "Membaca satu putaran sensor...");
         executor.execute(() -> {
+            long readingStarted = System.nanoTime();
             try {
-                LiveProfile.Sample sample = currentProfile.read(current, () -> cancelled(token, op), currentFields);
+                LiveProfile.Sample sample = currentProfile.read(current, () -> cancelled(token, op), currentFields).withReadingStarted(readingStarted);
                 synchronized (this) {
                     if (transportFailed(current, token, null)) return;
                     if (cancelled(token, op)) return;

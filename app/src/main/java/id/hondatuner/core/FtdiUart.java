@@ -26,6 +26,8 @@ public final class FtdiUart implements ByteChannel {
         @Override public void sleep(long millis) throws InterruptedException { Thread.sleep(millis); }
     };
     private static final int BAUD = 10400;
+    private static final long RX_HEALTH_FRESH_NANOS = 100000000L, RX_HEALTH_RETRY_NANOS = 50000000L;
+    private static final int RX_HEALTH_MISS_LIMIT = 3;
     private final UsbIo io;
     private final int port, packetSize;
     private final DiagnosticLog log;
@@ -34,6 +36,12 @@ public final class FtdiUart implements ByteChannel {
     private FtdiCodec.RxData pending;
     private boolean transmitReady;
     private volatile boolean failed;
+    private boolean hasUsbActivity, hasRxHealthProbe;
+    private long lastUsbActivity, lastRxHealthProbe;
+    private int rxHealthMisses;
+    private long statusOnlyPackets, statusOnlyBegan;
+    private int statusOnlyLineFlags;
+    private byte[] lastStatusOnly;
 
     public FtdiUart(UsbIo io, int port, int packetSize, DiagnosticLog log) {
         this(io, port, packetSize, log, SYSTEM);
@@ -49,21 +57,52 @@ public final class FtdiUart implements ByteChannel {
     }
     private TransportException failed(String message, Throwable cause) {
         failed = true; transmitReady = false;
+        flushStatusOnly();
         return cause == null ? new TransportException(message) : new TransportException(message, cause);
     }
+    private void usbActivity() {
+        hasUsbActivity = true; lastUsbActivity = timing.now(); rxHealthMisses = 0;
+    }
+    private boolean rxHealthDue(long now) {
+        return (!hasUsbActivity || now - lastUsbActivity >= RX_HEALTH_FRESH_NANOS) &&
+                (!hasRxHealthProbe || now - lastRxHealthProbe >= RX_HEALTH_RETRY_NANOS);
+    }
     private int readUsb(byte[] buffer, int timeoutMillis) throws TransportException {
-        long began = timing.now();
+        long began = timing.now(), deadline = began + timeoutMillis * 1000000L;
         try {
-            int count = io.read(buffer, timeoutMillis);
-            // Android may return an empty bulk read before its deadline. Check
-            // the adapter with the same vendor request already used for TX.
-            // A missing/short status or actual I/O exception stays fatal.
-            if (count <= 0 && timing.now() - began < timeoutMillis * 1000000L) {
+            // After an inconclusive probe, reserve time to check again even if
+            // the next bulk read consumes its timeout. Always let RX run first:
+            // a real FTDI packet is stronger evidence than a control timeout.
+            int bulkTimeout = timeoutMillis;
+            if (rxHealthMisses > 0 && rxHealthDue(began) && timeoutMillis > 1)
+                bulkTimeout -= Math.min(20, timeoutMillis / 2);
+            int count = io.read(buffer, bulkTimeout);
+            requireOpen();
+            if (count < -1 || count > buffer.length) throw failed("Panjang RX USB tidak valid (" + count + ").", null);
+            long now = timing.now(), remaining = deadline - now;
+            if (count <= 0 && remaining >= 1000000L && rxHealthDue(now)) {
                 requireOpen();
                 byte[] status = new byte[2];
-                int statusCount = io.controlIn(5, 0, port, status, Math.min(20, timeoutMillis));
+                int probeTimeout = (int) Math.min(20, remaining / 1000000L);
+                int statusCount = io.controlIn(5, 0, port, status, probeTimeout);
+                hasRxHealthProbe = true; lastRxHealthProbe = timing.now();
                 if (log != null) log.debug("USB RX HEALTH", "Early empty bulk read; FTDI status=" + statusCount + ", elapsed=" + elapsed(began));
-                if (statusCount != 2) throw failed("Status RX FT232R tidak tersedia (" + statusCount + ").", null);
+                requireOpen();
+                if (statusCount == 2) usbActivity();
+                else if (statusCount == -1) {
+                    rxHealthMisses++;
+                    if (log != null) log.warn("USB RX HEALTH", "Status RX belum tersedia (-1); percobaan " +
+                            rxHealthMisses + "/" + RX_HEALTH_MISS_LIMIT + "; menunggu bukti USB baru.");
+                    if (rxHealthMisses >= RX_HEALTH_MISS_LIMIT)
+                        throw failed("Status RX FT232R tidak tersedia (-1) pada " + RX_HEALTH_MISS_LIMIT +
+                                " pemeriksaan berturut-turut tanpa paket USB baru.", null);
+                } else throw failed("Status RX FT232R terpotong atau tidak valid (" + statusCount + ").", null);
+            }
+            if (count <= 0 && timing.now() == began) {
+                // Some Android bulk errors return immediately. Avoid spinning
+                // without advancing the outer transaction/cancellation window.
+                try { timing.sleep(1); }
+                catch (InterruptedException error) { Thread.currentThread().interrupt(); throw new InterruptedIOException("Pembacaan USB dibatalkan."); }
                 requireOpen();
             }
             return count;
@@ -98,6 +137,7 @@ public final class FtdiUart implements ByteChannel {
     }
     @Override public void initialize(CancelSignal cancel) throws IOException {
         cancel.check(); transmitReady = false;
+        hasUsbActivity = hasRxHealthProbe = false; rxHealthMisses = 0;
         try {
             control(0, 0, port); // full initialization deliberately resets the UART
             cancel.check(); purge();
@@ -144,6 +184,7 @@ public final class FtdiUart implements ByteChannel {
                     if (size < 2) throw failed("Status USB FTDI terpotong saat membersihkan wake.", null);
                     payload += size - 2;
                 }
+                usbActivity();
                 if (payload > 0) { discarded += payload; lastData = timing.now(); }
             }
         }
@@ -216,6 +257,7 @@ public final class FtdiUart implements ByteChannel {
                 catch (IOException | RuntimeException error) { throw failed("Status TX USB FT232R gagal: " + error.getMessage(), error); }
                 requireOpen(); cancel.check();
                 if (count != 2) throw failed("Status TX FT232R tidak tersedia (" + count + ").", null);
+                usbActivity();
                 if (log != null) log.wire("FTDI", "TX MODEM/LSR", status, count);
                 if (timing.now() < deadline && (status[1] & 0x60) == 0x60) {
                     if (log != null) log.debug("UART TX", data.length + " byte drained, elapsed=" + elapsed(began));
@@ -250,11 +292,26 @@ public final class FtdiUart implements ByteChannel {
             return new byte[0];
         }
         if (count > raw.length) throw failed("Panjang RX USB tidak valid.", null);
-        if (log != null) log.wire("USB RX", "RAW", raw, count);
         try { pending = FtdiCodec.decodeStatus(raw, count, packetSize); }
         catch (ProtocolException error) { throw failed(error.getMessage(), error); }
-        if (log != null && pending.size() == 0) log.debug("USB RX", "Status-only packet; no UART data.");
+        usbActivity();
+        if (pending.size() == 0) {
+            if (statusOnlyPackets++ == 0) statusOnlyBegan = timing.now();
+            statusOnlyLineFlags |= raw[1] & 255;
+            lastStatusOnly = new byte[]{raw[0], raw[1]};
+            if (timing.now() - statusOnlyBegan >= 250000000L) flushStatusOnly();
+        } else {
+            flushStatusOnly();
+            if (log != null) log.wire("USB RX", "RAW", raw, count);
+        }
         return takePending(maximumBytes);
+    }
+    private void flushStatusOnly() {
+        if (statusOnlyPackets == 0) return;
+        if (log != null) log.debug("USB RX", "Status-only packets=" + statusOnlyPackets +
+                "; last=" + DiagnosticLog.hex(lastStatusOnly, 2) + "; LSR flags=0x" +
+                Integer.toHexString(statusOnlyLineFlags) + "; no UART data.");
+        statusOnlyPackets = 0; statusOnlyLineFlags = 0; lastStatusOnly = null;
     }
     private byte[] takePending(int maximumBytes) throws FtdiCodec.UartException {
         int count = Math.min(maximumBytes, pending.size());

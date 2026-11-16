@@ -30,7 +30,7 @@ public final class SensorInfo {
             case "map_sensor_voltage": return "Tegangan MAP";
             case "spark_advance": return "Sudut pengapian";
             case "injector": return "Sinyal injektor";
-            case "vss": return "Sinyal kecepatan kendaraan";
+            case "vss": return "Speed / VSS";
             case "iacv_pulse_counter": return "Pulsa katup idle";
             case "iac_valve_command": return "Perintah katup idle";
             case "ethanol_index": return "Campuran etanol";
@@ -63,9 +63,26 @@ public final class SensorInfo {
         return "Mesin & udara";
     }
     public static int priority(String name) {
-        String[] priority = {"engine_speed", "tp_sensor_angle", "tp_sensor_1_angle", "battery_voltage", "ect_sensor_temperature", "eot_sensor_temperature", "iat_sensor_temperature", "map_sensor_pressure", "spark_advance", "injector"};
+        String[] priority = {"engine_speed", "vss", "tp_sensor_angle", "tp_sensor_1_angle", "battery_voltage", "ect_sensor_temperature", "eot_sensor_temperature", "iat_sensor_temperature", "map_sensor_pressure", "spark_advance", "injector"};
         for (int i = 0; i < priority.length; i++) if (priority[i].equals(name)) return i;
         return priority.length;
+    }
+    public static boolean nonNegative(String name) {
+        return name.equals("engine_speed") || name.equals("vss") || name.contains("voltage") ||
+                (name.endsWith("_angle") && (name.startsWith("tp_") || name.startsWith("tcp_")));
+    }
+    public static String compactLabel(String name) {
+        if (name.equals("engine_speed")) return "RPM";
+        if (name.equals("vss")) return "SPEED / VSS";
+        if (name.equals("battery_voltage")) return "BATTERY";
+        if (name.equals("tp_sensor_angle") || name.equals("tp_sensor_1_angle")) return "TPS";
+        if (name.equals("ect_sensor_temperature")) return "ECT";
+        if (name.equals("eot_sensor_temperature")) return "EOT";
+        if (name.equals("iat_sensor_temperature")) return "IAT";
+        return label(name).toUpperCase(Locale.ROOT);
+    }
+    public static String statisticsLabel(TelemetryHistory.Statistics values) {
+        return "Min " + format(values.minimum) + " · Avg " + format(values.average) + " · Max " + format(values.maximum);
     }
     public static String format(Object value) {
         if (value == null || value instanceof Number && TelemetryHistory.numeric(value) == null) return "—";

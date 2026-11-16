@@ -10,7 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -69,6 +71,9 @@ import id.hondatuner.core.DiagnosticLog;
 import id.hondatuner.core.HondaClient;
 import id.hondatuner.core.KLineTransport;
 import id.hondatuner.core.LiveProfile;
+import id.hondatuner.core.HudLayout;
+import id.hondatuner.core.LcdDashboard;
+import id.hondatuner.core.RefreshTiming;
 import id.hondatuner.core.SensorInfo;
 import id.hondatuner.core.SensorSelection;
 import id.hondatuner.core.TelemetryHistory;
@@ -88,6 +93,7 @@ public final class MainActivity extends Activity {
     private final ExecutorService files = Executors.newSingleThreadExecutor();
     private final DiagnosticLog log = new DiagnosticLog();
     private final TelemetryHistory history = new TelemetryHistory(600);
+    private final RefreshTiming timing = new RefreshTiming();
     private final AtomicBoolean logDirty = new AtomicBoolean(true);
     private final AtomicReference<Failure> lastFailure = new AtomicReference<>();
     private final List<UsbDevice> devices = new ArrayList<>();
@@ -124,6 +130,14 @@ public final class MainActivity extends Activity {
     private LinearLayout connectionPanel;
     private GridLayout grid;
     private SensorGraph graph;
+    private FrameLayout rootFrame;
+    private LinearLayout normalScreen, hudScreen;
+    private SpeedometerView speedometer;
+    private HudLayout hudLayout;
+    private Button showHud, rotate, hudPause;
+    private boolean hudMode;
+    private int orientationBeforeHud = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    private android.window.OnBackInvokedCallback hudBackCallback;
 
     private static final class Failure {
         final String reason, trace, source;
@@ -145,6 +159,7 @@ public final class MainActivity extends Activity {
                 logDirty.set(true);
             }
             refreshLiveNote();
+            if (hudMode) refreshHud();
             if (selectedTab == 3 && logDirty.getAndSet(false)) renderDebug();
             main.postDelayed(this, 500);
         }
@@ -173,6 +188,7 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences("diagnostics", MODE_PRIVATE);
+        hudLayout = readHudLayout(Collections.emptyList());
         sensorSelection = new SensorSelection(Arrays.asList(preferences.getString("sensor_order", "").split("\t")),
                 preferences.getStringSet("hidden_sensors", Collections.emptySet()));
         usb = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -226,7 +242,11 @@ public final class MainActivity extends Activity {
                 });
             }
             @Override public void onSample(long session, long generation, LiveProfile.Sample sample) {
-                main.post(() -> { if (!destroyed && controller.isCurrentLive(session, generation)) renderSample(sample); });
+                main.post(() -> {
+                    if (destroyed || !controller.isCurrentLive(session, generation)) return;
+                    timing.record(generation, sample, controller.snapshot().state == DiagnosticController.State.LIVE);
+                    renderSample(sample);
+                });
             }
             @Override public void onDtc(long session, long operation, HondaClient.DtcReport report) {
                 main.post(() -> {
@@ -259,13 +279,16 @@ public final class MainActivity extends Activity {
             } catch (IOException error) { log.warn("LOG LOAD", error.getMessage()); }
         });
         showState(controller.snapshot());
+        if (savedInstanceState != null && savedInstanceState.getBoolean("hud_mode")) setHudMode(true);
     }
     @Override protected void onStart() {
         super.onStart(); foreground = true; log.info("LIFECYCLE", "Foreground"); refreshAdapters();
+        speedometer.setKeepScreenOn(hudMode);
         finishPermission(); main.removeCallbacks(refreshScreen); main.post(refreshScreen);
     }
     @Override protected void onStop() {
         foreground = false; main.removeCallbacks(refreshScreen);
+        speedometer.setKeepScreenOn(false);
         // A permission dialog owns no UART. Consume its pending result on return.
         // Active ECU communication always ends when the screen leaves the foreground.
         activeDevice = null;
@@ -280,10 +303,12 @@ public final class MainActivity extends Activity {
         state.putBoolean("permission_ready", permissionResultReady); state.putInt("tab", selectedTab);
         state.putBoolean("archived_trace", archivedTrace); state.putBoolean("export_in_flight", awaitingExport);
         state.putString("export_name", pendingExportName); state.putString("export_file", pendingExportFile);
+        state.putBoolean("hud_mode", hudMode);
         super.onSaveInstanceState(state);
     }
     @Override protected void onDestroy() {
         destroyed = true;
+        if (Build.VERSION.SDK_INT >= 33 && hudBackCallback != null) getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(hudBackCallback);
         if (controller != null) controller.close();
         if (registered) unregisterReceiver(receiver);
         if (!awaitingExport) deleteExport(pendingExportFile);
@@ -291,6 +316,17 @@ public final class MainActivity extends Activity {
         super.onDestroy();
     }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); refreshAdapters(); }
+    @Override public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        grid.setColumnCount(configuration.screenWidthDp >= 600 ? 3 : 2); applyFilter();
+        rotate.setText(configuration.orientation == Configuration.ORIENTATION_LANDSCAPE ? "Mode tegak" : "Mode miring");
+        if (configuration.screenHeightDp < 500) { connectionExpanded = false; connectionPanel.setVisibility(View.GONE); }
+        speedometer.requestLayout(); refreshHud();
+        log.info("LIFECYCLE", "Rotasi layar; sesi USB dan statistik dipertahankan.");
+    }
+    @Override public void onBackPressed() {
+        if (hudMode) setHudMode(false); else super.onBackPressed();
+    }
     private static UsbDevice usbDevice(Intent intent) {
         if (Build.VERSION.SDK_INT >= 33) return intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice.class);
         return intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
@@ -332,16 +368,24 @@ public final class MainActivity extends Activity {
             content[i] = column(); content[i].setPadding(0, dp(6), 0, dp(12)); pages[i].addView(content[i]);
         }
         buildLive(content[0]); buildGraph(content[1]); buildDtcs(content[2]); buildDebug(content[3]);
-        setContentView(root); showTab(selectedTab);
+        normalScreen = root; rootFrame = new FrameLayout(this); rootFrame.setBackgroundColor(BG);
+        rootFrame.addView(root, new FrameLayout.LayoutParams(-1, -1)); buildHud();
+        setContentView(rootFrame); showTab(selectedTab);
         refresh.setOnClickListener(view -> refreshAdapters()); connect.setOnClickListener(view -> onConnect());
         errorShortcut.setOnClickListener(view -> { archivedTrace = true; showTab(3); });
     }
     private void buildLive(LinearLayout live) {
         LinearLayout controls = row(); toggleLive = button("Mulai live", true); readOnce = button("Baca sekali", false);
         controls.addView(toggleLive, weight()); controls.addView(readOnce, weight()); live.addView(controls);
-        LinearLayout timing = row(); timing.addView(text("Target interval", 12, MUTED, false), new LinearLayout.LayoutParams(0, -2, 1));
-        interval = new Spinner(this); choices(interval, Arrays.asList("Secepatnya", "50 ms", "100 ms", "250 ms", "500 ms", "1.000 ms", "2.000 ms")); interval.setSelection(savedIntervalIndex());
-        timing.addView(interval, new LinearLayout.LayoutParams(dp(155), dp(44))); live.addView(timing);
+        LinearLayout modes = row(); showHud = button("Speedometer LCD", true);
+        rotate = button(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? "Mode tegak" : "Mode miring", false);
+        modes.addView(showHud, weight()); modes.addView(rotate, weight()); live.addView(modes);
+        showHud.setOnClickListener(view -> setHudMode(true));
+        rotate.setOnClickListener(view -> setRequestedOrientation(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
+                ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT : ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE));
+        LinearLayout target = row(); target.addView(text("Target refresh", 12, MUTED, false), new LinearLayout.LayoutParams(0, -2, 1));
+        interval = new Spinner(this); choices(interval, Arrays.asList("0 ms", "50 ms", "100 ms", "250 ms", "500 ms", "1.000 ms", "2.000 ms")); interval.setSelection(savedIntervalIndex());
+        target.addView(interval, new LinearLayout.LayoutParams(dp(155), dp(44))); live.addView(target);
         liveNote = text(getString(R.string.sensor_empty), 12, MUTED, false); padded(liveNote); live.addView(liveNote);
         LinearLayout options = row(); detect = button("Deteksi ulang", false); saveCsv = button("Simpan CSV", false);
         options.addView(detect, weight()); options.addView(saveCsv, weight()); live.addView(options);
@@ -361,11 +405,12 @@ public final class MainActivity extends Activity {
         detect.setOnClickListener(view -> controller.detectAgain());
         saveCsv.setOnClickListener(view -> exportText(history.csv(), "text/csv", "HondaTuner-live-" + filenameTime() + ".csv"));
         resetStats.setOnClickListener(view -> {
-            history.reset(new ArrayList<>(cards.keySet()));
+            history.reset(new ArrayList<>(cards.keySet())); timing.reset();
             for (SensorCard card : cards.values()) card.refreshStatistics(); refreshGraph(); refreshLiveNote(); showControls();
             log.info("UI", "Statistik dan riwayat sampel direset.");
         });
         selected(interval, position -> {
+            timing.reset();
             preferences.edit().putLong("interval_ms", INTERVALS[position]).apply();
             if (controller != null) controller.setLiveIntervalMillis(INTERVALS[position]);
         });
@@ -425,12 +470,131 @@ public final class MainActivity extends Activity {
     }
     private void syncSensorPolling() {
         if (controller == null || focusSensors == null || displayedProfile == null) return;
+        if (hudMode && hudLayout.focused) {
+            List<String> needed = hudLayout.pollingFields(displayedProfile.fields);
+            controller.setLiveFields(needed.isEmpty() ? null : needed); return;
+        }
         List<String> visible = sensorSelection.visible(displayedProfile.fields);
         if (focusSensors.isChecked() && visible.isEmpty()) {
             focusSensors.setChecked(false); toast("Pilih minimal satu sensor untuk membatasi pembacaan.");
         }
         preferences.edit().putBoolean("focus_sensors", focusSensors.isChecked()).apply();
         controller.setLiveFields(focusSensors.isChecked() ? visible : null);
+    }
+    private HudLayout readHudLayout(List<String> fields) {
+        HudLayout defaults = HudLayout.defaults(fields);
+        List<String> auxiliary = new ArrayList<>();
+        for (int i = 0; i < 3; i++) auxiliary.add(preferences.getString("hud_aux_" + i, defaults.auxiliary.get(i)));
+        return new HudLayout(preferences.getString("hud_primary", defaults.primary), auxiliary,
+                preferences.getInt("hud_theme", defaults.theme), preferences.getFloat("hud_scale", 1f),
+                preferences.getBoolean("hud_mirror", false), preferences.getBoolean("hud_landscape", true),
+                preferences.getBoolean("hud_focus", true), preferences.getBoolean("hud_rpm_bar", true),
+                preferences.getInt("hud_rpm_limit", defaults.rpmLimit));
+    }
+    private void buildHud() {
+        hudScreen = column(); hudScreen.setBackgroundColor(Color.rgb(5, 14, 16)); hudScreen.setVisibility(View.GONE);
+        hudScreen.setOnApplyWindowInsetsListener((view, insets) -> {
+            view.setPadding(dp(6) + insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
+                    dp(6) + insets.getSystemWindowInsetRight(), dp(4) + insets.getSystemWindowInsetBottom()); return insets;
+        });
+        LinearLayout controls = row(); Button back = button("‹ Live", false), settings = button("Atur HUD", false);
+        hudPause = button("Mulai live", true);
+        controls.addView(back, weight()); controls.addView(settings, weight()); controls.addView(hudPause, weight());
+        hudScreen.addView(controls); speedometer = new SpeedometerView(this);
+        hudScreen.addView(speedometer, new LinearLayout.LayoutParams(-1, 0, 1));
+        rootFrame.addView(hudScreen, new FrameLayout.LayoutParams(-1, -1));
+        back.setOnClickListener(view -> setHudMode(false)); settings.setOnClickListener(view -> editHud());
+        hudPause.setOnClickListener(view -> { if (controller != null) controller.toggleLive(); }); refreshHud();
+    }
+    private void setHudMode(boolean enabled) {
+        if (hudMode == enabled) return;
+        if (enabled) orientationBeforeHud = getRequestedOrientation();
+        hudMode = enabled; normalScreen.setVisibility(enabled ? View.GONE : View.VISIBLE);
+        hudScreen.setVisibility(enabled ? View.VISIBLE : View.GONE); speedometer.setKeepScreenOn(enabled && foreground);
+        (enabled ? hudScreen : normalScreen).requestApplyInsets();
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (enabled) {
+                if (hudBackCallback == null) hudBackCallback = () -> setHudMode(false);
+                getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, hudBackCallback);
+            } else if (hudBackCallback != null) getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(hudBackCallback);
+        }
+        if (enabled) setRequestedOrientation(hudLayout.landscape ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+        else setRequestedOrientation(orientationBeforeHud);
+        timing.reset(); syncSensorPolling();
+        log.info("HUD", enabled ? "LCD dibuka; fokus=" + hudLayout.focused + ", utama=" + hudLayout.primary : "Kembali ke Live; pilihan pembacaan Live dipulihkan.");
+        if (!enabled) refreshVisibleReadings();
+        refreshHud(); refreshLiveNote(); showControls();
+    }
+    private List<String> hudFields() {
+        List<String> fields = new ArrayList<>(graphFields);
+        for (String field : Arrays.asList("vss", "engine_speed", "tp_sensor_angle", "battery_voltage", "ect_sensor_temperature", hudLayout.primary))
+            if (!fields.contains(field)) fields.add(field);
+        for (String field : hudLayout.auxiliary) if (!field.isEmpty() && !fields.contains(field)) fields.add(field);
+        return fields;
+    }
+    private String hudFieldLabel(String field) {
+        if (field.isEmpty()) return "Sembunyikan";
+        String unit = SensorInfo.unit(field);
+        boolean available = displayedProfile != null && displayedProfile.fields.contains(field);
+        return SensorInfo.label(field) + " · " + (unit.isEmpty() ? "raw" : unit) + (available ? "" : " · belum tersedia");
+    }
+    private Spinner hudChoice(LinearLayout form, String label, List<String> fields, String value) {
+        form.addView(text(label, 12, MUTED, false)); Spinner spinner = new Spinner(this);
+        List<String> labels = new ArrayList<>(); for (String field : fields) labels.add(hudFieldLabel(field));
+        choices(spinner, labels); spinner.setSelection(Math.max(0, fields.indexOf(value)));
+        form.addView(spinner, new LinearLayout.LayoutParams(-1, dp(44))); return spinner;
+    }
+    private CheckBox hudCheck(LinearLayout form, String label, boolean checked) {
+        CheckBox box = new CheckBox(this); box.setText(label); box.setTextColor(INK); box.setTextSize(13);
+        box.setChecked(checked); form.addView(box); return box;
+    }
+    private void editHud() {
+        ScrollView scroll = new ScrollView(this); LinearLayout form = column(); form.setPadding(dp(14), dp(8), dp(14), dp(8)); scroll.addView(form);
+        form.addView(text("Pilih sensor dan tampilan LCD. Pengaturan tersimpan. Speed/VSS tampil jika tabel ECU menyediakannya; skala km/h belum terverifikasi sehingga nilainya memakai raw.", 12, MUTED, false));
+        List<String> fields = hudFields(), optional = new ArrayList<>(fields); optional.add(0, "");
+        Spinner primary = hudChoice(form, "Angka utama", fields, hudLayout.primary);
+        Spinner[] auxiliary = new Spinner[3];
+        for (int i = 0; i < 3; i++) auxiliary[i] = hudChoice(form, "Sensor pendamping " + (i + 1), optional, hudLayout.auxiliary.get(i));
+        form.addView(text("Warna LCD", 12, MUTED, false)); Spinner theme = new Spinner(this);
+        choices(theme, Arrays.asList("Hijau", "Cyan", "Amber", "Putih")); theme.setSelection(hudLayout.theme); form.addView(theme);
+        form.addView(text("Ukuran angka utama", 12, MUTED, false)); Spinner size = new Spinner(this);
+        choices(size, Arrays.asList("Kecil", "Normal", "Besar")); size.setSelection(hudLayout.digitScale < .95f ? 0 : hudLayout.digitScale > 1.05f ? 2 : 1); form.addView(size);
+        form.addView(text("Skala maksimum bar RPM", 12, MUTED, false)); Spinner rpmLimit = new Spinner(this);
+        int[] limits = {10000, 12000, 15000, 18000, 20000}; choices(rpmLimit, Arrays.asList("10.000 RPM", "12.000 RPM", "15.000 RPM", "18.000 RPM", "20.000 RPM"));
+        int selectedLimit = 2; for (int i = 0; i < limits.length; i++) if (hudLayout.rpmLimit == limits[i]) selectedLimit = i;
+        rpmLimit.setSelection(selectedLimit); form.addView(rpmLimit);
+        CheckBox landscape = hudCheck(form, "Landscape saat membuka LCD", hudLayout.landscape);
+        CheckBox mirror = hudCheck(form, "Cerminkan display untuk HUD", hudLayout.mirrored);
+        CheckBox rpm = hudCheck(form, "Tampilkan bar RPM", hudLayout.rpmBar);
+        CheckBox focused = hudCheck(form, "Baca hanya grup sensor HUD", hudLayout.focused);
+        form.addView(text("Fokus HUD mengurangi transaksi. Saat kembali ke Live, pilihan pembacaan Live dipulihkan. Min / Avg / Max menghitung sampel valid sepanjang sesi, termasuk nilai 0; putus koneksi mereset statistik.", 11, MUTED, false));
+        new AlertDialog.Builder(this).setTitle("Atur speedometer / HUD").setView(scroll).setNegativeButton("Batal", null)
+                .setPositiveButton("Simpan", (dialog, which) -> {
+                    List<String> slots = new ArrayList<>(); for (Spinner spinner : auxiliary) slots.add(optional.get(spinner.getSelectedItemPosition()));
+                    hudLayout = new HudLayout(fields.get(primary.getSelectedItemPosition()), slots, theme.getSelectedItemPosition(),
+                            new float[]{.85f, 1f, 1.15f}[size.getSelectedItemPosition()], mirror.isChecked(), landscape.isChecked(),
+                            focused.isChecked(), rpm.isChecked(), limits[rpmLimit.getSelectedItemPosition()]);
+                    SharedPreferences.Editor edit = preferences.edit().putString("hud_primary", hudLayout.primary).putInt("hud_theme", hudLayout.theme)
+                            .putFloat("hud_scale", hudLayout.digitScale).putBoolean("hud_mirror", hudLayout.mirrored)
+                            .putBoolean("hud_landscape", hudLayout.landscape).putBoolean("hud_focus", hudLayout.focused)
+                            .putBoolean("hud_rpm_bar", hudLayout.rpmBar).putInt("hud_rpm_limit", hudLayout.rpmLimit);
+                    for (int i = 0; i < 3; i++) edit.putString("hud_aux_" + i, hudLayout.auxiliary.get(i)); edit.apply();
+                    if (hudMode) setRequestedOrientation(hudLayout.landscape ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+                    timing.reset(); syncSensorPolling(); refreshHud();
+                }).show();
+    }
+    private void refreshHud() {
+        if (speedometer == null || hudLayout == null) return;
+        DiagnosticController.Snapshot state = controller == null ? null : controller.snapshot();
+        boolean connected = state != null && state.connected(), live = state != null && state.state == DiagnosticController.State.LIVE;
+        Map<String, Object> values = connected && lastSample != null ? lastSample.values : Collections.emptyMap();
+        LcdDashboard.Reading primary = new LcdDashboard.Reading(hudLayout.primary, values.get(hudLayout.primary), history.statistics(hudLayout.primary));
+        List<LcdDashboard.Reading> auxiliary = new ArrayList<>();
+        for (String name : hudLayout.auxiliary) if (!name.isEmpty()) auxiliary.add(new LcdDashboard.Reading(name, values.get(name), history.statistics(name)));
+        long age = lastSample == null ? 0 : Math.max(0, (System.nanoTime() - lastSample.completedNanos) / 1000000L);
+        String speed = displayedProfile != null && displayedProfile.fields.contains("vss") ? "VSS TERSEDIA / RAW" : "VSS BELUM TERSEDIA";
+        speedometer.update(hudLayout, new LcdDashboard.Data(primary, auxiliary, TelemetryHistory.numeric(values.get("engine_speed")),
+                timing.actualMillis(), timing.readingMillis(), connected, live, age, speed));
     }
     private void buildGraph(LinearLayout graphs) {
         graphs.addView(text("Grafik sensor", 20, INK, true));
@@ -453,11 +617,11 @@ public final class MainActivity extends Activity {
     }
     private void buildDebug(LinearLayout debug) {
         debug.addView(text("Debug koneksi", 20, INK, true));
-        debug.addView(text("Log direkam otomatis sejak aplikasi dibuka. Setelah mencoba Hubungkan, salin atau simpan log untuk memeriksa balasan ECU.", 12, MUTED, false));
+        debug.addView(text("Log direkam otomatis sejak aplikasi dibuka. Salin mengambil bagian akhir beserta header versi dan error; Simpan .txt menyimpan log lengkap.", 12, MUTED, false));
         failureNote = text("Belum ada error yang direkam.", 12, RED, false); failureNote.setTextIsSelectable(true); padded(failureNote); debug.addView(failureNote);
         LinearLayout sources = row(); traceNow = button("Log sekarang", true); traceLast = button("Error terakhir", false);
         sources.addView(traceNow, weight()); sources.addView(traceLast, weight()); debug.addView(sources);
-        LinearLayout actions = row(); copyLog = button("Salin log", true); saveLog = button("Simpan .txt", false);
+        LinearLayout actions = row(); copyLog = button("Salin akhir log", true); saveLog = button("Simpan .txt", false);
         actions.addView(copyLog, weight()); actions.addView(saveLog, weight()); debug.addView(actions);
         Switch detailed = new Switch(this); detailed.setText("Detail TX/RX USB & K-Line"); detailed.setTextColor(INK); detailed.setTextSize(13); detailed.setChecked(log.isDetailed()); debug.addView(detailed, new LinearLayout.LayoutParams(-1, dp(44)));
         detailed.setOnCheckedChangeListener((view, checked) -> { log.setDetailed(checked); preferences.edit().putBoolean("detailed_log", checked).apply(); log.info("LOG", "Detail TX/RX=" + checked); });
@@ -474,7 +638,7 @@ public final class MainActivity extends Activity {
         traceLast.setOnClickListener(view -> { archivedTrace = true; renderDebug(); });
         copyLog.setOnClickListener(view -> {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            if (clipboard != null) { clipboard.setPrimaryClip(ClipData.newPlainText("Honda Tuner debug", exportTrace())); toast("Log disalin."); }
+            if (clipboard != null) { clipboard.setPrimaryClip(ClipData.newPlainText("Honda Tuner debug", DiagnosticLog.compactTrace(exportTrace(), 120, 32 * 1024))); toast("Bagian akhir log disalin."); }
         });
         saveLog.setOnClickListener(view -> exportText(exportTrace(), "text/plain", "HondaTuner-debug-" + filenameTime() + ".txt"));
         clear.setOnClickListener(view -> { log.clear(); log.info("APP", appContext); log.info("UI", "Log sesi dibersihkan. Arsip error terakhir tetap tersedia."); archivedTrace = false; renderDebug(); });
@@ -549,6 +713,10 @@ public final class MainActivity extends Activity {
             displayedSession = snapshot.session;
             if (snapshot.state == DiagnosticController.State.CONNECTING) resetSessionViews();
         }
+        if (snapshot.state == DiagnosticController.State.DISCONNECTED) {
+            history.clearStatistics(); timing.reset();
+            for (SensorCard card : cards.values()) card.refreshStatistics();
+        }
         String state;
         switch (snapshot.state) {
             case CONNECTING: state = "SCAN ECU · MENGHUBUNGKAN"; break;
@@ -565,14 +733,15 @@ public final class MainActivity extends Activity {
         identity.setText(snapshot.connected() ? identityLabel(snapshot.ecuId) : ""); identity.setVisibility(snapshot.connected() ? View.VISIBLE : View.GONE);
         connectionNote.setText(snapshot.message);
         for (SensorCard card : cards.values()) card.setLive(snapshot.state == DiagnosticController.State.LIVE);
-        refreshLiveNote(); logDirty.set(true); showControls();
+        refreshLiveNote(); refreshHud(); logDirty.set(true); showControls();
     }
     private void resetSessionViews() {
         displayedProfile = null; lastSample = null; tableContext = "Sensor belum dideteksi.";
-        cards.clear(); grid.removeAllViews(); history.reset(Collections.emptyList()); graphFields.clear(); graphField = "";
+        cards.clear(); grid.removeAllViews(); history.reset(Collections.emptyList()); timing.reset(); graphFields.clear(); graphField = "";
         choices(graphChoice, Collections.singletonList("Sensor muncul setelah deteksi ECU")); graph.setSeries("", Collections.emptyList());
         graphNote.setText("Belum ada sampel."); filterNote.setText("Belum ada sensor."); tableNote.setText(tableContext);
         dtcCurrent.setText(getString(R.string.dtc_unread)); dtcStored.setText(getString(R.string.dtc_unread)); dtcNote.setText(getString(R.string.dtc_unread));
+        refreshHud();
     }
     private void showControls() {
         if (controller == null) return;
@@ -588,15 +757,21 @@ public final class MainActivity extends Activity {
         saveCsv.setEnabled(history.size() > 0 && !exportInFlight); resetStats.setEnabled(history.size() > 0); saveLog.setEnabled(!exportInFlight);
         graphChoice.setEnabled(!graphFields.isEmpty()); traceLast.setEnabled(lastFailure.get() != null);
         chooseSensors.setEnabled(!cards.isEmpty()); focusSensors.setEnabled(!cards.isEmpty());
+        hudPause.setText(state.state == DiagnosticController.State.LIVE ? R.string.pause_live : R.string.start_live);
+        hudPause.setEnabled(state.connected() && !state.busy() && state.hasSensors); hudPause.setAlpha(hudPause.isEnabled() ? 1f : .45f);
         for (Button button : new Button[]{connect, refresh, toggleLive, readOnce, detect, readDtc, saveCsv, resetStats, saveLog, traceLast}) button.setAlpha(button.isEnabled() ? 1f : 0.45f);
     }
     private void showTab(int tab) {
+        if (hudMode) setHudMode(false);
         selectedTab = boundedIndex(tab, pages.length);
         for (int i = 0; i < pages.length; i++) { pages[i].setVisibility(i == selectedTab ? View.VISIBLE : View.GONE); tint(tabs[i], i == selectedTab); }
         if (selectedTab == 3 && debugText != null) renderDebug();
+        if (selectedTab == 0 && lastSample != null) refreshVisibleReadings();
+        if (selectedTab == 1 && graph != null) refreshGraph();
     }
     private void buildCards(List<String> fields) {
-        cards.clear(); grid.removeAllViews(); history.reset(fields); lastSample = null;
+        cards.clear(); grid.removeAllViews(); history.includeFields(fields); lastSample = null; timing.reset();
+        hudLayout = readHudLayout(fields);
         List<String> ordered = sensorSelection.order(fields);
         for (String name : ordered) cards.put(name, new SensorCard(name));
         graphFields.clear(); List<String> labels = new ArrayList<>();
@@ -616,11 +791,20 @@ public final class MainActivity extends Activity {
             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f); params.setMargins(dp(3), dp(3), dp(3), dp(3)); grid.addView(cards.get(name), params); visible++;
         }
         filterNote.setText(cards.isEmpty() ? "Belum ada sensor." : visible + " / " + cards.size() + " sensor ditampilkan");
+        if (!hudMode && selectedTab == 0) refreshVisibleReadings();
     }
     private void renderSample(LiveProfile.Sample sample) {
-        lastSample = sample; history.add(sample); boolean live = controller.snapshot().state == DiagnosticController.State.LIVE;
-        for (Map.Entry<String, SensorCard> card : cards.entrySet()) card.getValue().setReading(sample.values.get(card.getKey()), live);
-        refreshGraph(); refreshLiveNote(); showControls();
+        lastSample = sample; history.add(sample);
+        if (!hudMode && selectedTab == 0) refreshVisibleReadings();
+        if (!hudMode && selectedTab == 1) refreshGraph();
+        if (hudMode) refreshHud();
+        refreshLiveNote(); showControls();
+    }
+    private void refreshVisibleReadings() {
+        if (lastSample == null || controller == null) return;
+        boolean live = controller.snapshot().state == DiagnosticController.State.LIVE;
+        for (Map.Entry<String, SensorCard> card : cards.entrySet()) if (card.getValue().getParent() == grid)
+            card.getValue().setReading(lastSample.values.get(card.getKey()), live);
     }
     private void refreshLiveNote() {
         if (liveNote == null) return;
@@ -628,7 +812,12 @@ public final class MainActivity extends Activity {
         int valid = 0; for (Object value : lastSample.values.values()) if (value != null && (!(value instanceof Number) || TelemetryHistory.numeric(value) != null)) valid++;
         double age = Math.max(0, (System.nanoTime() - lastSample.completedNanos) / 1000000000.0);
         String mode = controller != null && controller.snapshot().state == DiagnosticController.State.LIVE ? "Live" : "Sampel terakhir";
-        liveNote.setText(String.format(Locale.getDefault(), "%s · %s · usia %.1f dtk\n%d/%d sensor · %d grup terbaca · %.2f Hz aktual\nRiwayat %d/600 sampel · total %d", mode, timeLabel(lastSample.completedMillis), age, valid, cards.size(), lastSample.validGroups, history.updatesPerSecond(), history.size(), history.totalSamples()) + (lastSample.failures.isEmpty() ? "" : "\nAda grup gagal dibaca; buka Debug untuk detail."));
+        String refresh = timing.actualMillis() == null ? "Refresh aktual — ms" : String.format(Locale.getDefault(),
+                "Refresh aktual %.1f ms (%.2f Hz) · terakhir %.1f ms", timing.actualMillis(), timing.updatesPerSecond(), timing.latestMillis());
+        String duration = timing.readingMillis() == null ? "—" : String.format(Locale.getDefault(), "%.1f", timing.readingMillis());
+        liveNote.setText(String.format(Locale.getDefault(), "%s · %s · usia %.1f dtk\n%s\nPutaran %s ms · target %d ms\n%d/%d sensor · %d grup terbaca\nRiwayat %d/600 sampel · total %d", mode, timeLabel(lastSample.completedMillis), age,
+                refresh, duration, controller == null ? 0 : controller.liveIntervalMillis(), valid, cards.size(), lastSample.validGroups, history.size(), history.totalSamples()) +
+                (lastSample.failures.isEmpty() ? "" : "\nAda grup gagal dibaca; buka Debug untuk detail."));
     }
     private void refreshGraph() {
         if (graph == null) return;
@@ -636,7 +825,7 @@ public final class MainActivity extends Activity {
         if (graphField.isEmpty()) { graphNote.setText("Belum ada sensor numerik."); return; }
         TelemetryHistory.Statistics stats = history.statistics(graphField);
         Object current = lastSample == null ? null : lastSample.values.get(graphField); String unit = SensorInfo.unit(graphField);
-        graphNote.setText(SensorInfo.label(graphField) + ": " + SensorInfo.format(current) + (unit.isEmpty() ? " (raw)" : " " + unit) + "\nMin " + SensorInfo.format(stats.minimum) + " · Maks " + SensorInfo.format(stats.maximum) + "\nRata-rata " + SensorInfo.format(stats.average) + " · " + stats.readings + " pembacaan valid");
+        graphNote.setText(SensorInfo.label(graphField) + ": " + SensorInfo.format(current) + (unit.isEmpty() ? " (raw)" : " " + unit) + "\n" + SensorInfo.statisticsLabel(stats));
     }
     private void renderDebug() {
         Failure failure = lastFailure.get();
@@ -645,7 +834,7 @@ public final class MainActivity extends Activity {
         traceLast.setEnabled(failure != null); traceLast.setAlpha(failure == null ? .45f : 1f);
         failureNote.setText(failure == null ? "Belum ada error yang direkam." : failure.reason);
         debugInfo.setText(appContext + "\n\nUSB terdeteksi:\n" + usbInventory + "\n\n" + stateContext + "\nTabel: " + tableContext);
-        debugSummary.setText(archivedTrace ? "Arsip error terakhir · tetap tersedia setelah aplikasi dibuka ulang." : log.size() + " entri · menampilkan 240 entri terbaru · " + log.droppedEntries() + " entri lama diganti. Salin/simpan untuk log lengkap yang tersimpan.");
+        debugSummary.setText(archivedTrace ? "Arsip error terakhir · tetap tersedia setelah aplikasi dibuka ulang." : log.size() + " entri · menampilkan 240 entri terbaru · " + log.droppedEntries() + " entri lama diganti. Salin mengambil bagian akhir; simpan .txt untuk log lengkap.");
         debugText.setText(archivedTrace ? failure.trace : captureTrace(240));
     }
     private String captureTrace(int maximumLines) { return traceContext + "\n" + stateContext + "\n\n" + log.text(maximumLines); }
@@ -793,7 +982,7 @@ public final class MainActivity extends Activity {
         void setLive(boolean live) { state.setText(!valid ? "Belum terbaca" : live ? "Live" : "Sampel terakhir"); state.setTextColor(valid && live ? GREEN : MUTED); }
         void refreshStatistics() {
             TelemetryHistory.Statistics values = history.statistics(sensor);
-            stats.setText(values.readings == 0 ? "" : "Min " + SensorInfo.format(values.minimum) + " · Maks " + SensorInfo.format(values.maximum) + "\nRata " + SensorInfo.format(values.average) + " · n=" + values.readings);
+            stats.setText(SensorInfo.statisticsLabel(values));
         }
     }
 }

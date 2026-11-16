@@ -9,9 +9,12 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Bounded session trace. Observers run outside its lock and their errors are isolated. */
 public final class DiagnosticLog {
+    private static final Pattern TRACE_ENTRY = Pattern.compile("(?m)^\\d{4}-\\d{2}-\\d{2}T[^\\r\\n ]+ \\+\\d+ms #\\d+ [A-Z]+ \\[");
     public interface Sink { void onEntry(Entry entry); }
     public static final class Entry {
         public final long sequence, timestampMillis, elapsedMillis;
@@ -94,6 +97,25 @@ public final class DiagnosticLog {
         int begin = maximumLines > 0 ? Math.max(0, copy.size() - maximumLines) : 0;
         for (int i = begin; i < copy.size(); i++) out.append(copy.get(i).line()).append('\n');
         return out.toString();
+    }
+    /** Keep the original app/error header and newest complete multiline entries. */
+    public static String compactTrace(String trace, int maximumEntries, int maximumCharacters) {
+        if (maximumEntries < 1 || maximumCharacters < 512) throw new IllegalArgumentException("Compact trace limits are too small.");
+        List<Integer> starts = new ArrayList<>(); Matcher entries = TRACE_ENTRY.matcher(trace);
+        while (entries.find()) starts.add(entries.start());
+        if (trace.length() <= maximumCharacters && starts.size() <= maximumEntries) return trace;
+        String notice = "Cuplikan akhir log. Simpan .txt untuk log lengkap.\n\n";
+        int first = starts.isEmpty() ? Math.min(512, trace.length()) : starts.get(0);
+        String header = trace.substring(0, Math.min(first, maximumCharacters / 4));
+        int budget = maximumCharacters - header.length() - notice.length();
+        int start;
+        if (starts.isEmpty()) start = Math.max(first, trace.length() - budget);
+        else {
+            int index = Math.max(0, starts.size() - maximumEntries);
+            while (index < starts.size() - 1 && trace.length() - starts.get(index) > budget) index++;
+            start = Math.max(starts.get(index), trace.length() - budget);
+        }
+        return header + notice + trace.substring(start);
     }
     public static String elapsed(long beganNanos) {
         return String.format(Locale.ROOT, "%.1f ms", (System.nanoTime() - beganNanos) / 1000000.0);

@@ -55,6 +55,18 @@ public final class TelemetryHistory {
             if (value != null) statistics.get(field).add(value);
         }
     }
+    /** Re-detection in the same ECU session retains accumulated statistics and CSV columns. */
+    public synchronized void includeFields(List<String> added) {
+        List<String> combined = new ArrayList<>(fields);
+        for (String field : added) if (!statistics.containsKey(field)) {
+            combined.add(field); statistics.put(field, new Accumulator());
+        }
+        fields = Collections.unmodifiableList(combined);
+    }
+    /** Disconnect ends records immediately; retained CSV/chart samples remain exportable. */
+    public synchronized void clearStatistics() {
+        for (String field : fields) statistics.put(field, new Accumulator());
+    }
     public static Double numeric(Object value) {
         if (!(value instanceof Number)) return null;
         double number = ((Number) value).doubleValue();

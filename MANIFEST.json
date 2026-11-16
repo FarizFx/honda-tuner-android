@@ -21,24 +21,24 @@
       "bytes": 1324
     },
     "PHYSICAL_TEST.md": {
-      "sha256": "d6a7c73480eabf069e9db53566001c9592f1238e9fbaadffa6922f836588cd4f",
-      "bytes": 2722
+      "sha256": "c6aa25f84f7f6b5d5aa62adf8cf4b3f5b5f4d60ebe5d47bdb28a5c843b5f2f5e",
+      "bytes": 5100
     },
     "README.md": {
-      "sha256": "0ab511ddf36ce35a8ed4341bcbc49c9e59aa03182ea5267afcea7d740ccf62aa",
-      "bytes": 10226
+      "sha256": "b4f286131c94e81f09b5760e92276fc281b9c1913037a50a07fdec7e9cafd11a",
+      "bytes": 12298
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "620802ee2c2ea793111fa756afa22beb6e6cd5c8ee94ad51c8b312dca40a6c90",
-      "bytes": 3885
+      "sha256": "72e58faf537311b2cd13fbb64a20d9a22c6cdfcf225ca35e05f9be5e163b8f67",
+      "bytes": 9896
     },
     "app/build.gradle": {
-      "sha256": "35ca8d4690bf8d72dacd8868bef74d6586759e59a94b6588c1bf75ca0964f2e4",
+      "sha256": "15f7a3553f6c039a08df4cd197d16d5f1d99e86c400b81e7c29a2d1bb10abf12",
       "bytes": 632
     },
     "app/src/main/AndroidManifest.xml": {
-      "sha256": "fd39faead10d5f70d79816dfa0021eea36b83eeb4accbe32c406b12d0904973a",
-      "bytes": 1031
+      "sha256": "273994ec667c2485d2b4954e1b650edb60368e5bf6b86141490472488dae9e9a",
+      "bytes": 1188
     },
     "app/src/main/assets/ecu_catalog.tsv": {
       "sha256": "f6f3c13cdfc6eec2369f28a98455b9eaa36dccd3fd0f488e8ad814e3a062a383",
@@ -49,12 +49,16 @@
       "bytes": 1105
     },
     "app/src/main/java/id/hondatuner/android/MainActivity.java": {
-      "sha256": "e1dbd37b21ad7e02a74fe90db65bc650b3154cc8526aff9d44dfd1da6b0b4339",
-      "bytes": 60544
+      "sha256": "17f5057c76d42d799c42126a31af13e412f121fa2b3c2ee14f27465e2305bb16",
+      "bytes": 75385
     },
     "app/src/main/java/id/hondatuner/android/SensorGraph.java": {
-      "sha256": "e7b0c6ac14959ffc101f676b15a2b44c2bf6c00ab11825b7db895405d9e2673c",
-      "bytes": 4309
+      "sha256": "3ddab508cc3154f8b7bb1cf573128e6e0e798f02fb237570b0cf5095459b348c",
+      "bytes": 4203
+    },
+    "app/src/main/java/id/hondatuner/android/SpeedometerView.java": {
+      "sha256": "ce9b76cea7da785cdd2cf1cb74ba2db31eed1e8233d1f89adf2d82f6155e60f9",
+      "bytes": 2195
     },
     "app/src/main/java/id/hondatuner/android/usb/FtdiChannel.java": {
       "sha256": "733600bdd465b0bf352cf786bc3e9446672aff4e28436341260d479a53864045",
@@ -69,12 +73,12 @@
       "bytes": 384
     },
     "app/src/main/java/id/hondatuner/core/DiagnosticController.java": {
-      "sha256": "3cc877ca7271a46e90277f17e69b621eaee071afc972d9d010a7e0c1a099884e",
-      "bytes": 18394
+      "sha256": "025a5f06ffee7f7f44ee705c2cbfaaa608258d3532e6b7569ca4471d997c14ca",
+      "bytes": 18452
     },
     "app/src/main/java/id/hondatuner/core/DiagnosticLog.java": {
-      "sha256": "7efb78cce9447a001e3b1de55e1301b48a6426049ee86d846bdae3ad68e54897",
-      "bytes": 5448
+      "sha256": "ae015aab074ea24dae3ee28878a9a9098d0796cb2fe3629e9001474942d7c7c5",
+      "bytes": 6974
     },
     "app/src/main/java/id/hondatuner/core/DtcDescriptions.java": {
       "sha256": "baefd0cb0071747b05c773de5bd45109181f31b8f93ebc33f1e08081dbc89506",
@@ -85,36 +89,52 @@
       "bytes": 3620
     },
     "app/src/main/java/id/hondatuner/core/FtdiUart.java": {
-      "sha256": "f375ed93308911b910060219f09fa9af1cef83226519de9d96326c2f5eb03afd",
-      "bytes": 15697
+      "sha256": "5fb1d50f57b6fea3e88b46ec293e9fdf80a7e2cf75e92640e6508df4929bf1d9",
+      "bytes": 18967
     },
     "app/src/main/java/id/hondatuner/core/HondaClient.java": {
       "sha256": "d81b1986cd969e210dd929ded141750fcad1d1b793bb63d53d8597b5bb8fd945",
       "bytes": 9276
     },
+    "app/src/main/java/id/hondatuner/core/HudLayout.java": {
+      "sha256": "8f0f11feb3b99ee79f8432132d7e5d0a6647e8d16108e8f5bbfe9a452a5b566a",
+      "bytes": 2539
+    },
     "app/src/main/java/id/hondatuner/core/KLineTransport.java": {
       "sha256": "7b5325d131ff93f0a7ee13aaae0f874eea315303c3e29585f6f3095ecf00ec3f",
       "bytes": 22629
     },
+    "app/src/main/java/id/hondatuner/core/LcdDashboard.java": {
+      "sha256": "79e8340a0fba419789c58379e91d00a44a69bdf07785280c970bf53e7298ffc7",
+      "bytes": 10603
+    },
     "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": {
-      "sha256": "9db4f6afa9afecdacec7b4997fbab29546deaf9b9cdfa1ae2062458deec6f6d9",
-      "bytes": 6332
+      "sha256": "ba246f895981c384c9f579b11effbcd3b569998d6adb7ee11f8f432513e4f18f",
+      "bytes": 6383
     },
     "app/src/main/java/id/hondatuner/core/LiveProfile.java": {
-      "sha256": "5eb7b969bbd356ab15447105e066c75f5fdadf9b1dc03287a0cd9176cc71896b",
-      "bytes": 7724
+      "sha256": "c6ca4760ce951f348e14e11e65425becc77fff4736c8fb90351cec55325713d7",
+      "bytes": 8395
     },
     "app/src/main/java/id/hondatuner/core/ProtocolException.java": {
       "sha256": "36a2da307ad95a4244b86672ec0ad35e8088c09de0225911179ca0905e336e95",
       "bytes": 231
+    },
+    "app/src/main/java/id/hondatuner/core/RefreshTiming.java": {
+      "sha256": "e8dc6c79794be973f0198125e2e5ed702d1e159ecbac4546c337f9d115dcda2a",
+      "bytes": 1792
     },
     "app/src/main/java/id/hondatuner/core/SensorDecoder.java": {
       "sha256": "1eda1bbad2de07f08754b54edddd664a78fba880c4c095c5aeaf720630a892e8",
       "bytes": 4545
     },
     "app/src/main/java/id/hondatuner/core/SensorInfo.java": {
-      "sha256": "70efa04e464fce60653d44940548f3c3926d5783cad1350f033cdac745e5e2e0",
-      "bytes": 4417
+      "sha256": "f4393365f55f2ab8b946fd7ac0cb5b9a4651f1d243e34404c5a103f095ef26b5",
+      "bytes": 5443
+    },
+    "app/src/main/java/id/hondatuner/core/SensorScale.java": {
+      "sha256": "7d85aa7f8e21c5da1373289e8b0c589700f0c4f2a02e38d372fc56e375204f5a",
+      "bytes": 2788
     },
     "app/src/main/java/id/hondatuner/core/SensorSchemas.java": {
       "sha256": "88c253380f4da28e0396eefdfa8d691aade8849c26733048e0169c6dc68bb6e1",
@@ -125,8 +145,8 @@
       "bytes": 2390
     },
     "app/src/main/java/id/hondatuner/core/TelemetryHistory.java": {
-      "sha256": "a00fa4fe80152f60f4d2c2b068d165162acbf37e400f9fa93a123c6321363962",
-      "bytes": 5428
+      "sha256": "d3470bb11d14fa78ec3a4a12841a2204ba38725770da9ad85ab43f85c2bace75",
+      "bytes": 6094
     },
     "app/src/main/java/id/hondatuner/core/TransportException.java": {
       "sha256": "150ebc83f1500135b9f79de681523b16c25e4f4e4febc49013e34168e5ec8b96",
@@ -175,6 +195,10 @@
     "evidence/core_verification.json": {
       "sha256": "104d310857c616c53d5b438124bb4f3dfcc0d81507e7628f591051e3b5407f19",
       "bytes": 15187
+    },
+    "evidence/dashboard_1_1_6.json": {
+      "sha256": "ff64fd1d038832a6d53a60540de83cb7fb333edee830fa107e8f1aadf1ba88e7",
+      "bytes": 9842
     },
     "evidence/delivery_verification.json": {
       "sha256": "7f24143b5ac31b0698e4258a0b67ebc77ad65497cca4c1b4d364951bdc9efc3c",
@@ -233,16 +257,28 @@
       "bytes": 18925
     },
     "tests/java/id/hondatuner/core/CoreTest.java": {
-      "sha256": "b7ae96bc82ceef038c4d14aaeb6ca8245e457bf5318c3dd68e54be65d06d71ec",
-      "bytes": 61312
+      "sha256": "4ec5628f4202eadf2c5e104821174b3accf7e1515401c3a8d4d9731e3a9747a0",
+      "bytes": 61402
+    },
+    "tests/java/id/hondatuner/core/DashboardPreview.java": {
+      "sha256": "6285b2285653d227e830c656e845fb7751ab2bde7a961e8f79e966afc573c1ee",
+      "bytes": 4287
+    },
+    "tests/java/id/hondatuner/core/DashboardTest.java": {
+      "sha256": "127096b7144d6b25a1b006ff5ca4757db1441aee04cad56c61396f4de8d8ae1b",
+      "bytes": 14818
     },
     "tests/java/id/hondatuner/core/DecodeCli.java": {
       "sha256": "48fce49c32797d8e81bb76a6b30969ede20d9cc6027b75c269e5eab713500be6",
       "bytes": 1455
     },
+    "tests/java/id/hondatuner/core/DiagnosticTraceTest.java": {
+      "sha256": "6601792f51b8f7b62890bc56ea33c20c67d2f97547a84574efde51e0eef4d6cd",
+      "bytes": 2340
+    },
     "tests/java/id/hondatuner/core/FtdiUartTest.java": {
-      "sha256": "0f26f71fcf167f9f767993562171de2d2a18dfc0ca4ccef81319b184dd38f85c",
-      "bytes": 28006
+      "sha256": "0bef9000b22e58d5b58b0bc3a7e7c92760c5ed8c91b7ac465ed8026ef6eb2cf9",
+      "bytes": 37916
     },
     "tests/java/id/hondatuner/core/SensorSelectionTest.java": {
       "sha256": "14a87cd1eab76c207b25079decaf940bcc3c79800119fdbcca7d3c52c58a4bfe",
@@ -269,8 +305,8 @@
       "bytes": 216640
     },
     "tools/package_apk.py": {
-      "sha256": "390b2e82e61e6a5fd29c1576ae2f51b9b1255c076bec968b49c5446d588ada0c",
-      "bytes": 7733
+      "sha256": "a0bfa10911de3c893ed322511cc954962a555e7204511b0db8e06f136ad9b8a2",
+      "bytes": 8836
     },
     "tools/prepare_repo.py": {
       "sha256": "fbcfe898b84392a0e7ca47cfaabd4a663d190ca157558522883127821b246331",
@@ -297,14 +333,24 @@
       "bytes": 5815
     }
   },
-  "scope": "1.1.5-debug sensor selection, fastest live, FTDI RX health and ECU ID",
-  "android_sdk_compilation": true,
-  "apk_included": true,
-  "version_name": "1.1.5-debug",
-  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151",
-  "pushed_source_commit": "443d36cc52ca282faeaadaebb2264682bb6602d1",
-  "built_source_commit": "443d36cc52ca282faeaadaebb2264682bb6602d1",
+  "scope": "1.1.6 RX FTDI health repair, LCD/HUD, session records, measured refresh and zero chart axes",
+  "version_name": "1.1.6-debug",
+  "version_code": 8,
+  "source_status": "prepared locally; build deferred",
+  "source_mirror_synced": true,
+  "android_sdk_compilation": false,
+  "apk_included": false,
+  "github_actions_run": null,
+  "pushed_source_commit": null,
+  "built_source_commit": null,
   "physical_ecu_success_verified": false,
-  "apk_relative_path": "dist/HondaTuner-1.1.5-debug.apk",
-  "apk_sha256": "aa979fe4f316ec4aceda863f449860380ce36046fa045440d2d3b284f604668a"
+  "local_core_regressions": 231,
+  "latest_verified_apk": {
+    "version_name": "1.1.5-debug",
+    "source_commit": "443d36cc52ca282faeaadaebb2264682bb6602d1",
+    "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151",
+    "relative_path": "dist/HondaTuner-1.1.5-debug.apk",
+    "sha256": "aa979fe4f316ec4aceda863f449860380ce36046fa045440d2d3b284f604668a"
+  },
+  "included_original_ci_report_version": "1.1.5-debug"
 }

@@ -22,6 +22,17 @@ final class FtdiUartTest {
         run("normal read timeout does not add a USB control probe", FtdiUartTest::normalEmpty);
         run("short FTDI RX health status remains fatal before another TX", FtdiUartTest::earlyFailedStatus);
         run("FTDI RX health exception remains fatal", FtdiUartTest::earlyStatusException);
+        run("recent status-only USB packets prevent redundant failing health probes", FtdiUartTest::recentStatusHealth);
+        run("fresh TX modem status prevents a redundant RX control probe", FtdiUartTest::recentTxHealth);
+        run("one inconclusive RX status can recover on the next real USB packet", FtdiUartTest::inconclusiveStatus);
+        run("a received FTDI heartbeat resets consecutive inconclusive probes", FtdiUartTest::statusResetsMisses);
+        run("persistent inconclusive RX probes stop the channel before another TX", FtdiUartTest::persistentStatusFailure);
+        run("pending RX health retry survives blocking bulk timeouts within the read budget", FtdiUartTest::blockingProbeRecovery);
+        run("RX health control timeout never extends the caller read budget", FtdiUartTest::probeBudget);
+        run("fresh USB activity cannot hide an actual bulk I/O exception", FtdiUartTest::bulkException);
+        run("status-only heartbeat logging is bounded while actual UART packets remain exact", FtdiUartTest::statusLogAggregation);
+        run("recorded 1.1.5 D0 frame survives an early empty read after damaged echo", FtdiUartTest::recordedD0EarlyEmpty);
+        run("persistent RX health failure terminates the Honda exchange without a retry TX", FtdiUartTest::exchangeStatusFailure);
         run("queued FF/FC USB samples are drained before sending Honda wake", FtdiUartTest::cleanupHostPackets);
         run("late stale data restarts the receive quiet window", FtdiUartTest::cleanupQuietWindow);
         run("status-only packets do not prevent a quiet RX window", FtdiUartTest::cleanupStatusOnly);
@@ -68,11 +79,12 @@ final class FtdiUartTest {
         final Deque<byte[]> hostRx = new ArrayDeque<>(); // survives a chip purge
         long time, hostReadyAt, lowAt = -1, highAt = -1, txUntil, staleUntil;
         int pin = 1, txStartDelay = 6, chunk = 512;
-        int closeCalls, modemPolls, readCalls, writeCalls;
+        int closeCalls, modemPolls, readCalls, writeCalls, modemDelayMillis, lastModemTimeout;
         boolean txStuck, shortModem, breakEnabled, failBreakOn, failBreakOff, continuousRx;
-        boolean failModem;
+        boolean failModem, failRead;
         int emptyReadMillis = -1;
         Integer forcedWriteResult;
+        Integer forcedModemResult;
         Runnable onSleep;
         Runnable onRead;
         Consumer<byte[]> onFrame = data -> {};
@@ -105,7 +117,9 @@ final class FtdiUartTest {
             check(value == 0 && index == 1 && timeout > 0 && timeout <= 50, "Wrong FT232R input request");
             check(request == 5 && buffer.length == 2, "Unexpected status poll");
             modemPolls++;
+            lastModemTimeout = timeout; time += Math.min(timeout, modemDelayMillis) * 1000000L;
             if (failModem) throw new IOException("FTDI status request failed");
+            if (forcedModemResult != null && forcedModemResult != 2) return forcedModemResult;
             if (shortModem) return 1;
             buffer[0] = 1;
             buffer[1] = (byte) (time < staleUntil ? 0x60 : txStuck || time < txUntil ? 0 : 0x60);
@@ -129,8 +143,9 @@ final class FtdiUartTest {
                 System.arraycopy(uart, offset, packet, 2, count); rx.add(packet);
             }
         }
-        @Override public int read(byte[] buffer, int timeout) {
+        @Override public int read(byte[] buffer, int timeout) throws IOException {
             check(timeout > 0, "Unbounded receive timeout"); readCalls++;
+            if (failRead) throw new IOException("USB endpoint removed");
             boolean readyHost = !hostRx.isEmpty() && time >= hostReadyAt;
             time += (rx.isEmpty() && !readyHost && !continuousRx ? (emptyReadMillis < 0 ? timeout : Math.min(timeout, emptyReadMillis)) : 1) * 1000000L;
             if (onRead != null) onRead.run();
@@ -176,13 +191,105 @@ final class FtdiUartTest {
         bytes(new byte[0], driver.read(64, 10)); check(usb.modemPolls == polls && driver.isHealthy(), "Normal timeout probed or closed USB"); driver.close();
     }
     private static void earlyFailedStatus() throws Exception {
-        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.shortModem = true;
-        failure(() -> driver.read(64, 10)); check(!driver.isHealthy(), "Short RX status was ignored");
-        failure(() -> driver.write(frame(), 100, CancelSignal.NEVER)); check(usb.writeCalls == 0, "TX followed failed RX status"); driver.close();
+        for (int result : new int[]{0, 1, 3, -2}) {
+            UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = result;
+            failure(() -> driver.read(64, 10)); check(!driver.isHealthy(), "Invalid RX status was ignored: " + result);
+            failure(() -> driver.write(frame(), 100, CancelSignal.NEVER)); check(usb.writeCalls == 0, "TX followed failed RX status"); driver.close();
+        }
     }
     private static void earlyStatusException() throws Exception {
         UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.failModem = true;
         failure(() -> driver.read(64, 10)); check(!driver.isHealthy(), "RX status I/O exception was ignored"); driver.close();
+    }
+    private static void recentStatusHealth() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb);
+        usb.rx.add(new byte[]{1, 0x68}); bytes(new byte[0], driver.read(64, 50));
+        usb.emptyReadMillis = 1; usb.forcedModemResult = -1; int polls = usb.modemPolls;
+        bytes(new byte[0], driver.read(64, 50));
+        check(driver.isHealthy() && polls == usb.modemPolls, "Fresh FTDI packet triggered a redundant negative probe");
+        usb.queue(new byte[]{2, 4, 0, (byte) 0xfa}, 0x60); bytes(new byte[]{2, 4, 0, (byte) 0xfa}, driver.read(64, 50)); driver.close();
+    }
+    private static void recentTxHealth() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); driver.write(frame(), 100, CancelSignal.NEVER);
+        usb.emptyReadMillis = 1; usb.forcedModemResult = -1; int polls = usb.modemPolls;
+        bytes(new byte[0], driver.read(64, 50)); check(driver.isHealthy() && usb.modemPolls == polls, "Fresh TX status triggered RX probe");
+        usb.time += 101000000L; bytes(new byte[0], driver.read(64, 50));
+        check(usb.modemPolls == polls + 1 && driver.isHealthy(), "Old USB activity indefinitely suppressed health checks"); driver.close();
+    }
+    private static void inconclusiveStatus() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = -1;
+        bytes(new byte[0], driver.read(64, 50)); check(driver.isHealthy() && usb.modemPolls == 1, "One inconclusive status closed USB");
+        usb.queue(new byte[]{2, 4, 0, (byte) 0xfa}, 0x60); bytes(new byte[]{2, 4, 0, (byte) 0xfa}, driver.read(64, 50));
+        check(driver.isHealthy(), "Real USB recovery left the channel failed"); driver.close();
+    }
+    private static void statusResetsMisses() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = -1;
+        bytes(new byte[0], driver.read(64, 50)); usb.time += 51000000L; bytes(new byte[0], driver.read(64, 50));
+        usb.rx.add(new byte[]{1, 0x60}); bytes(new byte[0], driver.read(64, 50));
+        usb.time += 101000000L; bytes(new byte[0], driver.read(64, 50));
+        check(driver.isHealthy() && usb.modemPolls == 3, "A heartbeat did not reset consecutive status misses"); driver.close();
+    }
+    private static void persistentStatusFailure() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = -1;
+        bytes(new byte[0], driver.read(64, 50)); usb.time += 51000000L; bytes(new byte[0], driver.read(64, 50)); usb.time += 51000000L;
+        failure(() -> driver.read(64, 50)); check(!driver.isHealthy() && usb.modemPolls == 3, "Persistent failed status remained usable");
+        failure(() -> driver.write(frame(), 100, CancelSignal.NEVER)); check(usb.writeCalls == 0, "Another frame followed persistent status failure"); driver.close();
+    }
+    private static void blockingProbeRecovery() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = -1;
+        bytes(new byte[0], driver.read(64, 50)); usb.time += 51000000L; usb.emptyReadMillis = -1; usb.forcedModemResult = 2;
+        long began = usb.time; bytes(new byte[0], driver.read(64, 50));
+        check(driver.isHealthy() && usb.modemPolls == 2 && usb.time - began <= 50000000L, "Blocking bulk read lost or overran the pending health retry"); driver.close();
+    }
+    private static void probeBudget() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.forcedModemResult = -1; usb.modemDelayMillis = 20;
+        long began = usb.time; bytes(new byte[0], driver.read(64, 10));
+        check(driver.isHealthy() && usb.time - began <= 10000000L && usb.lastModemTimeout <= 9, "Status probe exceeded the remaining read budget"); driver.close();
+    }
+    private static void bulkException() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.rx.add(new byte[]{1, 0x60}); driver.read(64, 50);
+        usb.failRead = true; failure(() -> driver.read(64, 50));
+        check(!driver.isHealthy(), "Recent USB status hid a real bulk exception"); driver.close();
+    }
+    private static void statusLogAggregation() throws Exception {
+        UsbFixture usb = new UsbFixture(); DiagnosticLog log = new DiagnosticLog(); FtdiUart driver = usb.driver(log); driver.initialize(CancelSignal.NEVER);
+        int polls = usb.modemPolls;
+        for (int i = 0; i < 1000; i++) { usb.rx.add(new byte[]{1, (byte) (i % 2 == 0 ? 0x68 : 0x60)}); bytes(new byte[0], driver.read(64, 50)); }
+        usb.queue(new byte[]{2, 4, 0, (byte) 0xfa}, 0x60); bytes(new byte[]{2, 4, 0, (byte) 0xfa}, driver.read(64, 50));
+        String trace = log.text(0); int total = 0;
+        java.util.regex.Matcher summaries = java.util.regex.Pattern.compile("Status-only packets=(\\d+)").matcher(trace);
+        while (summaries.find()) total += Integer.parseInt(summaries.group(1));
+        check(total == 1000 && log.size() < 50 && log.droppedEntries() == 0, "Status-only logging lost counts or flooded the rolling trace");
+        check(trace.contains("RAW 6 byte: 01 60 02 04 00 FA") && usb.modemPolls == polls, "UART packet was changed or heartbeat added control probes"); driver.close();
+    }
+    private static void recordedD0EarlyEmpty() throws Exception {
+        // Actual clean ECU frame from 1.1.5 transaction #84452. The inserted
+        // empty read/negative control result models the reported failure; its
+        // failing transaction was outside the supplied excerpt.
+        String[] hex = "02 1A 71 D0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF A5".split(" ");
+        byte[] recorded = new byte[hex.length];
+        for (int i = 0; i < hex.length; i++) recorded[i] = (byte) Integer.parseInt(hex[i], 16);
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); int[] pollsAtRx = {-1};
+        usb.onFrame = request -> {
+            usb.rx.add(new byte[]{1, 0x68, 0x60, 0, 0x60, (byte) 0x80, 0});
+            usb.rx.add(new byte[0]);
+            for (byte value : recorded) usb.rx.add(new byte[]{1, 0x60, value});
+            usb.onRead = () -> { if (pollsAtRx[0] < 0) pollsAtRx[0] = usb.modemPolls; usb.forcedModemResult = -1; };
+        };
+        KLineTransport transport = new KLineTransport(driver, usb, 1000, KLineTransport.EchoMode.AUTO, null);
+        KLineTransport.Packet packet = transport.exchange(0x72, new byte[]{0x71, (byte) 0xd0}, false, CancelSignal.NEVER);
+        bytes(Arrays.copyOfRange(recorded, 2, recorded.length - 1), packet.payload());
+        check(transport.isHealthy() && usb.uartFrames.size() == 1 && usb.modemPolls == pollsAtRx[0], "Recorded reply was lost or redundant RX probe was sent"); transport.close();
+    }
+    private static void exchangeStatusFailure() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1;
+        usb.onFrame = request -> usb.onRead = () -> usb.forcedModemResult = -1;
+        KLineTransport transport = new KLineTransport(driver, usb, 1000, KLineTransport.EchoMode.AUTO, null); long began = usb.time;
+        try { transport.exchange(0x72, new byte[]{0x71, (byte) 0xd0}, false, CancelSignal.NEVER); throw new AssertionError("Persistent status loss became a valid frame"); }
+        catch (TransportException expected) { check(!transport.isHealthy() && !driver.isHealthy(), "Exchange remained usable after persistent status loss"); }
+        check(usb.uartFrames.size() == 1 && usb.time - began <= 300000000L, "Persistent health failure repeated TX or exceeded its bound");
+        failure(() -> transport.exchange(0x72, new byte[]{0x71, (byte) 0xd0}, false, CancelSignal.NEVER));
+        check(usb.uartFrames.size() == 1, "A retry followed terminal USB failure"); transport.close();
     }
     private static void cleanupHostPackets() throws Exception {
         UsbFixture usb = new UsbFixture(); byte[] stale = new byte[256]; Arrays.fill(stale, (byte) 0xfc);

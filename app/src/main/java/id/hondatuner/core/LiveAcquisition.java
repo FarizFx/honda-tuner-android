@@ -93,6 +93,7 @@ public final class LiveAcquisition {
                 transportFailed(run, new TransportException("Kanal USB tidak dapat digunakan. Hubungkan ulang adaptor."));
             }
         }
+        sample = sample.withReadingStarted(began);
         final boolean terminal;
         synchronized (this) {
             if (cancelled(run)) return;

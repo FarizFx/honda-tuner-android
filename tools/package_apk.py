@@ -96,6 +96,8 @@ def main():
             raise RuntimeError("Development/native artifacts were bundled into the Android app")
         if archive.read(license_entry) != (ROOT / "app/src/main" / license_entry).read_bytes():
             raise RuntimeError("The bundled FTDI serial-driver license differs from source")
+        if archive.read("assets/ecu_catalog.tsv") != (ROOT / "app/src/main/assets/ecu_catalog.tsv").read_bytes():
+            raise RuntimeError("The bundled ECU catalog differs from source")
         declared = set()
         for name in names:
             if re.fullmatch(r"classes(?:\d+)?\.dex", name):
@@ -103,6 +105,17 @@ def main():
         required_driver_classes = {"Lcom/hoho/android/usbserial/driver/FtdiSerialDriver;", "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver$FtdiSerialPort;"}
         if not required_driver_classes <= declared:
             raise RuntimeError("The expected FTDI driver classes are absent from the APK")
+        required_application_classes = {
+            "Lid/hondatuner/android/MainActivity;", "Lid/hondatuner/android/SensorGraph;",
+            "Lid/hondatuner/android/SpeedometerView;", "Lid/hondatuner/android/usb/FtdiChannel;",
+            "Lid/hondatuner/core/HudLayout;", "Lid/hondatuner/core/LcdDashboard;",
+            "Lid/hondatuner/core/RefreshTiming;", "Lid/hondatuner/core/SensorScale;",
+            "Lid/hondatuner/core/TelemetryHistory;", "Lid/hondatuner/core/SensorSelection;",
+        }
+        missing_application_classes = required_application_classes - declared
+        if missing_application_classes:
+            raise RuntimeError("Expected application classes are absent from the APK: " +
+                               ", ".join(sorted(missing_application_classes)))
     output = ROOT / "dist"
     output.mkdir(exist_ok=True)
     exported = output / "HondaTuner-Android-debug.apk"
@@ -119,6 +132,8 @@ def main():
         "ftdi_driver_library": "usb-serial-for-android 3.12.0",
         "ftdi_driver_classes_verified": sorted(required_driver_classes),
         "ftdi_driver_license_verified": True,
+        "application_classes_verified": sorted(required_application_classes),
+        "ecu_catalog_matches_source": True,
     }
     if os.environ.get("GITHUB_ACTIONS") == "true":
         report["github_run"] = "https://github.com/%s/actions/runs/%s" % (os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_RUN_ID"])
