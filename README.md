@@ -3,43 +3,42 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.4-debug / versionCode 6:** menerima balasan sensor yang bersih setelah
-echo TX mengalami error UART. Posisi serta panjang sampel setiap paket FTDI
-dipertahankan. AUTO menerima frame ECU lengkap setelah tepat sejumlah byte
-echo sepanjang TX ketika error hanya mengenai echo. Error pada frame ECU,
-UART overrun, checksum/target/panjang salah dan echo ambigu tetap ditolak.
-REQUIRED memerlukan echo persis tanpa error; NONE memerlukan frame langsung
-yang bersih. Frame lengkap tetap diperiksa selama jendela tenang 24 ms.
+**v1.1.5-debug / versionCode 7:** Live menyediakan **Pilih & urutkan sensor**.
+Centang sensor yang ingin ditampilkan, ubah urutan dengan tombol naik/turun,
+lalu Simpan. Pilihan bertahan setelah aplikasi dibuka ulang dan saat tabel ECU
+berubah; sensor baru tetap tampil. Mengatur tampilan tidak mereset riwayat.
 
-Pada pengujian pengguna, **1.1.3 berhasil melakukan live polling**, tetapi hanya
-menampilkan tiga sensor O2. Paket echo dengan LSR `0x68` membuat balasan utama
-`0x17`, D0 dan D1 yang bersih ikut ditolak. Replay source baru menerima tabel
-utama dengan **13 parameter**, termasuk TPS, aki dan ECT, serta balasan D0/D1
-yang lengkap. Satu respons D0 berisi 22/26 byte tetap ditolak. Replay memakai
-rekaman USB dan clock simulasi; hasilnya bukan pengujian perangkat baru.
+Target **Secepatnya** tidak menambah jeda setelah satu putaran pembacaan selesai.
+Pilihan lain: 50/100/Secepatnya atau 50/100/250/500/1000/2000 ms. Waktu aktual mengikuti balasan ECU dan
+jumlah grup, tetap tampil sebagai Hz aktual. **Baca hanya grup sensor pilihan**
+mengurangi jumlah transaksi; sensor satu grup tetap dibaca bersama, sedangkan
+grup yang tidak dipilih menjadi belum terbaca di grafik/CSV. Pencarian dan
+kategori hanya menyaring tampilan. Interval yang tersimpan dari versi lama
+dipertahankan; pemasangan baru memakai Secepatnya.
 
-Katalog nama motor disertakan dalam APK: **245 definisi / 244 ID ECU unik**,
-berasal dari database Honda Tuner desktop. Sebanyak 33 entri dengan ID
-placeholder dikeluarkan dari pencocokan otomatis. Nama dicari setelah ID lima
-byte terbaca; ID kosong, ID belum terdaftar dan beberapa definisi yang cocok
-ditampilkan secara berbeda. Status pembacaan ID dan katalog selalu disertakan
-dalam header Debug, walaupun transaksi awal sudah keluar dari log bergulir.
-Log pengguna sebelumnya tidak memuat transaksi ID, sehingga penyebab ID
-kosong pada perangkat tersebut belum dapat ditentukan.
+Timer latensi FT232R kini 1 ms. Pemeriksaan koneksi USB pada pembacaan kosong
+yang kembali terlalu cepat memakai status vendor FTDI, menggantikan USB
+GET_STATUS generik yang gagal pada laporan 1.1.4. Status pendek/gagal serta
+kesalahan USB/TX tetap menghentikan sesi. Pemeriksaan target, panjang, checksum,
+UART ECU, overrun, echo ambigu, dan jendela tenang frame 24 ms tetap berlaku.
 
-**186 tes regresi lokal lulus**, termasuk 22 tes error UART, 24 fixture Lite dan
-17 replay transaksi rekaman pengguna. **312 vektor referensi / 5.616 nilai** dan
-**16 vektor rekaman / 166 nilai** cocok. [Build Actions 1.1.4](https://github.com/FarizFx/honda-tuner-android/actions/runs/43788584478)
-sudah dibuat dan menunggu runner server Linux online; APK belum tersedia.
-Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1, BREAK minimum
-70/130 ms, RX-only purge dan pembersihan wake tenang 24 ms / batas 250 ms.
-Pembatalan, drain balasan lama dan kegagalan USB/TX fatal tetap diuji.
+Pada log pengguna, **1.1.4 berhasil terhubung dan membaca 29 sensor dalam empat
+grup**, dengan tiga putaran lengkap sekitar 235–259 ms. Satu balasan utama
+terpotong menjadi 22/24 byte, lalu dipulihkan oleh retry. Log berhenti di tengah
+baris sebelum transaksi USB yang gagal, sehingga penyebab fisik error kontrol
+USB belum diketahui. Header ID `72 00 00` berisi **0102450F01** kini diterima
+bersama varian `72 00 05`, dengan syarat frame lengkap 11 byte dan checksum valid.
+Katalog berisi **245 definisi / 244 ID unik**; ID tersebut cocok dengan dua
+Vario 150 (K59F-A01 dan K59A-A11), dan keduanya tetap ditampilkan.
 
-APK dan laporan 1.1.3 dipertahankan di `dist/baseline-1.1.3`, bersama versi
-sebelumnya. Bukti audit baru: [evidence/uart_sensor_audit.json](evidence/uart_sensor_audit.json).
-Perbandingan modul asli dan batasnya:
-[evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).
-Pengujian lengkap versi baru pada HP/ECU: [PHYSICAL_TEST.md](PHYSICAL_TEST.md).
+**200 tes regresi lokal**, **312 vektor referensi / 5.616 nilai**, dan
+**16 vektor rekaman / 166 nilai** lulus. Source disiapkan untuk build Actions
+di server Linux; APK 1.1.5 belum tersedia pada tahap ini. APK/laporan 1.1.4
+dipertahankan di `dist/baseline-1.1.4`; semua versi sebelumnya juga dipertahankan.
+Bukti: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).
+Perbandingan transport sebelumnya: [evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).
+Pengujian HP/ECU: [PHYSICAL_TEST.md](PHYSICAL_TEST.md). Hasil versi baru pada
+perangkat dan latensi aktual masih perlu diuji.
 
 ## Hubungkan
 
@@ -68,7 +67,7 @@ untuk melanjutkan. Hasil izin USB dapat diselesaikan saat kembali dari dialog.
 - **Live:** seluruh sensor bernama dari tabel ECU, pencarian, kategori, kualitas,
   usia sampel, min/maks/rata-rata dan frekuensi aktual.
 - **Jeda/Mulai live**, **Baca sekali** saat dijeda, serta target interval
-  250/500/1000/2000 ms. Baca sekali tetap dijeda setelah selesai.
+  Secepatnya atau 50/100/250/500/1000/2000 ms. Baca sekali tetap dijeda setelah selesai.
 - **Grafik:** pilih sensor numerik; 120 sampel terakhir memakai waktu pembacaan
   sebenarnya. Data kosong memutus garis.
 - **Simpan CSV:** maksimal 600 sampel, waktu UTC/epoch, nilai, jumlah grup valid
@@ -123,9 +122,9 @@ Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.
 Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Runner default `self-hosted` harus online. Server Linux terakhir yang aktif
-adalah **3 (ID 30)**. Semua runner yang terdaftar sekarang offline; build menunggu
-server aktif kembali. Registrasi dipertahankan. Laptop tidak dipakai untuk APK.
+Runner default `self-hosted` harus online. **Server Linux 4 (ID 31)**
+membangun 1.1.4 dan masih online saat source 1.1.5 disiapkan. Registrasi runner
+dipertahankan. Laptop tidak dipakai untuk APK.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
 kemudian memeriksa signature, versi/manifest dan ZIP.

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,10 +96,16 @@ public final class LiveProfile {
     }
 
     public Sample read(Reader reader, CancelSignal cancel) throws IOException {
+        return read(reader, cancel, null);
+    }
+
+    /** null reads every group; selection skips groups with no requested field. */
+    public Sample read(Reader reader, CancelSignal cancel, Collection<String> selected) throws IOException {
         Map<String, Object> values = new LinkedHashMap<>();
         Map<Integer, String> failures = new LinkedHashMap<>();
         int valid = 0;
         for (Table table : tables) {
+            if (selected != null && Collections.disjoint(table.fields, selected)) continue;
             cancel.check();
             try {
                 requireHealthy(reader);

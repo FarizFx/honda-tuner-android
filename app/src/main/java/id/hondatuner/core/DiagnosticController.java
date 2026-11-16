@@ -2,6 +2,10 @@ package id.hondatuner.core;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,6 +36,7 @@ public final class DiagnosticController implements AutoCloseable {
     private final ScheduledExecutorService executor;
     private final Listener listener;
     private long liveInterval;
+    private Set<String> liveFields;
     private final TransportFactory transportFactory;
     private final DiagnosticLog log;
     private long session, operation;
@@ -61,7 +66,7 @@ public final class DiagnosticController implements AutoCloseable {
         this(listener, executor, liveInterval, transportFactory, null);
     }
     public DiagnosticController(Listener listener, ScheduledExecutorService executor, long liveInterval, TransportFactory transportFactory, DiagnosticLog log) {
-        if (liveInterval <= 0) throw new IllegalArgumentException("Interval harus positif.");
+        if (liveInterval < 0) throw new IllegalArgumentException("Interval tidak boleh negatif.");
         this.listener = Objects.requireNonNull(listener); this.executor = Objects.requireNonNull(executor);
         this.liveInterval = liveInterval; this.transportFactory = Objects.requireNonNull(transportFactory);
         this.log = log;
@@ -189,20 +194,34 @@ public final class DiagnosticController implements AutoCloseable {
                 transportFailed(owner, token, error);
             }
         }, liveInterval, log);
+        acquisition.setFields(fieldsFor(profile));
         startLive();
     }
 
     private void startLive() {
         if (!usableClient()) return;
         acquisition.start(profile);
-        publish(State.LIVE, "Live data aktif. Target pembacaan setiap " + liveInterval + " ms.");
+        publish(State.LIVE, liveMessage());
+    }
+    private String liveMessage() {
+        return liveInterval == 0 ? "Live data aktif. Secepatnya, tanpa jeda tambahan." : "Live data aktif. Target pembacaan setiap " + liveInterval + " ms.";
     }
     public synchronized long liveIntervalMillis() { return liveInterval; }
     public synchronized void setLiveIntervalMillis(long interval) {
-        if (interval < 100 || interval > 5000) throw new IllegalArgumentException("Live interval must be 100..5000 ms.");
+        if (interval < 0 || interval > 5000) throw new IllegalArgumentException("Live interval must be 0..5000 ms.");
         liveInterval = interval;
         if (acquisition != null) acquisition.setIntervalMillis(interval);
-        if (state == State.LIVE) publish(State.LIVE, "Live data aktif. Target pembacaan setiap " + interval + " ms.");
+        if (state == State.LIVE) publish(State.LIVE, liveMessage());
+    }
+    public synchronized void setLiveFields(Collection<String> fields) {
+        if (fields != null && fields.isEmpty()) throw new IllegalArgumentException("Pilih minimal satu sensor.");
+        liveFields = fields == null ? null : Collections.unmodifiableSet(new LinkedHashSet<>(fields));
+        if (acquisition != null) acquisition.setFields(fieldsFor(profile));
+    }
+    private Set<String> fieldsFor(LiveProfile selectedProfile) {
+        // A different ECU can have different fields. Keep diagnostics running
+        // until the UI applies its saved choices to the new layout.
+        return liveFields == null || selectedProfile == null || Collections.disjoint(selectedProfile.fields, liveFields) ? null : liveFields;
     }
     public synchronized boolean readOnce() {
         if (closed || !usableClient() || state != State.PAUSED || profile == null || acquisition == null) return false;
@@ -210,10 +229,11 @@ public final class DiagnosticController implements AutoCloseable {
         final long token = session, op = ++operation, generation = acquisition.currentGeneration();
         final HondaClient current = client;
         final LiveProfile currentProfile = profile;
+        final Set<String> currentFields = fieldsFor(currentProfile);
         publish(State.READING_SAMPLE, "Membaca satu putaran sensor...");
         executor.execute(() -> {
             try {
-                LiveProfile.Sample sample = currentProfile.read(current, () -> cancelled(token, op));
+                LiveProfile.Sample sample = currentProfile.read(current, () -> cancelled(token, op), currentFields);
                 synchronized (this) {
                     if (transportFailed(current, token, null)) return;
                     if (cancelled(token, op)) return;

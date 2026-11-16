@@ -18,6 +18,10 @@ final class FtdiUartTest {
     static int runAll() throws Exception {
         run("UART BREAK holds Honda LOW/HIGH timing without GPIO streaming", FtdiUartTest::wakeBreak);
         run("FTDI serial API receives Honda baud and BREAK settings", FtdiUartTest::configuration);
+        run("early empty read uses bounded FTDI health status and keeps a healthy session", FtdiUartTest::earlyEmpty);
+        run("normal read timeout does not add a USB control probe", FtdiUartTest::normalEmpty);
+        run("short FTDI RX health status remains fatal before another TX", FtdiUartTest::earlyFailedStatus);
+        run("FTDI RX health exception remains fatal", FtdiUartTest::earlyStatusException);
         run("queued FF/FC USB samples are drained before sending Honda wake", FtdiUartTest::cleanupHostPackets);
         run("late stale data restarts the receive quiet window", FtdiUartTest::cleanupQuietWindow);
         run("status-only packets do not prevent a quiet RX window", FtdiUartTest::cleanupStatusOnly);
@@ -66,6 +70,8 @@ final class FtdiUartTest {
         int pin = 1, txStartDelay = 6, chunk = 512;
         int closeCalls, modemPolls, readCalls, writeCalls;
         boolean txStuck, shortModem, breakEnabled, failBreakOn, failBreakOff, continuousRx;
+        boolean failModem;
+        int emptyReadMillis = -1;
         Integer forcedWriteResult;
         Runnable onSleep;
         Runnable onRead;
@@ -95,10 +101,11 @@ final class FtdiUartTest {
             breakEnabled = enabled; pin = enabled ? 0 : 1;
             if (enabled) lowAt = time; else highAt = time;
         }
-        @Override public int controlIn(int request, int value, int index, byte[] buffer, int timeout) {
+        @Override public int controlIn(int request, int value, int index, byte[] buffer, int timeout) throws IOException {
             check(value == 0 && index == 1 && timeout > 0 && timeout <= 50, "Wrong FT232R input request");
             check(request == 5 && buffer.length == 2, "Unexpected status poll");
             modemPolls++;
+            if (failModem) throw new IOException("FTDI status request failed");
             if (shortModem) return 1;
             buffer[0] = 1;
             buffer[1] = (byte) (time < staleUntil ? 0x60 : txStuck || time < txUntil ? 0 : 0x60);
@@ -125,7 +132,7 @@ final class FtdiUartTest {
         @Override public int read(byte[] buffer, int timeout) {
             check(timeout > 0, "Unbounded receive timeout"); readCalls++;
             boolean readyHost = !hostRx.isEmpty() && time >= hostReadyAt;
-            time += (rx.isEmpty() && !readyHost && !continuousRx ? timeout : 1) * 1000000L;
+            time += (rx.isEmpty() && !readyHost && !continuousRx ? (emptyReadMillis < 0 ? timeout : Math.min(timeout, emptyReadMillis)) : 1) * 1000000L;
             if (onRead != null) onRead.run();
             byte[] packet;
             if (!hostRx.isEmpty() && time >= hostReadyAt) packet = hostRx.remove();
@@ -154,7 +161,28 @@ final class FtdiUartTest {
         UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb);
         check(usb.hasControl(0, 0, 1) && usb.hasControl(11, 0, 1) && !usb.hasControl(11, 0x0101, 1), "Reset/UART controls missing");
         check(usb.hasControl(2, 0, 1) && usb.hasControl(4, 8, 1) && usb.hasControl(3, 0x4120, 0), "Wrong flow/8N1/divisor");
-        check(usb.hasControl(4, 0x4008, 1) && usb.hasControl(9, 8, 1), "BREAK/latency setup missing"); driver.close();
+        check(usb.hasControl(4, 0x4008, 1) && usb.hasControl(9, 1, 1), "BREAK/minimum latency setup missing"); driver.close();
+    }
+    private static void earlyEmpty() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1;
+        int polls = usb.modemPolls;
+        bytes(new byte[0], driver.read(64, 10)); check(usb.modemPolls == polls + 1, "Early empty read did not check FTDI status");
+        check(driver.isHealthy() && usb.writeCalls == 0, "Healthy RX caused a disconnect or extra command");
+        usb.queue(new byte[]{1, 2, 3}, 0x60); bytes(new byte[]{1, 2, 3}, driver.read(64, 10));
+        check(usb.modemPolls == polls + 1, "Successful bulk read added a status probe"); driver.close();
+    }
+    private static void normalEmpty() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); int polls = usb.modemPolls;
+        bytes(new byte[0], driver.read(64, 10)); check(usb.modemPolls == polls && driver.isHealthy(), "Normal timeout probed or closed USB"); driver.close();
+    }
+    private static void earlyFailedStatus() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.shortModem = true;
+        failure(() -> driver.read(64, 10)); check(!driver.isHealthy(), "Short RX status was ignored");
+        failure(() -> driver.write(frame(), 100, CancelSignal.NEVER)); check(usb.writeCalls == 0, "TX followed failed RX status"); driver.close();
+    }
+    private static void earlyStatusException() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.emptyReadMillis = 1; usb.failModem = true;
+        failure(() -> driver.read(64, 10)); check(!driver.isHealthy(), "RX status I/O exception was ignored"); driver.close();
     }
     private static void cleanupHostPackets() throws Exception {
         UsbFixture usb = new UsbFixture(); byte[] stale = new byte[256]; Arrays.fill(stale, (byte) 0xfc);

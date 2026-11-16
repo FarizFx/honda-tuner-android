@@ -56,6 +56,12 @@ public final class FtdiChannel implements ByteChannel {
             UsbInterface uart = device.getInterface(0);
             FtdiSerialDriver library = new FtdiSerialDriver(device);
             FtdiSerialDriver.FtdiSerialPort serial = library.new FtdiSerialPort(device, 0) {
+                @Override public int read(byte[] buffer, int timeoutMillis) throws IOException {
+                    // Keep the driver's bounded read and open-state check. An
+                    // early empty read is checked with FTDI modem status by
+                    // FtdiUart instead of the generic USB GET_STATUS request.
+                    return super.read(buffer, buffer.length, timeoutMillis, false);
+                }
                 @Override protected int readFilter(byte[] buffer, int count) {
                     // Keep status headers for FtdiUart's packet codec and trace.
                     // This preserves UART-error checks during real ECU replies.

@@ -1,6 +1,7 @@
 package id.hondatuner.android;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -29,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
@@ -50,7 +52,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,6 +69,7 @@ import id.hondatuner.core.HondaClient;
 import id.hondatuner.core.KLineTransport;
 import id.hondatuner.core.LiveProfile;
 import id.hondatuner.core.SensorInfo;
+import id.hondatuner.core.SensorSelection;
 import id.hondatuner.core.TelemetryHistory;
 
 /** Foreground USB diagnostics with visible connection stages and real-sample history. */
@@ -78,7 +80,7 @@ public final class MainActivity extends Activity {
     private static final String USB_PERMISSION = "id.hondatuner.android.USB_PERMISSION";
     private static final String FAILURE_FILE = "last-diagnostic-failure.txt";
     private static final int EXPORT_REQUEST = 41;
-    private static final long[] INTERVALS = {250, 500, 1000, 2000};
+    private static final long[] INTERVALS = {0, 50, 100, 250, 500, 1000, 2000};
     private static final int[] TIMEOUTS = {500, 1000, 2000};
     private static final String[] GROUPS = {"Semua sensor", "Mesin & udara", "Temperatur", "Tegangan", "O2 & bahan bakar", "Saklar & status"};
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -90,6 +92,9 @@ public final class MainActivity extends Activity {
     private final List<UsbDevice> devices = new ArrayList<>();
     private final Map<String, List<String>> catalog = new LinkedHashMap<>();
     private int catalogRows;
+    private SensorSelection sensorSelection;
+    private Button chooseSensors;
+    private CheckBox focusSensors;
     private String catalogStatus = "Katalog belum dimuat.";
     private final Map<String, SensorCard> cards = new LinkedHashMap<>();
     private final List<String> graphFields = new ArrayList<>();
@@ -167,6 +172,8 @@ public final class MainActivity extends Activity {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferences = getSharedPreferences("diagnostics", MODE_PRIVATE);
+        sensorSelection = new SensorSelection(Arrays.asList(preferences.getString("sensor_order", "").split("\t")),
+                preferences.getStringSet("hidden_sensors", Collections.emptySet()));
         usb = (UsbManager) getSystemService(Context.USB_SERVICE);
         appContext = "Honda Tuner " + versionLabel() + "\nAndroid " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")\n" + Build.MANUFACTURER + " " + Build.MODEL;
         traceContext = appContext;
@@ -332,13 +339,19 @@ public final class MainActivity extends Activity {
         LinearLayout controls = row(); toggleLive = button("Mulai live", true); readOnce = button("Baca sekali", false);
         controls.addView(toggleLive, weight()); controls.addView(readOnce, weight()); live.addView(controls);
         LinearLayout timing = row(); timing.addView(text("Target interval", 12, MUTED, false), new LinearLayout.LayoutParams(0, -2, 1));
-        interval = new Spinner(this); choices(interval, Arrays.asList("250 ms", "500 ms", "1.000 ms", "2.000 ms")); interval.setSelection(boundedIndex(preferences.getInt("interval_index", 1), INTERVALS.length));
+        interval = new Spinner(this); choices(interval, Arrays.asList("Secepatnya", "50 ms", "100 ms", "250 ms", "500 ms", "1.000 ms", "2.000 ms")); interval.setSelection(savedIntervalIndex());
         timing.addView(interval, new LinearLayout.LayoutParams(dp(155), dp(44))); live.addView(timing);
         liveNote = text(getString(R.string.sensor_empty), 12, MUTED, false); padded(liveNote); live.addView(liveNote);
         LinearLayout options = row(); detect = button("Deteksi ulang", false); saveCsv = button("Simpan CSV", false);
         options.addView(detect, weight()); options.addView(saveCsv, weight()); live.addView(options);
         LinearLayout filters = panel(); search = new EditText(this); search.setSingleLine(true); search.setTextSize(14); search.setTextColor(INK); search.setHintTextColor(MUTED); search.setHint("Cari RPM, gas, baterai, sensor…"); filters.addView(search, new LinearLayout.LayoutParams(-1, dp(44)));
         category = new Spinner(this); choices(category, Arrays.asList(GROUPS)); filters.addView(category, new LinearLayout.LayoutParams(-1, dp(44)));
+        chooseSensors = button("Pilih & urutkan sensor", false); filters.addView(chooseSensors, new LinearLayout.LayoutParams(-1, dp(44)));
+        chooseSensors.setOnClickListener(view -> editSensors());
+        focusSensors = new CheckBox(this); focusSensors.setText("Baca hanya grup sensor pilihan"); focusSensors.setTextColor(INK); focusSensors.setTextSize(13);
+        focusSensors.setChecked(preferences.getBoolean("focus_sensors", false)); filters.addView(focusSensors);
+        filters.addView(text("Aktifkan untuk mempercepat sensor pilihan. Sensor dalam satu grup tetap dibaca bersama; grup lain tidak direkam di grafik/CSV. Pencarian dan kategori hanya menyaring tampilan.", 11, MUTED, false));
+        focusSensors.setOnCheckedChangeListener((button, checked) -> syncSensorPolling());
         filterNote = text("Belum ada sensor.", 11, MUTED, false); filters.addView(filterNote); spaced(live, filters);
         grid = new GridLayout(this); grid.setColumnCount(getResources().getConfiguration().screenWidthDp >= 600 ? 3 : 2); grid.setPadding(0, dp(6), 0, 0); live.addView(grid);
         tableNote = text("Ukuran dan jenis tabel mengikuti balasan ECU.", 11, MUTED, false); padded(tableNote); live.addView(tableNote);
@@ -352,7 +365,7 @@ public final class MainActivity extends Activity {
             log.info("UI", "Statistik dan riwayat sampel direset.");
         });
         selected(interval, position -> {
-            preferences.edit().putInt("interval_index", position).apply();
+            preferences.edit().putLong("interval_ms", INTERVALS[position]).apply();
             if (controller != null) controller.setLiveIntervalMillis(INTERVALS[position]);
         });
         selected(category, position -> applyFilter());
@@ -361,6 +374,62 @@ public final class MainActivity extends Activity {
             @Override public void onTextChanged(CharSequence text, int start, int before, int count) { applyFilter(); }
             @Override public void afterTextChanged(Editable text) { }
         });
+    }
+    private int savedIntervalIndex() {
+        long value = 0;
+        if (preferences.contains("interval_ms")) value = preferences.getLong("interval_ms", 0);
+        else if (preferences.contains("interval_index")) {
+            long[] previous = {250, 500, 1000, 2000};
+            value = previous[boundedIndex(preferences.getInt("interval_index", 1), previous.length)];
+        }
+        for (int i = 0; i < INTERVALS.length; i++) if (INTERVALS[i] == value) return i;
+        return 0;
+    }
+    private void editSensors() {
+        if (cards.isEmpty()) return;
+        SensorSelection draft = new SensorSelection(sensorSelection.savedOrder(), sensorSelection.hidden());
+        List<String> available = new ArrayList<>(cards.keySet());
+        ScrollView scroll = new ScrollView(this); LinearLayout list = column(); scroll.addView(list);
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Sensor & urutan tampilan").setView(scroll)
+                .setNegativeButton("Batal", null).setNeutralButton("Semua & urutan awal", null)
+                .setPositiveButton("Simpan", (ignored, which) -> {
+                    sensorSelection = draft;
+                    preferences.edit().putString("sensor_order", String.join("\t", draft.savedOrder())).putStringSet("hidden_sensors", draft.hidden()).apply();
+                    applyFilter(); syncSensorPolling();
+                }).create();
+        Runnable[] draw = new Runnable[1];
+        draw[0] = () -> {
+            int offset = scroll.getScrollY(); list.removeAllViews();
+            List<String> ordered = draft.order(available);
+            for (int i = 0; i < ordered.size(); i++) {
+                String name = ordered.get(i); LinearLayout item = row();
+                CheckBox shown = new CheckBox(this); shown.setText(SensorInfo.label(name)); shown.setTextColor(INK); shown.setTextSize(13);
+                shown.setChecked(draft.isVisible(name)); shown.setOnCheckedChangeListener((button, checked) -> draft.setVisible(name, checked));
+                item.addView(shown, new LinearLayout.LayoutParams(0, -2, 1));
+                Button up = button("↑", false), down = button("↓", false);
+                up.setContentDescription("Naikkan " + SensorInfo.label(name)); down.setContentDescription("Turunkan " + SensorInfo.label(name));
+                up.setEnabled(i > 0); down.setEnabled(i < ordered.size() - 1);
+                up.setOnClickListener(view -> { draft.move(name, -1, available); draw[0].run(); });
+                down.setOnClickListener(view -> { draft.move(name, 1, available); draw[0].run(); });
+                item.addView(up, new LinearLayout.LayoutParams(dp(44), dp(44))); item.addView(down, new LinearLayout.LayoutParams(dp(44), dp(44)));
+                list.addView(item);
+            }
+            scroll.post(() -> scroll.scrollTo(0, offset));
+        };
+        dialog.setOnShowListener(ignored -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view -> {
+            draft.reset(available);
+            draw[0].run();
+        }));
+        draw[0].run(); dialog.show();
+    }
+    private void syncSensorPolling() {
+        if (controller == null || focusSensors == null || displayedProfile == null) return;
+        List<String> visible = sensorSelection.visible(displayedProfile.fields);
+        if (focusSensors.isChecked() && visible.isEmpty()) {
+            focusSensors.setChecked(false); toast("Pilih minimal satu sensor untuk membatasi pembacaan.");
+        }
+        preferences.edit().putBoolean("focus_sensors", focusSensors.isChecked()).apply();
+        controller.setLiveFields(focusSensors.isChecked() ? visible : null);
     }
     private void buildGraph(LinearLayout graphs) {
         graphs.addView(text("Grafik sensor", 20, INK, true));
@@ -517,6 +586,7 @@ public final class MainActivity extends Activity {
         detect.setEnabled(state.connected() && !state.busy()); readDtc.setEnabled(state.connected() && !state.busy()); interval.setEnabled(!state.busy());
         saveCsv.setEnabled(history.size() > 0 && !exportInFlight); resetStats.setEnabled(history.size() > 0); saveLog.setEnabled(!exportInFlight);
         graphChoice.setEnabled(!graphFields.isEmpty()); traceLast.setEnabled(lastFailure.get() != null);
+        chooseSensors.setEnabled(!cards.isEmpty()); focusSensors.setEnabled(!cards.isEmpty());
         for (Button button : new Button[]{connect, refresh, toggleLive, readOnce, detect, readDtc, saveCsv, resetStats, saveLog, traceLast}) button.setAlpha(button.isEnabled() ? 1f : 0.45f);
     }
     private void showTab(int tab) {
@@ -526,22 +596,23 @@ public final class MainActivity extends Activity {
     }
     private void buildCards(List<String> fields) {
         cards.clear(); grid.removeAllViews(); history.reset(fields); lastSample = null;
-        List<String> ordered = new ArrayList<>(fields); Collections.sort(ordered, Comparator.comparingInt(SensorInfo::priority));
+        List<String> ordered = sensorSelection.order(fields);
         for (String name : ordered) cards.put(name, new SensorCard(name));
         graphFields.clear(); List<String> labels = new ArrayList<>();
         for (String name : ordered) if (TelemetryHistory.numeric(displayedProfile.initial.values.get(name)) != null) { graphFields.add(name); labels.add(SensorInfo.label(name) + (SensorInfo.unit(name).isEmpty() ? " · raw" : " · " + SensorInfo.unit(name))); }
         if (labels.isEmpty()) labels.add("Tidak ada sensor numerik pada tabel ini");
         graphField = graphFields.isEmpty() ? "" : graphFields.get(0); choices(graphChoice, labels); applyFilter();
+        syncSensorPolling();
     }
     private void applyFilter() {
         if (grid == null || search == null || category == null) return;
         String query = search.getText().toString().trim().toLowerCase(Locale.ROOT);
         int group = Math.max(0, category.getSelectedItemPosition()); grid.removeAllViews(); int visible = 0;
-        for (Map.Entry<String, SensorCard> card : cards.entrySet()) {
-            String name = card.getKey(); String searchable = name + " " + SensorInfo.label(name) + " " + SensorInfo.unit(name);
+        for (String name : sensorSelection.visible(cards.keySet())) {
+            String searchable = name + " " + SensorInfo.label(name) + " " + SensorInfo.unit(name);
             if (group > 0 && !GROUPS[group].equals(SensorInfo.group(name)) || !searchable.toLowerCase(Locale.ROOT).contains(query)) continue;
             GridLayout.LayoutParams params = new GridLayout.LayoutParams(); params.width = 0; params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f); params.setMargins(dp(3), dp(3), dp(3), dp(3)); grid.addView(card.getValue(), params); visible++;
+            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f); params.setMargins(dp(3), dp(3), dp(3), dp(3)); grid.addView(cards.get(name), params); visible++;
         }
         filterNote.setText(cards.isEmpty() ? "Belum ada sensor." : visible + " / " + cards.size() + " sensor ditampilkan");
     }

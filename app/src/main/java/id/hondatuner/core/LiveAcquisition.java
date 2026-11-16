@@ -2,6 +2,10 @@ package id.hondatuner.core;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +22,7 @@ public final class LiveAcquisition {
     private final LiveProfile.Reader reader;
     private final Listener listener;
     private long intervalMillis;
+    private Set<String> selectedFields;
     private final DiagnosticLog log;
     private ScheduledFuture<?> pending;
     private LiveProfile profile;
@@ -29,7 +34,7 @@ public final class LiveAcquisition {
         this(executor, reader, listener, intervalMillis, null);
     }
     public LiveAcquisition(ScheduledExecutorService executor, LiveProfile.Reader reader, Listener listener, long intervalMillis, DiagnosticLog log) {
-        if (intervalMillis <= 0) throw new IllegalArgumentException("Interval harus positif.");
+        if (intervalMillis < 0) throw new IllegalArgumentException("Interval tidak boleh negatif.");
         this.executor = executor; this.reader = reader; this.listener = listener; this.intervalMillis = intervalMillis;
         this.log = log;
     }
@@ -52,19 +57,23 @@ public final class LiveAcquisition {
     public synchronized boolean isRunning() { return running; }
     public synchronized long currentGeneration() { return generation; }
     public synchronized void setIntervalMillis(long value) {
-        if (value <= 0) throw new IllegalArgumentException("Interval harus positif.");
+        if (value < 0) throw new IllegalArgumentException("Interval tidak boleh negatif.");
         intervalMillis = value;
+    }
+    public synchronized void setFields(Collection<String> fields) {
+        selectedFields = fields == null ? null : Collections.unmodifiableSet(new LinkedHashSet<>(fields));
     }
     public synchronized boolean isCurrent(long run) { return generation == run; }
     private synchronized boolean cancelled(long run) { return !running || generation != run; }
 
     private void poll(long run) {
         final LiveProfile activeProfile;
-        synchronized (this) { if (cancelled(run)) return; pending = null; activeProfile = profile; }
+        final Set<String> activeFields;
+        synchronized (this) { if (cancelled(run)) return; pending = null; activeProfile = profile; activeFields = selectedFields; }
         long began = System.nanoTime();
         LiveProfile.Sample sample;
         boolean fatalReported = false;
-        try { sample = activeProfile.read(reader, () -> cancelled(run)); }
+        try { sample = activeProfile.read(reader, () -> cancelled(run), activeFields); }
         catch (InterruptedIOException ignored) { return; }
         catch (TransportException error) {
             fatalReported = true;

@@ -34,6 +34,7 @@ public final class CoreTest {
         run("warm ECU and missing identity keep normal diagnostics usable", CoreTest::warmAndMissingId);
         run("unrelated same-length packet cannot become an ECU identity", CoreTest::identityHeader);
         run("unexpected identity layout retains the failure without losing diagnostics", CoreTest::identityLayout);
+        run("recorded 1.1.4 Shindengen ID header and checksum are validated", CoreTest::recordedIdentity);
         run("failed diagnostic connection cannot read sensors", CoreTest::failedConnection);
         run("live reply selects the returned schema", CoreTest::returnedSchema);
         run("discovery fallbacks stay inside the correct sensor group", CoreTest::discovery);
@@ -86,6 +87,7 @@ public final class CoreTest {
         run("logged app controller scans and reads DTC without echo", CoreTest::controllerDirect);
         run("runtime polling failures produce unread samples and stop visibly", CoreTest::runtimeLoss);
         passed += FtdiUartTest.runAll();
+        passed += SensorSelectionTest.runAll();
         System.out.println("PASS: " + passed + " core regression tests");
     }
     private static void run(String name, Checked test) throws Exception { test.run(); passed++; System.out.println("OK " + name); }
@@ -208,6 +210,15 @@ public final class CoreTest {
         check(client.identityStatus().contains("layout berbeda: total=10, payload=7"), "Unexpected ID length lost its diagnostic detail");
         c.responder = request -> reply(join(new byte[]{0x71, 0x13}, mainBody(1800, 20, 123)));
         eq(1800, client.readTable(0x10, CancelSignal.NEVER).fields.get("engine_speed")); client.close();
+    }
+    private static void recordedIdentity() throws Exception {
+        byte[] recorded = {2, 11, 0x72, 0, 0, 1, 2, 0x45, 0x0f, 1, 0x29};
+        eq("0102450F01", HondaClient.parseIdentity(KLineTransport.parseReply(0x72, recorded)));
+        recorded[10] ^= 1; io(() -> KLineTransport.parseReply(0x72, recorded));
+        FakeChannel c = new FakeChannel(); c.standard(); Function<byte[], byte[]> old = c.responder;
+        c.responder = request -> request[2] == 0x72 ? reply((byte) 0x72, (byte) 0, (byte) 0, (byte) 1, (byte) 2, (byte) 0x45, (byte) 0x0f, (byte) 1) : old.apply(request);
+        HondaClient client = new HondaClient(c.transport());
+        eq("0102450F01", client.connect(CancelSignal.NEVER)); eq("ID ECU terbaca: 0102450F01", client.identityStatus()); client.close();
     }
     private static void failedConnection() throws Exception {
         FakeChannel c = new FakeChannel(); c.responder = request -> null; HondaClient client = new HondaClient(c.transport());
@@ -655,7 +666,7 @@ public final class CoreTest {
         ref[0] = new LiveAcquisition(worker, (request, cancel) -> { int n = active.incrementAndGet(); maximum.accumulateAndGet(n, Math::max);
             try { calls.incrementAndGet(); return mainResult(2000); } finally { active.decrementAndGet(); }
         }, new LiveAcquisition.Listener() {
-            @Override public void onSample(long generation, LiveProfile.Sample sample) { ref[0].setIntervalMillis(10); enough.countDown(); }
+            @Override public void onSample(long generation, LiveProfile.Sample sample) { ref[0].setIntervalMillis(0); enough.countDown(); }
             @Override public void onStopped(long generation, String reason) { }
         }, 5000);
         try { ref[0].start(profile()); check(enough.await(2, TimeUnit.SECONDS), "New interval did not affect the next poll"); ref[0].stop(); check(calls.get() >= 3, "Live samples missing"); eq(1, maximum.get()); }

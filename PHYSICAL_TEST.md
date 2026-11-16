@@ -1,11 +1,11 @@
-# Pengujian Honda Tuner 1.1.4 pada HP dan ECU
+# Pengujian Honda Tuner 1.1.5 pada HP dan ECU
 
 Gunakan Xiaomi/FT232RL/ECU Shindengen dan rangkaian yang sama dengan pengujian
-1.1.3. Rekaman pengguna memuat frame sensor ECU yang valid sesudah echo dengan
-error UART. Replay 1.1.4 menerima frame yang bersih tersebut; respons sensor
+1.1.4. Rekaman pengguna memuat frame sensor ECU yang valid sesudah echo dengan
+error UART. Replay 1.1.5 menerima frame yang bersih tersebut; respons sensor
 terhadap perubahan fisik dan koneksi awal langsung masih perlu diuji.
 
-1. Pasang APK 1.1.4 yang telah diperiksa. Ikuti catatan kompatibilitas pemasangan
+1. Pasang APK 1.1.5 yang telah diperiksa. Ikuti catatan kompatibilitas pemasangan
    pada hasil build. Sambungkan adaptor langsung lewat OTG, dengan kontak
    seperti pengujian sebelumnya. Koneksi ini tidak dibantu HondaECU di PC.
 2. Pilih Echo AUTO, timeout 1000 ms dan aktifkan Detail TX/RX. Tekan Hubungkan.
@@ -29,3 +29,12 @@ terhadap perubahan fisik dan koneksi awal langsung masih perlu diuji.
 Status pengujian fisik tetap belum terverifikasi sampai langkah tersebut
 dibuktikan pada perangkat. Data yang datang setelah timeout atau setelah
 jendela tenang tidak dapat diprediksi oleh parser dari rekaman sebelumnya.
+
+7. Pilih beberapa sensor dan ubah urutan, simpan, lalu buka ulang aplikasi.
+   Periksa pilihan dan urutan tetap tersimpan tanpa mereset riwayat saat diedit.
+8. Pilih Secepatnya. Bandingkan Hz aktual dengan seluruh grup dan hanya sensor
+   utama (RPM/TPS/aki). Periksa grup yang tidak dibaca menjadi belum terbaca
+   di grafik/CSV. Kembali ke semua grup dan periksa nilai kembali diperbarui.
+9. Periksa ID 0102450F01 dan kedua entri Vario 150 bila ECU yang sama digunakan.
+   Biarkan pembacaan kosong/timeout terjadi, lalu periksa apakah live tetap
+   berjalan. Lepas USB dan pastikan sesi terputus; hubungkan kembali langsung.

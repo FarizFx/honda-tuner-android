@@ -1,0 +1,89 @@
+{
+  "recorded_at_utc": "2026-11-16T02:32:16.863494+00:00",
+  "version_name": "1.1.5-debug",
+  "version_code": 7,
+  "stage": "source verified locally; server build pending",
+  "user_request_timestamp_utc": "2026-11-16T02:21:23Z",
+  "user_requests": [
+    "Choose visible sensors and their order",
+    "Reduce live interval as far as practical",
+    "Fix reported 1.1.4 USB get_status failure and investigate retained identity error"
+  ],
+  "recording": {
+    "version_name": "1.1.4-debug",
+    "original_message_sha256": "444dd9425f30b3175414292c57681707c42c252737fc6dd451234d3392c78531",
+    "trace_sha256": "cd3c5e1221dec82a32e15ea5cc577947fbdf35ee6b723d31ed9dc5edfd8e0883",
+    "user_reports_connection_succeeded": true,
+    "observed_live_groups": 4,
+    "observed_named_fields": 29,
+    "observed_complete_live_round_millis": [
+      240.5,
+      258.9,
+      235.1
+    ],
+    "reported_usb_error": "USB get_status request failed",
+    "failing_usb_transaction_present": false,
+    "trace_ends_mid_line_after_entry": 638,
+    "recorded_incomplete_main_reply_bytes": 22,
+    "expected_main_reply_bytes": 24,
+    "recorded_timeout_millis": 2000
+  },
+  "identity": {
+    "clean_frame_hex": "02 0B 72 00 00 01 02 45 0F 01 29",
+    "identifier": "0102450F01",
+    "old_rejection": "expected 72 00 05 instead of recorded 72 00 00",
+    "accepted_header_variants": [
+      "72 00 00",
+      "72 00 05"
+    ],
+    "total_length_required": 11,
+    "target_checksum_and_exact_five_byte_length_required": true,
+    "catalog_matches": [
+      "Vario 150 / 30400-K59F-A01",
+      "Vario 150 / 30400-K59A-A11"
+    ],
+    "ambiguity_preserved": true
+  },
+  "usb": {
+    "driver_version": "3.12.0",
+    "source_url": "https://github.com/mik3y/usb-serial-for-android/blob/3.12.0/usbSerialForAndroid/src/main/java/com/hoho/android/usbserial/driver/CommonUsbSerialPort.java",
+    "driver_sources_sha256": {
+      "CommonUsbSerialPort.java": "fc6d5491eb21adff034ee04be16b7d0b27d180c487755dce35d07518198a9637",
+      "FtdiSerialDriver.java": "b23d21f835f01d27121715154489f59bce061bc4ba0f91ff5a64e17f69bcd438"
+    },
+    "generic_get_status_replaced_by_ftdi_vendor_request": 5,
+    "early_empty_read_health_probe_timeout_max_millis": 20,
+    "short_or_failed_status_stays_fatal": true,
+    "actual_cause_of_device_control_failure": "Unproven; excerpt has no failing USB transaction"
+  },
+  "live": {
+    "persist_visibility_and_order": true,
+    "new_sensor_fields_visible_by_default": true,
+    "optional_selected_group_polling": true,
+    "unpolled_groups_are_unread_in_history": true,
+    "fastest_target_millis": 0,
+    "interval_choices_millis": [
+      0,
+      50,
+      100,
+      250,
+      500,
+      1000,
+      2000
+    ],
+    "zero_target_means_no_added_delay_after_serialized_round": true,
+    "old_saved_interval_migrated_by_value": true,
+    "ftdi_latency_timer_millis": 1,
+    "complete_frame_quiet_millis": 24,
+    "physical_latency_or_success_of_1_1_5_verified": false
+  },
+  "verification": {
+    "local_core_regressions": 200,
+    "reference_decoder_vectors": 312,
+    "reference_field_values": 5616,
+    "phone_decoder_vectors": 16,
+    "phone_decoder_field_values": 166,
+    "preserved_baseline_files": 123,
+    "local_sdk_or_apk_build": false
+  }
+}

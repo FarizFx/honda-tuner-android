@@ -52,7 +52,22 @@ public final class FtdiUart implements ByteChannel {
         return cause == null ? new TransportException(message) : new TransportException(message, cause);
     }
     private int readUsb(byte[] buffer, int timeoutMillis) throws TransportException {
-        try { return io.read(buffer, timeoutMillis); }
+        long began = timing.now();
+        try {
+            int count = io.read(buffer, timeoutMillis);
+            // Android may return an empty bulk read before its deadline. Check
+            // the adapter with the same vendor request already used for TX.
+            // A missing/short status or actual I/O exception stays fatal.
+            if (count <= 0 && timing.now() - began < timeoutMillis * 1000000L) {
+                requireOpen();
+                byte[] status = new byte[2];
+                int statusCount = io.controlIn(5, 0, port, status, Math.min(20, timeoutMillis));
+                if (log != null) log.debug("USB RX HEALTH", "Early empty bulk read; FTDI status=" + statusCount + ", elapsed=" + elapsed(began));
+                if (statusCount != 2) throw failed("Status RX FT232R tidak tersedia (" + statusCount + ").", null);
+                requireOpen();
+            }
+            return count;
+        }
         catch (IOException | RuntimeException error) { throw failed("Pembacaan USB FT232R gagal: " + error.getMessage(), error); }
     }
     private void setBreak(boolean enabled) throws TransportException {
@@ -87,7 +102,7 @@ public final class FtdiUart implements ByteChannel {
             control(0, 0, port); // full initialization deliberately resets the UART
             cancel.check(); purge();
             configureUart(cancel);
-            control(9, 8, port);
+            control(9, 1, port); // FT232R minimum latency timer, milliseconds
             cancel.check(); setBreak(true);
             long lowBegan = timing.now();
             pauseUntil(lowBegan + 70000000L, cancel);

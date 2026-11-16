@@ -84,7 +84,9 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
         if (reply.totalLength != 11 || data.length != 8) {
             throw new ProtocolException("Balasan ID memiliki layout berbeda: total=" + reply.totalLength + ", payload=" + data.length);
         }
-        if (data[0] != 0x72 || data[1] != 0 || data[2] != 5) {
+        // The recorded Shindengen reply uses 72 00 00; the desktop fixtures
+        // use 72 00 05. Both contain exactly five ID bytes in an 11-byte frame.
+        if (data[0] != 0x72 || data[1] != 0 || (data[2] != 0 && data[2] != 5)) {
             throw new ProtocolException("Balasan bukan untuk permintaan ID ECU lima byte.");
         }
         StringBuilder value = new StringBuilder();
