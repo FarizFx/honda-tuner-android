@@ -1,6 +1,6 @@
 {
   "recorded_at_utc": "2026-11-16T01:48:24.466586+00:00",
-  "stage": "local verification before source push",
+  "stage": "source pushed; GitHub Actions queued for an online Linux server",
   "version_name": "1.1.4-debug",
   "version_code": 6,
   "user_requests": [
@@ -120,7 +120,10 @@
       "os": "Linux"
     },
     "laptop_ci_or_sdk_installation": false,
-    "status": "waiting for server availability; all existing runners offline",
+    "status": "queued; all existing Linux runners offline",
+    "run_id": 43788584478,
+    "run_url": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43788584478",
+    "source_commit": "7ae1d6b07e8281ee1d163b61e4c7de74c809574d",
     "runner_inventory_checked_at_utc": "2026-11-16T01:49:47.065438+00:00"
   },
   "physical_1_1_4_qualification": false,

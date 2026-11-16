@@ -10,7 +10,14 @@ already authorized. Ordinary source-repository work; no new native RE performed.
 regressions (89 core, 21 transport, 13 lifecycle, 22 UART, 24 Lite fixtures,
 17 recorded USB transaction replays), 312 reference vectors / 5,616 values,
 16 recorded vectors / 166 values, XML/YAML/source checks and Git diff checks.
-Build, push and APK delivery remain outstanding at this preflight stage.
+Source is pushed at 7ae1d6b07e8281ee1d163b61e4c7de74c809574d.
+One Actions job is queued:
+https://github.com/FarizFx/honda-tuner-android/actions/runs/43788584478
+All registered Linux runners are offline; an async question requests the user
+to restart a server runner. APK 1.1.4 is not built or available yet.
+Source ZIP: dist/source-1.1.4-7ae1d6b.zip, 205,783 bytes; SHA-256
+7afa7731ff6bcc739aca94f8c642d49ffcb589bd7fce1ff9851c0e1e9fad60b2.
+All 72 archived source files and 101 preserved baseline/archive hashes passed.
 Local reports: build/repair-1.1.4/local in the development mirror. The previous
 CI core/APK reports in evidence are still exact 1.1.3 server originals until
 new originals are downloaded. Audit: evidence/uart_sensor_audit.json.
@@ -54,7 +61,10 @@ used for offline Java tests only. Default push triggers one Actions build.
 APK signer compatibility must be checked against the preserved 1.1.3 signer
 764ff636cf91220f3b275cd0e2a03a44062b6824eaf6f9989174e834caada453 before delivery.
 
-Remaining: commit/push, verify actual Linux runner/run, resolve real CI failures,
+Offline-only build/repair-1.1.4/verify_delivery.py is prepared in the mirror.
+It consumes run.json, jobs.json, release.json and assets/ produced by direct gh
+commands; it does not invoke Git/gh, an SDK or USB/ECU I/O.
+Remaining: monitor the queued run when a Linux server is online, resolve real CI failures,
 download and compare all seven release assets/digests, source hashes, APK ZIP,
 signature and version/classes/catalog, synchronize source/mirror/artifacts,
 record delivery and provide APK. Full 1.1.4 physical qualification remains

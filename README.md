@@ -29,8 +29,8 @@ kosong pada perangkat tersebut belum dapat ditentukan.
 
 **186 tes regresi lokal lulus**, termasuk 22 tes error UART, 24 fixture Lite dan
 17 replay transaksi rekaman pengguna. **312 vektor referensi / 5.616 nilai** dan
-**16 vektor rekaman / 166 nilai** cocok. Build Android, lint, signature dan
-pengiriman APK 1.1.4 sedang dipersiapkan untuk Actions di server Linux.
+**16 vektor rekaman / 166 nilai** cocok. [Build Actions 1.1.4](https://github.com/FarizFx/honda-tuner-android/actions/runs/43788584478)
+sudah dibuat dan menunggu runner server Linux online; APK belum tersedia.
 Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1, BREAK minimum
 70/130 ms, RX-only purge dan pembersihan wake tenang 24 ms / batas 250 ms.
 Pembatalan, drain balasan lama dan kegagalan USB/TX fatal tetap diuji.
@@ -165,7 +165,8 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
-Build dan APK 1.1.4 belum diverifikasi pada tahap persiapan source ini.
+Source 1.1.4: `7ae1d6b07e8281ee1d163b61e4c7de74c809574d`. Build dan APK belum
+terverifikasi karena job masih mengantre untuk runner Linux yang offline.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.
