@@ -89,6 +89,8 @@ public final class MainActivity extends Activity {
     private final AtomicReference<Failure> lastFailure = new AtomicReference<>();
     private final List<UsbDevice> devices = new ArrayList<>();
     private final Map<String, List<String>> catalog = new LinkedHashMap<>();
+    private int catalogRows;
+    private String catalogStatus = "Katalog belum dimuat.";
     private final Map<String, SensorCard> cards = new LinkedHashMap<>();
     private final List<String> graphFields = new ArrayList<>();
     private SharedPreferences preferences;
@@ -198,7 +200,7 @@ public final class MainActivity extends Activity {
         loadCatalog();
         controller = new DiagnosticController(new DiagnosticController.Listener() {
             @Override public void onState(DiagnosticController.Snapshot snapshot) {
-                stateContext = "State=" + snapshot.state + ", session=" + snapshot.session + ", ECU=" + snapshot.ecuId + "\n" + snapshot.message;
+                stateContext = sessionContext(snapshot);
                 logDirty.set(true);
                 main.post(() -> { if (!destroyed && controller.isCurrent(snapshot.session)) showState(controller.snapshot()); });
             }
@@ -472,7 +474,7 @@ public final class MainActivity extends Activity {
         }
     }
     private void showState(DiagnosticController.Snapshot snapshot) {
-        stateContext = "State=" + snapshot.state + ", session=" + snapshot.session + ", ECU=" + snapshot.ecuId + "\n" + snapshot.message;
+        stateContext = sessionContext(snapshot);
         if (displayedSession != snapshot.session) {
             displayedSession = snapshot.session;
             if (snapshot.state == DiagnosticController.State.CONNECTING) resetSessionViews();
@@ -633,16 +635,30 @@ public final class MainActivity extends Activity {
         for (HondaClient.DtcCode code : codes) { if (result.length() != 0) result.append("\n\n"); result.append(code.code()).append("\n").append(code.description()); } return result.toString();
     }
     private void loadCatalog() {
+        catalog.clear(); catalogRows = 0;
         try (BufferedReader source = new BufferedReader(new InputStreamReader(getAssets().open("ecu_catalog.tsv"), StandardCharsets.UTF_8))) {
             for (String line; (line = source.readLine()) != null;) {
                 String[] parts = line.split("\t", -1); if (parts.length != 3) continue;
                 List<String> rows = catalog.get(parts[0]); if (rows == null) { rows = new ArrayList<>(); catalog.put(parts[0], rows); }
                 rows.add(parts[1] + (parts[2].isEmpty() ? "" : " · " + parts[2]));
+                catalogRows++;
             }
-        } catch (IOException error) { catalog.clear(); log.warn("CATALOG", error.getMessage()); }
+            catalogStatus = catalogRows + " definisi, " + catalog.size() + " ID ECU unik, dimuat dari aplikasi.";
+            log.info("CATALOG", catalogStatus);
+        } catch (IOException error) {
+            catalog.clear(); catalogRows = 0;
+            catalogStatus = "Katalog nama gagal dimuat: " + error.getMessage();
+            log.warn("CATALOG", catalogStatus);
+        }
+    }
+    private String sessionContext(DiagnosticController.Snapshot snapshot) {
+        return "State=" + snapshot.state + ", session=" + snapshot.session + ", ECU=" + snapshot.ecuId +
+                "\nIdentitas: " + snapshot.identityStatus + "\nModel: " + (snapshot.ecuId.isEmpty() ? "Menunggu ID ECU." : identityLabel(snapshot.ecuId)) +
+                "\nKatalog: " + catalogStatus + "\n" + snapshot.message;
     }
     private String identityLabel(String id) {
-        if (id.isEmpty()) return "ECU merespons · identitas belum terbaca";
+        if (id.isEmpty()) return "ECU merespons · ID belum terbaca. Detail di Debug.";
+        if (catalogRows == 0) return "ECU " + id + " · katalog nama belum tersedia";
         List<String> rows = catalog.get(id);
         if (rows == null) return "ECU " + id + " · model belum ada di katalog";
         if (rows.size() == 1) return rows.get(0) + "\nECU " + id;

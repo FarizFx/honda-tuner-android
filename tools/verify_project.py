@@ -1,4 +1,5 @@
 """Offline structural checks. Android API compilation is performed by Gradle/CI."""
+import argparse
 import ast
 import hashlib
 import json
@@ -12,6 +13,9 @@ ANDROID = "{http://schemas.android.com/apk/res/android}"
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=Path, help="Retain local reports separately from CI evidence")
+    options = parser.parse_args()
     source = ROOT / "app/src/main"
     manifest = ET.parse(source / "AndroidManifest.xml").getroot()
     features = manifest.findall("uses-feature")
@@ -64,20 +68,21 @@ def main():
     catalog_lines = (source / "assets/ecu_catalog.tsv").read_text(encoding="utf-8").splitlines()
     for line in catalog_lines:
         fields = line.split("\t")
-        assert len(fields) == 3 and re.fullmatch("[0-9A-F]{10}", fields[0]) and fields[0] != "FFFFFFFFFF"
+        assert len(fields) == 3 and re.fullmatch("[0-9A-F]{10}", fields[0]) and fields[0] not in ("FFFFFFFFFF", "9999999999", "0000000000")
     driver_checksums = ROOT / "gradle/verification-metadata.xml"
     ET.parse(driver_checksums)
     checked = java_paths + xml_paths + tool_paths + [source / "AndroidManifest.xml", source / "assets/ecu_catalog.tsv", source / "assets/usb-serial-for-android-LICENSE.txt", driver_checksums, workflow_path, ROOT / "app/build.gradle", ROOT / "build.gradle", ROOT / "settings.gradle", ROOT / "gradle.properties"]
     report = {
         "result": "passed", "java_source_files": len(java_paths), "resource_xml_files": len(xml_paths),
         "string_resources_resolved": len(references), "exact_id_catalog_rows": len(catalog_lines),
+        "catalog_unique_ids": len({line.split("\t")[0] for line in catalog_lines}),
         "python_tool_syntax_checks": len(tool_paths),
         "yaml_parser_validation": yaml_parsed, "android_sdk_compilation": False,
         "physical_android_usb_or_ecu_test": False,
         "source_sha256": {path.relative_to(ROOT).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest() for path in checked},
     }
-    evidence = ROOT / "evidence"
-    evidence.mkdir(exist_ok=True)
+    evidence = options.output_dir if options.output_dir is not None else ROOT / "evidence"
+    evidence.mkdir(parents=True, exist_ok=True)
     (evidence / "project_verification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n")
     print("PASS: Android manifest, USB filter, %d Java sources, %d XML resources, %d string references and %d catalog rows." %
           (len(java_paths), len(xml_paths), len(references), len(catalog_lines)))

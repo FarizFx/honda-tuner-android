@@ -21,10 +21,10 @@ public final class DiagnosticController implements AutoCloseable {
     public static final class Snapshot {
         public final long session;
         public final State state;
-        public final String ecuId, message;
+        public final String ecuId, identityStatus, message;
         public final boolean hasSensors;
-        private Snapshot(long session, State state, String ecuId, String message, boolean hasSensors) {
-            this.session = session; this.state = state; this.ecuId = ecuId; this.message = message; this.hasSensors = hasSensors;
+        private Snapshot(long session, State state, String ecuId, String identityStatus, String message, boolean hasSensors) {
+            this.session = session; this.state = state; this.ecuId = ecuId; this.identityStatus = identityStatus; this.message = message; this.hasSensors = hasSensors;
         }
         public boolean connected() { return state != State.DISCONNECTED && state != State.CONNECTING; }
         public boolean busy() { return state == State.CONNECTING || state == State.DISCOVERING || state == State.READING_DTC || state == State.READING_SAMPLE; }
@@ -41,6 +41,7 @@ public final class DiagnosticController implements AutoCloseable {
     private LiveAcquisition acquisition;
     private State state = State.DISCONNECTED;
     private String ecuId = "", message = "Hubungkan adaptor FT232R K-Line lewat USB OTG.";
+    private String identityStatus = "ID ECU belum dibaca.";
 
     public DiagnosticController(Listener listener) {
         this(listener, newExecutor(), 500);
@@ -65,7 +66,7 @@ public final class DiagnosticController implements AutoCloseable {
         this.liveInterval = liveInterval; this.transportFactory = Objects.requireNonNull(transportFactory);
         this.log = log;
     }
-    public synchronized Snapshot snapshot() { return new Snapshot(session, state, ecuId, message, profile != null && acquisition != null); }
+    public synchronized Snapshot snapshot() { return new Snapshot(session, state, ecuId, identityStatus, message, profile != null && acquisition != null); }
     public synchronized boolean isCurrent(long token) { return !closed && session == token; }
     public synchronized boolean isCurrentOperation(long token, long op) { return isCurrent(token) && operation == op; }
     public synchronized boolean isCurrentLive(long token, long generation) {
@@ -138,6 +139,7 @@ public final class DiagnosticController implements AutoCloseable {
                 if (transportFailed(opened, token, null)) return;
                 if (cancelled(token, op)) return;
                 ready = true; ecuId = identifier;
+                identityStatus = opened.identityStatus();
                 publish(State.DISCOVERING, "ECU terhubung. Mendeteksi grup sensor...");
             }
             installProfile(LiveProfile.detect(opened, cancel, log, message -> progress(token, op, State.DISCOVERING, message)), token, op);
@@ -310,6 +312,7 @@ public final class DiagnosticController implements AutoCloseable {
         session++; operation++;
         if (acquisition != null) acquisition.stop();
         acquisition = null; profile = null; ecuId = "";
+        identityStatus = "ID ECU belum dibaca.";
         if (client != null) client.close();
         client = null;
         publish(State.DISCONNECTED, reason == null ? "Koneksi terputus." : reason);

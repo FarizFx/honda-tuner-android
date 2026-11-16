@@ -1,0 +1,128 @@
+{
+  "recorded_at_utc": "2026-11-16T01:48:24.466586+00:00",
+  "stage": "local verification before source push",
+  "version_name": "1.1.4-debug",
+  "version_code": 6,
+  "user_requests": [
+    "ubah bro, terus run di action",
+    "Trace ECU ID and motorcycle names; confirm the database is included"
+  ],
+  "recording": {
+    "version": "1.1.3-debug",
+    "trace_sha256": "5f39533b8d4a3bf417a25bad3360541d6cfc37c99d7200075d5aa23f798a1566",
+    "contains_wake_or_identity_transactions": false,
+    "user_reported_connection_succeeded": true,
+    "valid_live_frame_rounds_seen": 11,
+    "old_app_named_sensors": 3,
+    "uart_error_observed_in_echo": "LSR 0x68",
+    "initial_cold_connection_or_changed_physical_sensors_verified": false
+  },
+  "repair": {
+    "fault_samples_and_usb_packet_lsr_retained": true,
+    "auto_allows_faults_only_before_exact_tx_length_boundary": true,
+    "ecu_frame_must_have_clean_uart_samples": true,
+    "overrun_rejected_even_on_echo": true,
+    "required_echo_remains_exact_and_clean": true,
+    "none_remains_direct_and_clean": true,
+    "target_length_checksum_extra_data_and_ambiguity_checks_preserved": true,
+    "complete_frame_quiet_millis": 24,
+    "cancelled_rx_deadline_and_fatal_usb_tx_checks_preserved": true
+  },
+  "recorded_replay": {
+    "transactions": 17,
+    "valid_clean_frames_accepted": 16,
+    "genuinely_truncated_d0_rejected": true,
+    "named_fields_by_response_table": {
+      "0x17": 13,
+      "0x20": 3,
+      "0xd0": 8,
+      "0xd1": 5
+    },
+    "combined_named_fields": 29,
+    "clock_is_simulated": true,
+    "new_physical_io_performed": false
+  },
+  "identity": {
+    "command_hex": "72077200000510",
+    "expected_reply_total_length": 11,
+    "expected_payload_header_hex": "720005",
+    "id_bytes": 5,
+    "source_reference": "Existing desktop core/session.py query_ecu_id uses the same request and extracts payload[3:]",
+    "failure_in_user_recording": "Unknown: identity transaction absent from the excerpt",
+    "optional_id_failure_remains_nonfatal": true,
+    "failure_reason_retained_in_controller_and_debug_header": true,
+    "unknown_and_ambiguous_exact_ids_not_assigned_a_guessed_model": true
+  },
+  "catalog": {
+    "included_in_original_1_1_3_apk": true,
+    "original_rows": 278,
+    "original_unique_ids": 245,
+    "placeholder_rows_removed": 33,
+    "current_rows": 245,
+    "current_unique_ids": 244,
+    "asset_sha256": "f6f3c13cdfc6eec2369f28a98455b9eaa36dccd3fd0f488e8ad814e3a062a383",
+    "desktop_database_sha256": "48a0dd989c435b6073cbbcf604275fdaa8d4a5a16e9501fcb4b8f1f7b44ef556",
+    "ambiguous_exact_id": "0102450F01",
+    "matching": "All five bytes, uppercase hexadecimal; all matching definitions retained"
+  },
+  "local_verification": {
+    "core_regression_tests": 186,
+    "regression_suites": {
+      "CoreTest": 89,
+      "TransportTest": 21,
+      "ControllerHealthTest": 13,
+      "UartReplyTest": 22
+    },
+    "lite_transport_fixtures": 24,
+    "phone_packet_replay_fixtures": 17,
+    "reference_decoder_vectors": 312,
+    "reference_field_values": 5616,
+    "phone_decoder_vectors": 16,
+    "phone_decoder_field_values": 166,
+    "java_home": "D:\\Tools\\jre25\\jdk-25.0.4.1+1",
+    "xml_yaml_source_checks": "passed",
+    "source_sha256": {
+      "app/src/main/java/id/hondatuner/core/ByteChannel.java": "dedec7fcb7a7e28924c899a92c91386af201a7db6451b90e5aa00874f5681621",
+      "app/src/main/java/id/hondatuner/core/CancelSignal.java": "2128bf532f7f5e29707e25db18eb6febe364f12be600c89c7ae55ca1d9f1a057",
+      "app/src/main/java/id/hondatuner/core/DiagnosticController.java": "14c70438623927ae62cf429a089ccb817cdd40f19442616d2bdf4bccc9328415",
+      "app/src/main/java/id/hondatuner/core/DiagnosticLog.java": "7efb78cce9447a001e3b1de55e1301b48a6426049ee86d846bdae3ad68e54897",
+      "app/src/main/java/id/hondatuner/core/DtcDescriptions.java": "baefd0cb0071747b05c773de5bd45109181f31b8f93ebc33f1e08081dbc89506",
+      "app/src/main/java/id/hondatuner/core/FtdiCodec.java": "b5619f1b2a264e7e766540b4d1e13d2f1f66253eb3cf7ef5080f1c41e23f16ba",
+      "app/src/main/java/id/hondatuner/core/FtdiUart.java": "8092ab37ffa25e355609f95179d3ab0aef4f0a93bbf02a14951fec2977b19438",
+      "app/src/main/java/id/hondatuner/core/HondaClient.java": "de9b2553d6fa7e77fa40420fb17ebcfd17d0bd23a8fd9bbfe1e5d5a9e3dcaab4",
+      "app/src/main/java/id/hondatuner/core/KLineTransport.java": "7b5325d131ff93f0a7ee13aaae0f874eea315303c3e29585f6f3095ecf00ec3f",
+      "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": "261d39f9935c943e7fb3b06815556ffb1dc3abe6afd630a394fe48888daae594",
+      "app/src/main/java/id/hondatuner/core/LiveProfile.java": "57fd687a26ad9607b87b0cc388812a921968d9d9add0d856a4fede91f6d779f1",
+      "app/src/main/java/id/hondatuner/core/ProtocolException.java": "36a2da307ad95a4244b86672ec0ad35e8088c09de0225911179ca0905e336e95",
+      "app/src/main/java/id/hondatuner/core/SensorDecoder.java": "1eda1bbad2de07f08754b54edddd664a78fba880c4c095c5aeaf720630a892e8",
+      "app/src/main/java/id/hondatuner/core/SensorInfo.java": "70efa04e464fce60653d44940548f3c3926d5783cad1350f033cdac745e5e2e0",
+      "app/src/main/java/id/hondatuner/core/SensorSchemas.java": "88c253380f4da28e0396eefdfa8d691aade8849c26733048e0169c6dc68bb6e1",
+      "app/src/main/java/id/hondatuner/core/TelemetryHistory.java": "a00fa4fe80152f60f4d2c2b068d165162acbf37e400f9fa93a123c6321363962",
+      "app/src/main/java/id/hondatuner/core/TransportException.java": "150ebc83f1500135b9f79de681523b16c25e4f4e4febc49013e34168e5ec8b96",
+      "tests/java/id/hondatuner/core/ControllerHealthTest.java": "cbf468adfe88522533614ce91fa58e0adbd48c2c10335389670c711af6c128d6",
+      "tests/java/id/hondatuner/core/CoreTest.java": "694b478e7e5bbcc45efad6b69c8d55e1623d125a982b80eec34dc7004c1ee5ff",
+      "tests/java/id/hondatuner/core/DecodeCli.java": "48fce49c32797d8e81bb76a6b30969ede20d9cc6027b75c269e5eab713500be6",
+      "tests/java/id/hondatuner/core/FtdiUartTest.java": "e4f35e35a4b6bf2e31862783186ee5c3038dc098e24af98bfaff132e59ddbf5d",
+      "tests/java/id/hondatuner/core/TransportTest.java": "dd8a6e8997b33ce89eb0ebbbe602da051662bbe82119e80fd91072f45d25caf5",
+      "tests/java/id/hondatuner/core/UartReplyTest.java": "a47396fa00333530ac16068847076379975901e44d95485c513690c51e4901ea"
+    },
+    "report_sha256": {
+      "core_tests.txt": "30c9fe6bfcab77010ebd2049a7116b58dd3bdd04056153b105253a9da6f854e1",
+      "core_verification.json": "a9bec388f611dba4249bb734fd3c9ac84712fa7eafbd17bed2813aedf0e0e3c7",
+      "project_verification.json": "479fe8156b50e06f195ad9bdf99fc72920268a3408a77f33266603e1c5a3a195"
+    }
+  },
+  "server_build": {
+    "requested": true,
+    "runner_last_seen_online": {
+      "name": "3",
+      "id": 30,
+      "os": "Linux"
+    },
+    "laptop_ci_or_sdk_installation": false,
+    "status": "waiting for server availability; all existing runners offline",
+    "runner_inventory_checked_at_utc": "2026-11-16T01:49:47.065438+00:00"
+  },
+  "physical_1_1_4_qualification": false,
+  "preserved_baseline_archive_fingerprints": 101
+}

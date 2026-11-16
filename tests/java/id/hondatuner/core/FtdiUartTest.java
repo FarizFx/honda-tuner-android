@@ -33,6 +33,9 @@ final class FtdiUartTest {
         run("cancellation during LOW restores UART idle without another byte", FtdiUartTest::cancelLow);
         run("failed BREAK controls restore idle and prevent ECU commands", FtdiUartTest::badBreak);
         run("FTDI receive keeps pending UART bytes across small reads", FtdiUartTest::pendingRx);
+        run("clean USB packet after a UART error survives a bounded pending read", FtdiUartTest::pendingCleanAfterError);
+        run("pending UART errors retain their positions across small reads", FtdiUartTest::pendingErrorPositions);
+        run("malformed USB status after UART error is fatal to the channel", FtdiUartTest::malformedAfterError);
         run("status-only BREAK is discarded but UART framing errors stay strict", FtdiUartTest::statusRx);
         run("RX purge preserves the UART transmit queue", FtdiUartTest::rxOnly);
         run("reported FC/framing wake reaches entry only after complete TX", FtdiUartTest::traceHandshake);
@@ -258,6 +261,42 @@ final class FtdiUartTest {
         usb.rx.add(new byte[]{1, 0x70}); bytes(new byte[0], driver.read(256, 50));
         usb.queue(new byte[]{2, 3, (byte) 0xfb}, 0x60); bytes(new byte[]{2, 3, (byte) 0xfb}, driver.read(256, 50));
         usb.rx.add(new byte[]{1, 0x68, (byte) 0xfc, 0}); failure(() -> driver.read(256, 50)); driver.close();
+    }
+    private static FtdiCodec.UartException uartRead(FtdiUart driver, int maximum) throws Exception {
+        try { driver.read(maximum, 50); }
+        catch (FtdiCodec.UartException error) { return error; }
+        throw new AssertionError("Pending UART error was lost");
+    }
+    private static byte[] mixedPackets(int firstStatus, int lastStatus) {
+        byte[] raw = new byte[70]; Arrays.fill(raw, 2, 64, (byte) 0x60);
+        raw[0] = 1; raw[1] = (byte) firstStatus; raw[64] = 1; raw[65] = (byte) lastStatus;
+        System.arraycopy(new byte[]{2, 4, 0, (byte) 0xfa}, 0, raw, 66, 4); return raw;
+    }
+    private static void pendingCleanAfterError() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); int before = usb.readCalls;
+        usb.rx.add(mixedPackets(0x68, 0x60));
+        FtdiCodec.UartException error = uartRead(driver, 63);
+        check(error.samples().size() == 63 && error.samples().data()[62] == 2 && error.samples().lineStatuses()[62] == 0x60, "Clean second packet was dropped or marked bad");
+        bytes(new byte[]{4}, driver.read(1, 50)); bytes(new byte[]{0, (byte) 0xfa}, driver.read(2, 50));
+        check(usb.readCalls - before == 1 && driver.isHealthy(), "Pending clean bytes required USB reads or closed the channel"); driver.close();
+    }
+    private static void pendingErrorPositions() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); int before = usb.readCalls;
+        usb.rx.add(mixedPackets(0x60, 0x68));
+        FtdiCodec.UartException first = uartRead(driver, 63);
+        byte[] status = first.samples().lineStatuses();
+        check(first.samples().size() == 63 && status[61] == 0x60 && status[62] == 0x68, "Fault crossed its original packet boundary");
+        FtdiCodec.UartException next = uartRead(driver, 1), last = uartRead(driver, 2);
+        bytes(new byte[]{4}, next.samples().data()); bytes(new byte[]{0, (byte) 0xfa}, last.samples().data());
+        check(next.samples().size() == 1 && last.samples().size() == 2 && last.lineStatus == 0x68 && usb.readCalls - before == 1, "Pending read lost status or exceeded its bound");
+        usb.rx.add(mixedPackets(0x60, 0x68)); uartRead(driver, 63); driver.purge(); bytes(new byte[0], driver.read(1, 1)); driver.close();
+    }
+    private static void malformedAfterError() throws Exception {
+        UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb);
+        byte[] raw = new byte[65]; raw[0] = 1; raw[1] = 0x68; raw[64] = 1; usb.rx.add(raw);
+        try { driver.read(256, 50); throw new AssertionError("Malformed USB tail accepted"); }
+        catch (TransportException expected) { check(!driver.isHealthy(), "Malformed USB status left the channel healthy"); }
+        finally { driver.close(); }
     }
     private static void rxOnly() throws Exception {
         UsbFixture usb = new UsbFixture(); FtdiUart driver = initialized(usb); usb.txUntil = usb.time + 100000000L;

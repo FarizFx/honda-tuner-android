@@ -1,53 +1,61 @@
-# Active Honda Tuner 1.1.3 connection repair - 16 November 2026
+# Active Honda Tuner 1.1.4 sensor and identity repair - 16 November 2026
 
-1.1.3-debug / versionCode 5 source is implemented and locally verified: 141 JVM
-regressions (83 existing, 21 transport, 13 lifecycle, 24 Lite fixtures), 312
-decoder vectors / 5,616 values and project XML/YAML/source checks passed.
-Source is pushed and APK is built/verified on Linux runner 2 / ID29.
-Source: b9f0a189c4617596e7e8e85504a8a72dabc18975
-Run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43776385671
-Release: https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-f766d1589a3cafb27ef6
-APK: honda_tuner_android/dist/HondaTuner-1.1.3-debug.apk (991,509 bytes)
-SHA-256: b4e356e4637e0538e07dc401d9f7196150c7e8c5d96da7830b2bd614fc2e0983
-All 7 GitHub assets/digests, sidecar, reports, ZIP CRC, actual repair DEX classes,
-62 source-hash checks and all 50 preserved baseline/ZIP fingerprints passed.
-Server SDK/lint passed: 0 errors, 35 warnings. Core reports in evidence are exact
-downloaded CI originals; local JVM reports remain in build/local-1.1.3-verification.
-Debug signer differs from 1.1.2; save needed logs, uninstall 1.1.2, then install
-1.1.3. Uninstall removes private app data. No app was installed/uninstalled here.
+The user explicitly requested the fix and GitHub Actions build, then asked to
+trace ECU ID/name reading and verify the embedded database. These requests were
+recovered from the immediately preceding thread
+01a1e1e4-9324-7193-a0d1-47909985d923. Source/push/server build/APK delivery are
+already authorized. Ordinary source-repository work; no new native RE performed.
 
-AUTO validates direct frames or full frames after exactly TX-length echo,
-including damaged 60 00 00 E0 10 and 02 00 00 E0 10. REQUIRED checks exact echo,
-NONE accepts direct frames. Target/length/checksum/UART/bounds stay strict.
-Complete replies settle for 24 ms, bounded by the selected receive deadline,
-to catch trailing fragments. Invalid prefixes do not trigger early retries.
-Cancelled RX retains its original deadline; the next operation drains until it
-ends before purging/TX. USB/partial or uncertain TX errors are fatal even after
-operation cancellation. Old callbacks cannot close a replacement session.
-Hardware cleanup is asynchronous; reopening waits for the old device cleanup.
+1.1.4-debug / versionCode 6 is implemented and locally verified: 186 JVM
+regressions (89 core, 21 transport, 13 lifecycle, 22 UART, 24 Lite fixtures,
+17 recorded USB transaction replays), 312 reference vectors / 5,616 values,
+16 recorded vectors / 166 values, XML/YAML/source checks and Git diff checks.
+Build, push and APK delivery remain outstanding at this preflight stage.
+Local reports: build/repair-1.1.4/local in the development mirror. The previous
+CI core/APK reports in evidence are still exact 1.1.3 server originals until
+new originals are downloaded. Audit: evidence/uart_sensor_audit.json.
 
-FTDI 3.12.0, 10400/8N1, BREAK minimum 70/130 ms, RX-only purge, 60 ms wake drain
-and pre-wake 24 ms quiet / 250 ms bound remain. Identity/catalog never gates scan.
-Original HondaECU Lite Kline v3.5.99.30 observations and their explicit limits:
-evidence/lite_transport_reference.json. Original native tests are memory FTDI,
-not physical ECU traces. The user's 1.1.2 physically failed; diagnostic text is
-evidence/phone-1.1.2-trace.txt, full user message is retained locally in build/.
-Do not blame wiring, infer a measured rising edge or claim physical success.
+FTDI RxData and UartException retain every sample and enclosing packet LSR.
+AUTO permits parity/framing/BREAK faults only within exactly TX-length echo,
+followed by a fully clean valid ECU frame. Overrun is always rejected; a packet
+crossing the echo/frame boundary taints ECU data. REQUIRED requires clean exact
+echo; NONE requires clean direct frames. Full UART/frame/checksum/target/length,
+ambiguity, 24 ms quiet, RX deadline/cancellation and fatal TX checks remain.
 
-Authoritative checkout: honda_tuner_android/build/github-repo; mirror:
-honda_tuner_android. Source/push/server build/APK delivery are authorized.
-Build only on existing Linux runner 2 / ID29; other runners/credentials stay.
-Never register this laptop as a runner or install Android/Java/CI toolchains.
-Existing D:/Tools/jre25/jdk-25.0.4.1+1 may run offline JVM tests. Git/gh directly
-in terminal, no Python Git wrappers. Never run tools/prepare_repo.py; preserve
-the historical ZIP and all baselines. Git identity can be per-command Codex /
-codex@localhost. Metadata from the prior interrupted 1.1.2 delivery was present
-before this continuation and is now corrected to include its physical failure.
+The user's 1.1.3 now connects and has continuous valid 0x20 polling, but had only
+3 named sensors and blank ECU ID. Its complete USB windows replay as 16 accepted
+frames plus one truly truncated D0, rejected. Main 0x17 has 13 named parameters,
+D0 has 8, D1 has 5 and O2 0x20 has 3; combined profile has 29 named fields.
+The trace lacks initial wake/ID. Do not infer physical cold-connection, changing
+sensor values, sensor presence or the specific ECU ID failure cause from replay.
 
-Source repair, push, single-version server build and APK delivery are complete.
-An asynchronous user question is pending for physical retest. PHYSICAL_TEST.md
-covers direct OTG connection, reconnect, at least 20 live rounds responding to
-real changes, pause/resume and DTC. Physical success remains unverified; do not
-infer success from elapsed time, simulator tests, build, or APK integrity.
-Historical source ZIP/baselines are untouched. New source snapshot is
-dist/source-1.1.3-b9f0a18.zip; never reset from an older historical ZIP.
+The old APK already contained 278 catalog rows / 245 IDs from desktop ecudb.json.
+33 placeholder 9999999999 rows are now excluded from matching; the embedded
+catalog has 245 definitions / 244 real exact IDs. Ambiguous 0102450F01 retains
+both Vario 150 part numbers. ID query uses 72 07 72 00 00 05 10; replies require
+11 bytes, payload 72 00 05 + five ID bytes. Optional failure is retained in
+controller snapshots and Debug's Identitas/Model/Katalog header, beyond the
+rolling wire log. No guessed ID, alternate protocol, flash or DTC clear added.
+
+Authoritative checkout: honda_tuner_android/build/github-repo; development
+mirror: honda_tuner_android. Source Git main/origin/main were e2e335b before edits.
+Use terminal Git/gh directly, never Python wrappers. Per-command author Codex /
+codex@localhost is allowed. Never run tools/prepare_repo.py or overwrite the
+historical ZIP. Previous source snapshots and all baseline artifacts remain.
+1.1.3 is newly preserved in dist/baseline-1.1.3 in both folders; 101 baseline and
+archive fingerprints are in build/repair-1.1.4/preserved-baselines.json.
+
+Build only on the user's existing Linux server. Runner 3 / ID30 was online, but
+all registered runners are now offline. An async question requests that the user
+restart a Linux server runner; keep the Actions job queued until one is online. Preserve every registration and
+credential. Never register this laptop as a runner, install Android/Java/CI
+here, or run a local APK build. The existing D:/Tools/jre25/jdk-25.0.4.1+1 was
+used for offline Java tests only. Default push triggers one Actions build.
+APK signer compatibility must be checked against the preserved 1.1.3 signer
+764ff636cf91220f3b275cd0e2a03a44062b6824eaf6f9989174e834caada453 before delivery.
+
+Remaining: commit/push, verify actual Linux runner/run, resolve real CI failures,
+download and compare all seven release assets/digests, source hashes, APK ZIP,
+signature and version/classes/catalog, synchronize source/mirror/artifacts,
+record delivery and provide APK. Full 1.1.4 physical qualification remains
+outstanding and is covered by PHYSICAL_TEST.md.

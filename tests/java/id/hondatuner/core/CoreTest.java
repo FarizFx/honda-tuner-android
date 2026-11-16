@@ -32,6 +32,8 @@ public final class CoreTest {
         run("reply received after the deadline is discarded", CoreTest::lateReply);
         run("cold handshake and optional identity without another pulse", CoreTest::coldConnection);
         run("warm ECU and missing identity keep normal diagnostics usable", CoreTest::warmAndMissingId);
+        run("unrelated same-length packet cannot become an ECU identity", CoreTest::identityHeader);
+        run("unexpected identity layout retains the failure without losing diagnostics", CoreTest::identityLayout);
         run("failed diagnostic connection cannot read sensors", CoreTest::failedConnection);
         run("live reply selects the returned schema", CoreTest::returnedSchema);
         run("discovery fallbacks stay inside the correct sensor group", CoreTest::discovery);
@@ -49,6 +51,7 @@ public final class CoreTest {
         run("three failed samples stop acquisition without stale values", CoreTest::persistentLoss);
         run("slow live samples never overlap", CoreTest::noOverlap);
         run("app controller connects and starts live automatically", CoreTest::controllerAutoLive);
+        run("identity failure survives live and pause snapshots without leaking to a new session", CoreTest::controllerIdentityStatus);
         run("DTC pauses serialized live work and resumes afterward", CoreTest::controllerDtc);
         run("pause revokes queued UI callbacks and resume starts fresh", CoreTest::controllerPause);
         run("disconnect during USB opening closes the late handle", CoreTest::controllerLateOpen);
@@ -186,8 +189,25 @@ public final class CoreTest {
         FakeChannel c = new FakeChannel(); c.standard(); c.initializations = 1; Function<byte[], byte[]> old = c.responder;
         c.responder = request -> request[2] == 0x72 ? null : old.apply(request);
         HondaClient client = new HondaClient(c.transport()); eq("", client.connect(CancelSignal.NEVER)); eq(2, c.initializations);
+        check(client.identityStatus().startsWith("ID ECU belum terbaca:"), "Optional ID failure was not retained");
         c.responder = request -> reply(join(new byte[]{0x71, 0x13}, mainBody(1800, 20, 123)));
         eq(1800, client.readTable(0x10, CancelSignal.NEVER).fields.get("engine_speed"));
+    }
+    private static void identityHeader() throws Exception {
+        for (byte[] data : new byte[][]{{0x71, 0, 5, 1, 2, 3, 4, 5}, {0x72, 1, 5, 1, 2, 3, 4, 5}, {0x72, 0, 4, 1, 2, 3, 4, 5}}) {
+            FakeChannel c = new FakeChannel(); c.standard(); Function<byte[], byte[]> original = c.responder;
+            c.responder = request -> request[2] == 0x72 ? reply(data) : original.apply(request);
+            HondaClient client = new HondaClient(c.transport()); eq("", client.connect(CancelSignal.NEVER));
+            check(client.identityStatus().contains("bukan untuk permintaan ID ECU"), "Unexpected ID command/table/count was accepted"); client.close();
+        }
+    }
+    private static void identityLayout() throws Exception {
+        FakeChannel c = new FakeChannel(); c.standard(); Function<byte[], byte[]> original = c.responder;
+        c.responder = request -> request[2] == 0x72 ? reply((byte) 0x72, (byte) 0, (byte) 5, (byte) 1, (byte) 2, (byte) 3, (byte) 4) : original.apply(request);
+        HondaClient client = new HondaClient(c.transport()); eq("", client.connect(CancelSignal.NEVER));
+        check(client.identityStatus().contains("layout berbeda: total=10, payload=7"), "Unexpected ID length lost its diagnostic detail");
+        c.responder = request -> reply(join(new byte[]{0x71, 0x13}, mainBody(1800, 20, 123)));
+        eq(1800, client.readTable(0x10, CancelSignal.NEVER).fields.get("engine_speed")); client.close();
     }
     private static void failedConnection() throws Exception {
         FakeChannel c = new FakeChannel(); c.responder = request -> null; HondaClient client = new HondaClient(c.transport());
@@ -335,8 +355,20 @@ public final class CoreTest {
     }
     private static void controllerAutoLive() throws Exception {
         FakeChannel c = new FakeChannel(); allDiagnostics(c); ControllerProbe probe = new ControllerProbe(); ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = controller(probe, worker);
-        try { app.connect(cancel -> c); await(() -> probe.samples.get() >= 2); eq(DiagnosticController.State.LIVE, app.snapshot().state); eq("0102030405", app.snapshot().ecuId); eq(1, c.initializations); }
+        try { app.connect(cancel -> c); await(() -> probe.samples.get() >= 2); eq(DiagnosticController.State.LIVE, app.snapshot().state); eq("0102030405", app.snapshot().ecuId); eq("ID ECU terbaca: 0102030405", app.snapshot().identityStatus); eq(1, c.initializations); }
         finally { app.close(); check(worker.awaitTermination(2, TimeUnit.SECONDS), "Controller worker leaked"); }
+    }
+    private static void controllerIdentityStatus() throws Exception {
+        FakeChannel c = new FakeChannel(); allDiagnostics(c); Function<byte[], byte[]> original = c.responder;
+        c.responder = request -> request[2] == 0x72 ? null : original.apply(request);
+        ControllerProbe probe = new ControllerProbe(); ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = controller(probe, worker);
+        try {
+            app.connect(cancel -> c); await(() -> probe.samples.get() >= 2);
+            eq("", app.snapshot().ecuId); String detail = app.snapshot().identityStatus;
+            check(detail.startsWith("ID ECU belum terbaca:") && detail.contains("ECU belum membalas"), "Live snapshot lost the optional identity failure");
+            check(app.toggleLive(), "Pause refused"); eq(detail, app.snapshot().identityStatus);
+            app.disconnect("new session"); eq("ID ECU belum dibaca.", app.snapshot().identityStatus);
+        } finally { app.close(); check(worker.awaitTermination(2, TimeUnit.SECONDS), "Controller worker leaked"); }
     }
     private static void controllerDtc() throws Exception {
         FakeChannel c = new FakeChannel(); allDiagnostics(c); ControllerProbe probe = new ControllerProbe(); ScheduledExecutorService worker = Executors.newSingleThreadScheduledExecutor(); DiagnosticController app = controller(probe, worker);

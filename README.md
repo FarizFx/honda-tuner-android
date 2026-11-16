@@ -3,38 +3,43 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.3-debug / versionCode 5:** memperbaiki pembacaan echo dan pembatalan
-transaksi. AUTO menerima frame langsung atau frame valid setelah prefix echo
-sepanjang TX, termasuk echo berbeda seperti `60 00 00 E0 10`. RX yang belum
-valid tetap dibaca sampai timeout; retry tidak memotong jendela balasan.
-Balasan transaksi yang dibatalkan dikuras sampai batas waktunya sebelum
-perintah berikutnya. Kegagalan USB/TX fatal memutus sesi terkait, termasuk
-operasi yang dibatalkan, tanpa memutus koneksi pengganti dari callback lama.
+**v1.1.4-debug / versionCode 6:** menerima balasan sensor yang bersih setelah
+echo TX mengalami error UART. Posisi serta panjang sampel setiap paket FTDI
+dipertahankan. AUTO menerima frame ECU lengkap setelah tepat sejumlah byte
+echo sepanjang TX ketika error hanya mengenai echo. Error pada frame ECU,
+UART overrun, checksum/target/panjang salah dan echo ambigu tetap ditolak.
+REQUIRED memerlukan echo persis tanpa error; NONE memerlukan frame langsung
+yang bersih. Frame lengkap tetap diperiksa selama jendela tenang 24 ms.
 
-Target, panjang, checksum dan status UART tetap ketat. Frame lengkap diberi
-jendela tenang 24 ms, dibatasi timeout yang dipilih, untuk mendeteksi data
-tambahan pada fragmen USB berikutnya. REQUIRED memeriksa echo persis; NONE
-hanya menerima frame langsung. Bukti dan batas perbandingan dengan modul asli
-**HondaECU Lite Kline Edition v3.5.99.30** tersimpan di
+Pada pengujian pengguna, **1.1.3 berhasil melakukan live polling**, tetapi hanya
+menampilkan tiga sensor O2. Paket echo dengan LSR `0x68` membuat balasan utama
+`0x17`, D0 dan D1 yang bersih ikut ditolak. Replay source baru menerima tabel
+utama dengan **13 parameter**, termasuk TPS, aki dan ECT, serta balasan D0/D1
+yang lengkap. Satu respons D0 berisi 22/26 byte tetap ditolak. Replay memakai
+rekaman USB dan clock simulasi; hasilnya bukan pengujian perangkat baru.
+
+Katalog nama motor disertakan dalam APK: **245 definisi / 244 ID ECU unik**,
+berasal dari database Honda Tuner desktop. Sebanyak 33 entri dengan ID
+placeholder dikeluarkan dari pencocokan otomatis. Nama dicari setelah ID lima
+byte terbaca; ID kosong, ID belum terdaftar dan beberapa definisi yang cocok
+ditampilkan secara berbeda. Status pembacaan ID dan katalog selalu disertakan
+dalam header Debug, walaupun transaksi awal sudah keluar dari log bergulir.
+Log pengguna sebelumnya tidak memuat transaksi ID, sehingga penyebab ID
+kosong pada perangkat tersebut belum dapat ditentukan.
+
+**186 tes regresi lokal lulus**, termasuk 22 tes error UART, 24 fixture Lite dan
+17 replay transaksi rekaman pengguna. **312 vektor referensi / 5.616 nilai** dan
+**16 vektor rekaman / 166 nilai** cocok. Build Android, lint, signature dan
+pengiriman APK 1.1.4 sedang dipersiapkan untuk Actions di server Linux.
+Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1, BREAK minimum
+70/130 ms, RX-only purge dan pembersihan wake tenang 24 ms / batas 250 ms.
+Pembatalan, drain balasan lama dan kegagalan USB/TX fatal tetap diuji.
+
+APK dan laporan 1.1.3 dipertahankan di `dist/baseline-1.1.3`, bersama versi
+sebelumnya. Bukti audit baru: [evidence/uart_sensor_audit.json](evidence/uart_sensor_audit.json).
+Perbandingan modul asli dan batasnya:
 [evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).
-
-Driver tetap `usb-serial-for-android 3.12.0` (MIT), UART 10400/8N1 dan BREAK
-minimum 70/130 ms. Pembersihan sebelum wake tetap tenang 24 ms / batas 250 ms.
-**141 tes regresi**, termasuk **24 fixture transport Lite**, **312 vektor
-dekoder / 5.616 nilai**, kompilasi Android dan lint lulus pada runner Linux
-**2 / ID 29**. Lint: 0 error / 35 warning. Semua tujuh aset unduhan cocok dengan
-digest GitHub dan laporan CI; APK memuat class perbaikan transport.
-[Unduh APK 1.1.3](https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-f766d1589a3cafb27ef6).
-APK lokal: `dist/HondaTuner-1.1.3-debug.apk`.
-
-Runner baru menggunakan sertifikat debug berbeda: simpan log yang dibutuhkan,
-copot 1.1.2, lalu pasang 1.1.3. Pencopotan menghapus data lokal aplikasi.
-
-**1.1.2 telah diuji pengguna dan masih gagal konek.** Log aslinya disimpan di
-`evidence/phone-1.1.2-trace.txt`; source, APK dan laporan sebelumnya tetap di
-`dist/baseline-1.1.2` beserta baseline 1.1.1, 1.1.0 dan 1.0.0. Penyebab fisik
-kerusakan echo belum terbukti. Keberhasilan 1.1.3 perlu dibuktikan lewat
-[pengujian HP dan ECU](PHYSICAL_TEST.md).
+Pengujian lengkap versi baru pada HP/ECU: [PHYSICAL_TEST.md](PHYSICAL_TEST.md).
 
 ## Hubungkan
 
@@ -94,8 +99,10 @@ mengekspor trace yang tersimpan tanpa izin storage tambahan.
 Log mencatat perangkat/Android, izin, descriptor/endpoint, control FTDI, tahap
 scan, TX/RX mentah dan UART, echo, timeout, checksum, tabel, serta stack trace.
 Pesan membedakan tidak ada RX, echo tanpa balasan ECU dan balasan terpotong.
-Log pin FTDI mengonfirmasi TXD LOW/HIGH dan log modem menunjukkan TX kosong.
-Durasi pulsa tetap diukur host; level/timing pada pin K-Line ECU belum diukur.
+Log driver mencatat perintah BREAK dan log modem menunjukkan TX kosong.
+Durasi pulsa diukur host; level/timing pada pin K-Line ECU belum diukur.
+Error UART mencantumkan rentang byte RX dan apakah hanya mengenai echo.
+Header Debug mempertahankan hasil pembacaan ID, model dan jumlah entri katalog.
 **Error terakhir** menyimpan snapshot privat yang dapat dibuka setelah aplikasi
 dijalankan ulang. **Bersihkan log sekarang** mempertahankan arsip error terakhir.
 Trace aktif dibatasi 2.000 entri / sekitar 256 KiB karakter. Layar menampilkan 240
@@ -103,9 +110,10 @@ entri terbaru; salin/simpan mencakup trace tersimpan. Logcat: `adb logcat -s Hon
 
 Default: **Echo otomatis**, timeout **1000 ms**. Auto menerima echo lengkap lalu
 balasan atau balasan ECU langsung; header, panjang dan checksum tetap diperiksa.
-Wake memakai drain RX hingga 60 ms setelah UART selesai mengirim. Hanya kesalahan
-data UART pada wake opsional yang dibuang; error transport USB tetap menggagalkan
-koneksi. Wake/echo saja tidak dianggap ACK. Echo wajib/tanpa echo dan timeout dapat dipilih
+Wake memakai drain RX hingga 60 ms setelah UART selesai mengirim. RX wake opsional
+dikuras; balasan ECU selanjutnya harus bersih. Pada AUTO, error echo diterima hanya
+di prefix sepanjang TX yang diikuti frame ECU valid. Error transport USB tetap
+menggagalkan koneksi. Wake/echo saja tidak dianggap ACK. Echo wajib/tanpa echo dan timeout dapat dipilih
 untuk diagnosis saat koneksi terputus.
 
 ## Build di GitHub
@@ -115,9 +123,9 @@ Workflow: [.github/workflows/build-android.yml](.github/workflows/build-android.
 Push source memicu build. Manual: [Actions](https://github.com/FarizFx/honda-tuner-android/actions)
 → **Build Android APK → Run workflow → main**. README saja tidak memicu build.
 
-Runner default `self-hosted` harus online. APK 1.1.3 dibangun di server Linux
-**2 (runner ID 29)**. Registrasi 1/28, KC/27 dan KillerCoda/26 tetap dipertahankan.
-Laptop tidak didaftarkan sebagai runner atau dipakai untuk APK ini.
+Runner default `self-hosted` harus online. Server Linux terakhir yang aktif
+adalah **3 (ID 30)**. Semua runner yang terdaftar sekarang offline; build menunggu
+server aktif kembali. Registrasi dipertahankan. Laptop tidak dipakai untuk APK.
 Workflow memakai Python 3.12/PyYAML, Java 17, Gradle 8.9, AGP 8.7.3, SDK 35 dan
 build-tools 35.0.0; menjalankan verifikasi source/core, `:app:assembleDebug :app:lintDebug`,
 kemudian memeriksa signature, versi/manifest dan ZIP.
@@ -141,9 +149,11 @@ python tools/verify_project.py
 python tools/test_core.py --java-home /path/to/jdk
 ```
 
-Suite mencakup framing/echo, retry, FTDI pin/FIFO/drain/status, DTC, live/cancel/session, logging,
-riwayat dan CSV. Fixture mencakup 13 varian tabel; input terkontrol, bukan rekaman
-kendaraan. `tools/sync_reference.py` memperbarui ekspor referensi bila source
+Suite mencakup framing/echo, retry, FTDI BREAK/FIFO/drain/status, DTC, live/cancel/session,
+identitas, logging, riwayat dan CSV. Vektor referensi mencakup 13 varian tabel dengan
+input terkontrol. Fixture telepon memuat 17 transaksi rekaman USB; replay tidak
+melakukan I/O pada kendaraan. `--output-dir PATH` menyimpan laporan tes lokal
+terpisah dari bukti CI. `tools/sync_reference.py` memperbarui ekspor referensi bila source
 desktop tersedia; CI memakai ekspor yang disertakan.
 Build mandiri membutuhkan JDK 17, Gradle 8.9 dan SDK 35; tentukan `ANDROID_HOME`
 atau `sdk.dir` dalam `local.properties`:
@@ -155,7 +165,7 @@ python tools/package_apk.py --apk app/build/outputs/apk/debug/app-debug.apk --sd
 
 Repo belum menyertakan Gradle Wrapper.
 Status: [evidence/build_status.json](evidence/build_status.json).
-APK 1.1.3-debug dibangun dari source `b9f0a189c4617596e7e8e85504a8a72dabc18975`.
+Build dan APK 1.1.4 belum diverifikasi pada tahap persiapan source ini.
 Baseline 1.0.0 dibangun pada
 [run 43683216038](https://github.com/FarizFx/honda-tuner-android/actions/runs/43683216038).
 Build dan tes source tidak membuktikan keberhasilan ECU fisik pada APK pembaruan.

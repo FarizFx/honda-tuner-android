@@ -65,9 +65,13 @@ def main():
 
     catalog = json.loads((DESKTOP / "data/ecudb.json").read_text(encoding="utf-8-sig"))
     labels = []
+    placeholder_rows = 0
     for entry in catalog:
         identifier = (entry["ecmid_model"] + entry["ecmid_region"]).upper()
-        if len(identifier) != 10 or identifier == "FFFFFFFFFF":
+        if identifier in ("FFFFFFFFFF", "9999999999", "0000000000"):
+            placeholder_rows += 1
+            continue
+        if len(identifier) != 10:
             continue
         labels.append("\t".join(str(value or "").replace("\t", " ").replace("\n", " ").replace("\r", " ")
                                 for value in (identifier, entry["model"], entry.get("ecu_pn"))))
@@ -102,6 +106,8 @@ def main():
         "reference_sha256": {name: digest(DESKTOP / name) for name in source_paths},
         "generated_sha256": {path.relative_to(ROOT).as_posix(): digest(path) for path in generated},
         "schema_variants": len(schemas), "decoder_vectors": len(vectors), "catalog_rows": len(labels),
+        "catalog_unique_ids": len({line.split("\t")[0] for line in labels}),
+        "catalog_placeholder_rows_excluded": placeholder_rows,
         "physical_android_usb_or_ecu_validation": False,
         "new_rea_evidence_claimed": False,
     }

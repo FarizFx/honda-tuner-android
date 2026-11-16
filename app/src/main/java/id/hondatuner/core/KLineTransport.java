@@ -138,23 +138,26 @@ public final class KLineTransport implements AutoCloseable {
                 return null;
             }
             String detail = null;
-            boolean uartFault = false;
             ReplyChoice candidate = null;
             long quietUntil = deadline;
             while (clock.now() < deadline) {
                 cancel.check(); requireHealthy();
                 if (candidate != null && clock.now() >= quietUntil) return complete(candidate, trace, cancel);
                 byte[] piece;
+                byte[] statuses = null;
                 try { piece = channel.read(256, waitMillis(candidate == null ? deadline : Math.min(deadline, quietUntil))); }
                 catch (FtdiCodec.UartException error) {
                     cancel.check();
-                    uartFault = true; candidate = null; trace.uart(error);
-                    detail = error.getMessage();
-                    continue;
+                    // Retain the bad packet's bytes and positions. AUTO can
+                    // tolerate faults in exactly the TX-length echo prefix,
+                    // but never in a byte of the selected ECU frame.
+                    trace.uart(error);
+                    piece = error.samples().data();
+                    statuses = error.samples().lineStatuses();
                 }
                 cancel.check(); requireHealthy();
                 if (piece == null) throw new TransportException("Driver USB tidak mengembalikan RX yang valid.");
-                trace.capture(piece);
+                trace.capture(piece, statuses);
                 if (piece.length != 0) candidate = null;
                 if (clock.now() >= deadline) break;
                 if (piece.length == 0) continue;
@@ -165,7 +168,7 @@ public final class KLineTransport implements AutoCloseable {
                     if (!prefixMatches(bytes, request)) {
                         detail = "Echo adaptor tidak cocok dengan perintah saat ini.";
                         trace.first(detail);
-                    } else if (bytes.length >= request.length && !uartFault) {
+                    } else if (bytes.length >= request.length && !trace.hasUartErrors(0, 0x1e)) {
                         trace.echo = "exact";
                         drainWake(deadline, cancel, trace);
                         discardUntil = 0;
@@ -175,24 +178,28 @@ public final class KLineTransport implements AutoCloseable {
                     continue;
                 }
                 ReplyChoice choice = chooseReply(target, request, bytes);
-                if (choice.packet != null && !uartFault) {
-                    candidate = choice;
-                    quietUntil = Math.min(deadline, clock.now() + REPLY_QUIET_MILLIS * 1000000L);
-                    continue;
+                if (choice.packet != null) {
+                    detail = trace.replyUartFailure(choice.echo);
+                    if (detail == null) {
+                        candidate = choice;
+                        quietUntil = Math.min(deadline, clock.now() + REPLY_QUIET_MILLIS * 1000000L);
+                        continue;
+                    }
+                    trace.first(detail);
                 }
                 if (choice.detail != null) {
-                    if (!uartFault) detail = choice.detail;
+                    detail = choice.detail;
                     trace.first(choice.detail);
                 }
             }
             cancel.check(); requireHealthy();
             // A frame received before the deadline remains valid if the rest of
             // the available window is empty, even if less than 24 ms remained.
-            if (candidate != null && !uartFault) return complete(candidate, trace, cancel);
+            if (candidate != null) return complete(candidate, trace, cancel);
             channel.purge();
             discardUntil = 0;
             byte[] bytes = trace.rx.toByteArray();
-            if (uartFault) detail = "Sampel UART rusak; balasan transaksi tidak digunakan. " + trace.firstFailure;
+            if (trace.hasUartErrors(0, 0x1e)) detail = "RX ditolak: " + (detail == null ? "belum ada frame ECU bersih yang valid." : detail) + " UART=" + trace.uartStatus;
             else if (bytes.length == 0) detail = "Tidak ada RX dari adaptor/ECU";
             else if (Arrays.equals(bytes, request) && echoMode != EchoMode.NONE) detail = "Echo TX diterima, tetapi ECU belum membalas";
             else if (prefixMatches(bytes, request) && bytes.length < request.length && echoMode != EchoMode.NONE) detail = "Echo TX terpotong (" + bytes.length + "/" + request.length + " byte)";
@@ -208,6 +215,7 @@ public final class KLineTransport implements AutoCloseable {
     private Packet complete(ReplyChoice choice, TransactionTrace trace, CancelSignal cancel) throws IOException {
         cancel.check(); requireHealthy();
         trace.echo = choice.echo; trace.outcome = "valid";
+        trace.uartScope = trace.hasUartErrors(0, 0x1e) ? "echo-only" : "none";
         if (log != null) log.debug("KLINE", "Echo terdeteksi: " + !"none".equals(choice.echo) + "; kualitas=" + choice.echo);
         discardUntil = 0;
         return choice.packet;
@@ -282,6 +290,7 @@ public final class KLineTransport implements AutoCloseable {
                 discarded += piece.length;
                 if (log != null && piece.length != 0) log.wire("RX DISCARD", "Transaksi sebelumnya", piece, piece.length);
             } catch (FtdiCodec.UartException error) {
+                discarded += error.samples().size();
                 if (log != null) log.warn("RX DISCARD", error.getMessage());
             }
             cancel.check(); requireHealthy();
@@ -307,6 +316,7 @@ public final class KLineTransport implements AutoCloseable {
             } catch (InterruptedIOException error) { throw error; }
             catch (FtdiCodec.UartException error) {
                 cancel.check(); trace.uart(error);
+                trace.capture(error.samples().data(), error.samples().lineStatuses());
                 if (log != null) log.warn("WAKE", "RX wake dibuang: " + error.getMessage());
             }
         }
@@ -320,18 +330,61 @@ public final class KLineTransport implements AutoCloseable {
         final long began;
         final int receiveTimeout;
         final ByteArrayOutputStream rx = new ByteArrayOutputStream();
+        final ByteArrayOutputStream statuses = new ByteArrayOutputStream();
         long receiveBegan = -1;
         int received;
         String echo = "undetermined", uartStatus = "no-error-reported", firstFailure, outcome = "failed";
+        String uartScope = "none";
         TransactionTrace(byte[] request, long began, int receiveTimeout) { this.request = request; this.began = began; this.receiveTimeout = receiveTimeout; }
         void first(String reason) { if (firstFailure == null && reason != null) firstFailure = reason; }
-        void capture(byte[] piece) {
+        void capture(byte[] piece) { capture(piece, null); }
+        void capture(byte[] piece, byte[] flags) {
+            if (flags != null && flags.length != piece.length) throw new IllegalArgumentException("UART status/sample count differs");
             received += piece.length;
-            rx.write(piece, 0, Math.min(piece.length, 510 - rx.size()));
+            int kept = Math.min(piece.length, 510 - rx.size());
+            rx.write(piece, 0, kept);
+            for (int index = 0; index < kept; index++) statuses.write(flags == null ? 0 : flags[index] & 255);
         }
         void uart(FtdiCodec.UartException error) {
             uartStatus = "LSR 0x" + Integer.toHexString(error.lineStatus);
+            uartScope = "unclassified";
             first(error.getMessage());
+        }
+        boolean hasUartErrors(int start, int mask) {
+            byte[] flags = statuses.toByteArray();
+            for (int index = start; index < flags.length; index++) if ((flags[index] & mask) != 0) return true;
+            return false;
+        }
+        String replyUartFailure(String selectedEcho) {
+            if (!hasUartErrors(0, 0x1e)) return null;
+            if (echoMode != EchoMode.AUTO || "none".equals(selectedEcho)) {
+                uartScope = echoMode == EchoMode.REQUIRED ? "required-echo-or-frame" : "ecu-frame";
+                return "Error UART pada RX wajib bersih; balasan ECU tidak digunakan.";
+            }
+            // Overrun may have lost bytes, so even a TX-length prefix cannot
+            // establish a reliable echo/frame boundary in that case.
+            if (hasUartErrors(0, 0x02)) {
+                uartScope = "overrun";
+                return "UART overrun; batas echo dan frame ECU tidak dapat dipastikan.";
+            }
+            if (hasUartErrors(request.length, 0x1e)) {
+                uartScope = "ecu-frame";
+                return "Error UART mengenai frame ECU; balasan tidak digunakan.";
+            }
+            return null;
+        }
+        String uartRanges() {
+            byte[] flags = statuses.toByteArray();
+            StringBuilder ranges = new StringBuilder();
+            for (int start = 0; start < flags.length;) {
+                if ((flags[start] & 0x1e) == 0) { start++; continue; }
+                int end = start + 1;
+                while (end < flags.length && flags[end] == flags[start]) end++;
+                if (ranges.length() != 0) ranges.append(',');
+                ranges.append('[').append(start).append(',').append(end).append("):0x").append(Integer.toHexString(flags[start] & 255));
+                start = end;
+            }
+            return ranges.length() == 0 ? "none" : ranges.toString();
         }
         void publish() {
             if (log == null) return;
@@ -343,7 +396,7 @@ public final class KLineTransport implements AutoCloseable {
             String txText = log.isDetailed() ? DiagnosticLog.hex(request, request.length) : request.length + " byte";
             String rxText = log.isDetailed() ? DiagnosticLog.hex(bytes, bytes.length) : received + " byte";
             log.info("TRANSACTION", "result=" + outcome + "; TX=" + txText + "; RX=" + rxText + "; rx_bytes=" + received +
-                    "; echo=" + echo + "; UART=" + uartStatus + "; receive_wait=" + (receiveBegan < 0 ? 0 : (clock.now() - receiveBegan) / 1000000L) +
+                    "; echo=" + echo + "; UART=" + uartStatus + "; uart_scope=" + uartScope + "; uart_error_ranges=" + uartRanges() + "; receive_wait=" + (receiveBegan < 0 ? 0 : (clock.now() - receiveBegan) / 1000000L) +
                     "/" + receiveTimeout + " ms; frame_quiet=" + REPLY_QUIET_MILLIS + " ms; elapsed=" + (clock.now() - began) / 1000000L + " ms; first_failure=" + (firstFailure == null ? "none" : firstFailure));
         }
     }

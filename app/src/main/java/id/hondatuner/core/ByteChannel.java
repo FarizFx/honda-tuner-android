@@ -9,6 +9,7 @@ public interface ByteChannel extends AutoCloseable {
     void purge() throws IOException;
     /** Return after all bytes have left the UART, within the supplied timeout. */
     void write(byte[] data, int timeoutMillis, CancelSignal cancel) throws IOException;
+    /** UART faults must retain every returned sample and its packet status in UartException. */
     byte[] read(int maximumBytes, int timeoutMillis) throws IOException;
     /** Cached state only; this must never wait for USB or a wire-operation lock. */
     default boolean isHealthy() { return true; }

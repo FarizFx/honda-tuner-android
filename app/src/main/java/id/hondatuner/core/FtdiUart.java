@@ -2,7 +2,6 @@ package id.hondatuner.core;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +31,7 @@ public final class FtdiUart implements ByteChannel {
     private final DiagnosticLog log;
     private final Timing timing;
     private final AtomicBoolean closed = new AtomicBoolean();
-    private byte[] pending = new byte[0];
+    private FtdiCodec.RxData pending;
     private boolean transmitReady;
     private volatile boolean failed;
 
@@ -137,7 +136,7 @@ public final class FtdiUart implements ByteChannel {
         if (log != null) log.info("WAKE CLEANUP", "RX quiet for 24 ms; discarded UART samples=" + discarded + "; elapsed=" + elapsed(began));
     }
     @Override public void purge() throws IOException {
-        pending = new byte[0];
+        pending = null;
         if (log != null) log.debug("FTDI", "Purge RX only (TX preserved)");
         control(0, 1, port);
     }
@@ -225,7 +224,7 @@ public final class FtdiUart implements ByteChannel {
     @Override public byte[] read(int maximumBytes, int timeoutMillis) throws IOException {
         requireOpen();
         if (maximumBytes <= 0) return new byte[0];
-        if (pending.length != 0) return takePending(maximumBytes);
+        if (pending != null && pending.size() != 0) return takePending(maximumBytes);
         int packets = (int) Math.min(4L, Math.max(1L, ((long) maximumBytes + packetSize - 3) / (packetSize - 2)));
         byte[] raw = new byte[packetSize * packets];
         long began = timing.now();
@@ -237,17 +236,16 @@ public final class FtdiUart implements ByteChannel {
         }
         if (count > raw.length) throw failed("Panjang RX USB tidak valid.", null);
         if (log != null) log.wire("USB RX", "RAW", raw, count);
-        try { pending = FtdiCodec.stripStatus(raw, count, packetSize); }
-        catch (FtdiCodec.UartException error) { throw error; }
+        try { pending = FtdiCodec.decodeStatus(raw, count, packetSize); }
         catch (ProtocolException error) { throw failed(error.getMessage(), error); }
-        if (log != null && pending.length == 0) log.debug("USB RX", "Status-only packet; no UART data.");
+        if (log != null && pending.size() == 0) log.debug("USB RX", "Status-only packet; no UART data.");
         return takePending(maximumBytes);
     }
-    private byte[] takePending(int maximumBytes) {
-        int count = Math.min(maximumBytes, pending.length);
-        byte[] result = Arrays.copyOfRange(pending, 0, count);
-        pending = Arrays.copyOfRange(pending, count, pending.length);
-        return result;
+    private byte[] takePending(int maximumBytes) throws FtdiCodec.UartException {
+        int count = Math.min(maximumBytes, pending.size());
+        FtdiCodec.RxData result = pending.slice(0, count);
+        pending = pending.slice(count, pending.size());
+        return result.cleanBytes();
     }
     @Override public void close() {
         if (closed.compareAndSet(false, true)) {

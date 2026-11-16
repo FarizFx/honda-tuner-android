@@ -90,7 +90,7 @@ public final class TransportTest {
         run("malformed first RX never starts retry before its deadline", TransportTest::retryDeadline);
         run("510-byte combined echo and reply is accepted", TransportTest::maximumFrame);
         run("oversized RX stays bounded and waits before retry", TransportTest::oversizedFrame);
-        run("UART error poisons the receive attempt despite a later valid frame", TransportTest::uartFault);
+        run("short UART-marked prefix cannot hide a later valid frame", TransportTest::uartFault);
         run("fatal read is not retried or hidden by simultaneous cancellation", TransportTest::fatalRead);
         run("fatal write never appends a second command", TransportTest::fatalWrite);
         run("cancelled uncertain TX remains unhealthy", TransportTest::uncertainCancellation);

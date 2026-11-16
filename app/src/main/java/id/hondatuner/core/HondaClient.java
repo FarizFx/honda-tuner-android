@@ -16,6 +16,7 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
     private final DiagnosticLog log;
     private volatile boolean connected;
     private String identifier = "";
+    private String identityStatus = "ID ECU belum dibaca.";
     public HondaClient(KLineTransport transport) { this(transport, null); }
     public HondaClient(KLineTransport transport, DiagnosticLog log) { this.transport = Objects.requireNonNull(transport); this.log = log; }
 
@@ -26,6 +27,7 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
         if (attempts < 1 || attempts > 3) throw new IllegalArgumentException("Scan attempts must be 1..3.");
         connected = false;
         identifier = "";
+        identityStatus = "ID ECU belum dibaca.";
         String stage = "inisialisasi K-Line";
         for (int attempt = 1; attempt <= attempts; attempt++) {
             cancel.check();
@@ -62,23 +64,36 @@ public final class HondaClient implements LiveProfile.Reader, AutoCloseable {
         progress.onStage("ECU merespons. Membaca identitas ECU...");
         try {
             KLineTransport.Packet reply = transport.exchange(0x72, new byte[]{0x72, 0, 0, 5}, false, cancel);
-            byte[] data = reply.payload();
-            if (reply.totalLength == 11 && data.length == 8) {
-                StringBuilder value = new StringBuilder();
-                for (int i = 3; i < 8; i++) value.append(String.format(Locale.ROOT, "%02X", data[i] & 255));
-                identifier = value.toString();
-                if (log != null) log.info("ECU ID", identifier);
-            } else {
-                if (log != null) log.warn("ECU ID", "Balasan ID memiliki layout berbeda: total=" + reply.totalLength + ", payload=" + data.length);
-            }
+            identifier = parseIdentity(reply);
+            identityStatus = "ID ECU terbaca: " + identifier;
+            if (log != null) log.info("ECU ID", identityStatus);
         } catch (InterruptedIOException error) { throw error; }
         catch (TransportException error) { throw error; }
-        catch (IOException error) { if (log != null) log.warn("ECU ID", "ID opsional belum terbaca: " + error.getMessage()); }
+        catch (IOException error) {
+            identityStatus = "ID ECU belum terbaca: " + error.getMessage();
+            if (log != null) log.warn("ECU ID", identityStatus);
+        }
         cancel.check();
         requireHealthy();
         connected = true;
         return identifier;
     }
+
+    static String parseIdentity(KLineTransport.Packet reply) throws ProtocolException {
+        byte[] data = reply.payload();
+        if (reply.totalLength != 11 || data.length != 8) {
+            throw new ProtocolException("Balasan ID memiliki layout berbeda: total=" + reply.totalLength + ", payload=" + data.length);
+        }
+        if (data[0] != 0x72 || data[1] != 0 || data[2] != 5) {
+            throw new ProtocolException("Balasan bukan untuk permintaan ID ECU lima byte.");
+        }
+        StringBuilder value = new StringBuilder();
+        for (int i = 3; i < 8; i++) value.append(String.format(Locale.ROOT, "%02X", data[i] & 255));
+        return value.toString();
+    }
+
+    /** Retained outside the rolling wire log, including an optional ID failure. */
+    public String identityStatus() { return identityStatus; }
 
     /** A volatile health snapshot; callers must not wait for an in-flight exchange. */
     @Override public boolean isHealthy() { return transport.isHealthy(); }

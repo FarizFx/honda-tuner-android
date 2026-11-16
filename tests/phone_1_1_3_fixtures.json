@@ -1,0 +1,1143 @@
+{
+  "source": "User-supplied physical USB trace from Honda Tuner 1.1.3; complete transaction windows only",
+  "trace_sha256": "5f39533b8d4a3bf417a25bad3360541d6cfc37c99d7200075d5aa23f798a1566",
+  "missing_initial_transaction": 6466,
+  "excerpt_contains_wake_or_identity_transactions": false,
+  "timing": "UTC log timestamps rounded to milliseconds; replay uses a simulated clock, not new timing measurements",
+  "physical_usb_io_performed_by_tests": false,
+  "cases": [
+    {
+      "name": "phone-1.1.3-transaction-6522",
+      "transaction_entry": 6522,
+      "previous_app_result": "failed",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "7205711701",
+      "payload_hex": "7117",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "01686000600600",
+          "trace_entry": 6475
+        },
+        {
+          "at_ms": 9,
+          "raw_hex": "016002",
+          "trace_entry": 6476
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "016018711700001200",
+          "trace_entry": 6478
+        },
+        {
+          "at_ms": 25,
+          "raw_hex": "0160ffffffff88467a",
+          "trace_entry": 6480
+        },
+        {
+          "at_ms": 33,
+          "raw_hex": "01600000628e00000000",
+          "trace_entry": 6482
+        },
+        {
+          "at_ms": 41,
+          "raw_hex": "016018",
+          "trace_entry": 6484
+        },
+        {
+          "at_ms": 97,
+          "raw_hex": "0160",
+          "trace_entry": 6486
+        },
+        {
+          "at_ms": 153,
+          "raw_hex": "0160",
+          "trace_entry": 6488
+        },
+        {
+          "at_ms": 209,
+          "raw_hex": "0160",
+          "trace_entry": 6490
+        },
+        {
+          "at_ms": 265,
+          "raw_hex": "0160",
+          "trace_entry": 6492
+        },
+        {
+          "at_ms": 321,
+          "raw_hex": "0160",
+          "trace_entry": 6494
+        },
+        {
+          "at_ms": 377,
+          "raw_hex": "0160",
+          "trace_entry": 6496
+        },
+        {
+          "at_ms": 433,
+          "raw_hex": "0160",
+          "trace_entry": 6498
+        },
+        {
+          "at_ms": 489,
+          "raw_hex": "0160",
+          "trace_entry": 6500
+        },
+        {
+          "at_ms": 545,
+          "raw_hex": "0160",
+          "trace_entry": 6502
+        },
+        {
+          "at_ms": 601,
+          "raw_hex": "0160",
+          "trace_entry": 6504
+        },
+        {
+          "at_ms": 657,
+          "raw_hex": "0160",
+          "trace_entry": 6506
+        },
+        {
+          "at_ms": 713,
+          "raw_hex": "0160",
+          "trace_entry": 6508
+        },
+        {
+          "at_ms": 769,
+          "raw_hex": "0160",
+          "trace_entry": 6510
+        },
+        {
+          "at_ms": 825,
+          "raw_hex": "0160",
+          "trace_entry": 6512
+        },
+        {
+          "at_ms": 929,
+          "raw_hex": "0160",
+          "trace_entry": 6515
+        },
+        {
+          "at_ms": 1009,
+          "raw_hex": "0160",
+          "trace_entry": 6518
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "711700001200ffffffff88467a0000628e00000000",
+        "decoded_field_count": 13,
+        "response_table": "0x17",
+        "body_hex": "00001200ffffffff88467a0000628e00000000",
+        "decoded": {
+          "engine_speed": 0,
+          "tp_sensor_voltage": 0.35103529411764706,
+          "tp_sensor_angle": 0.0,
+          "eot_sensor_voltage": 4.973,
+          "eot_sensor_temperature": 215,
+          "iat_sensor_voltage": 4.973,
+          "iat_sensor_temperature": 215,
+          "ect_sensor_voltage": 2.6522666666666668,
+          "ect_sensor_temperature": 30,
+          "battery_voltage": 12.2,
+          "injector": 0,
+          "spark_advance": -15.0,
+          "env_revision_coeff": 1.1070431372549019
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6540",
+      "transaction_entry": 6540,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6533
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "016002087120bf800026",
+          "trace_entry": 6535
+        },
+        {
+          "at_ms": 49,
+          "raw_hex": "0160",
+          "trace_entry": 6537
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6739",
+      "transaction_entry": 6739,
+      "previous_app_result": "failed",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "720571d048",
+      "payload_hex": "71d0",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "01686000608000",
+          "trace_entry": 6551
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "0160021a71d000000000",
+          "trace_entry": 6552
+        },
+        {
+          "at_ms": 25,
+          "raw_hex": "016000000000000000",
+          "trace_entry": 6554
+        },
+        {
+          "at_ms": 33,
+          "raw_hex": "016000000000000000",
+          "trace_entry": 6556
+        },
+        {
+          "at_ms": 161,
+          "raw_hex": "0160",
+          "trace_entry": 6709
+        },
+        {
+          "at_ms": 217,
+          "raw_hex": "0160",
+          "trace_entry": 6711
+        },
+        {
+          "at_ms": 321,
+          "raw_hex": "0160",
+          "trace_entry": 6714
+        },
+        {
+          "at_ms": 425,
+          "raw_hex": "0160",
+          "trace_entry": 6717
+        },
+        {
+          "at_ms": 529,
+          "raw_hex": "0160",
+          "trace_entry": 6720
+        },
+        {
+          "at_ms": 633,
+          "raw_hex": "0160",
+          "trace_entry": 6723
+        },
+        {
+          "at_ms": 689,
+          "raw_hex": "0160",
+          "trace_entry": 6725
+        },
+        {
+          "at_ms": 745,
+          "raw_hex": "0160",
+          "trace_entry": 6727
+        },
+        {
+          "at_ms": 849,
+          "raw_hex": "0160",
+          "trace_entry": 6730
+        },
+        {
+          "at_ms": 953,
+          "raw_hex": "0160",
+          "trace_entry": 6733
+        },
+        {
+          "at_ms": 1009,
+          "raw_hex": "0160",
+          "trace_entry": 6735
+        }
+      ],
+      "expect": {
+        "success": false,
+        "writes": 2,
+        "payload_hex": "",
+        "decoded_field_count": 0
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6782",
+      "transaction_entry": 6782,
+      "previous_app_result": "failed",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "720571d048",
+      "payload_hex": "71d0",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "01686000608000",
+          "trace_entry": 6748
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "0160021a71d0000000",
+          "trace_entry": 6749
+        },
+        {
+          "at_ms": 25,
+          "raw_hex": "016000000000000000",
+          "trace_entry": 6751
+        },
+        {
+          "at_ms": 33,
+          "raw_hex": "01600000000000000000",
+          "trace_entry": 6753
+        },
+        {
+          "at_ms": 41,
+          "raw_hex": "016000ffffa5",
+          "trace_entry": 6755
+        },
+        {
+          "at_ms": 209,
+          "raw_hex": "0160",
+          "trace_entry": 6759
+        },
+        {
+          "at_ms": 377,
+          "raw_hex": "0160",
+          "trace_entry": 6763
+        },
+        {
+          "at_ms": 880,
+          "raw_hex": "0160",
+          "trace_entry": 6773
+        },
+        {
+          "at_ms": 936,
+          "raw_hex": "0160",
+          "trace_entry": 6775
+        },
+        {
+          "at_ms": 1008,
+          "raw_hex": "0160",
+          "trace_entry": 6778
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "71d000000000000000000000000000000000000000ffff",
+        "decoded_field_count": 8,
+        "response_table": "0xd0",
+        "body_hex": "00000000000000000000000000000000000000ffff",
+        "decoded": {
+          "byte01": 0,
+          "byte02": 0,
+          "byte03": 0,
+          "byte04": 0,
+          "byte05": 0,
+          "egcv_position_input_signal": 0.0,
+          "egcv_position_output_signal": 0.0,
+          "egcv_motor_duty_value": 0,
+          "linear_solenoid_energizing_current_value": 0.0,
+          "linear_solenoid_energizing_desired_current_value": 0.0,
+          "linear_solenoid_energizing_duty_value": 0,
+          "byte12": 0,
+          "byte13": 0,
+          "bank_angle_sensor_input_value": 0.0,
+          "byte15": 0,
+          "byte16": 0,
+          "byte17": 0,
+          "byte18": 0,
+          "byte19": 0,
+          "byte20": 255,
+          "map_sensor_average": 255
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6831",
+      "transaction_entry": 6831,
+      "previous_app_result": "failed",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "720571d147",
+      "payload_hex": "71d1",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "01686000608006",
+          "trace_entry": 6793
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "0160020b71d1000000",
+          "trace_entry": 6794
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "0160000000b1",
+          "trace_entry": 6796
+        },
+        {
+          "at_ms": 129,
+          "raw_hex": "0160",
+          "trace_entry": 6799
+        },
+        {
+          "at_ms": 185,
+          "raw_hex": "0160",
+          "trace_entry": 6801
+        },
+        {
+          "at_ms": 289,
+          "raw_hex": "0160",
+          "trace_entry": 6804
+        },
+        {
+          "at_ms": 393,
+          "raw_hex": "0160",
+          "trace_entry": 6807
+        },
+        {
+          "at_ms": 497,
+          "raw_hex": "0160",
+          "trace_entry": 6810
+        },
+        {
+          "at_ms": 553,
+          "raw_hex": "0160",
+          "trace_entry": 6812
+        },
+        {
+          "at_ms": 609,
+          "raw_hex": "0160",
+          "trace_entry": 6814
+        },
+        {
+          "at_ms": 713,
+          "raw_hex": "0160",
+          "trace_entry": 6817
+        },
+        {
+          "at_ms": 817,
+          "raw_hex": "0160",
+          "trace_entry": 6820
+        },
+        {
+          "at_ms": 873,
+          "raw_hex": "0160",
+          "trace_entry": 6822
+        },
+        {
+          "at_ms": 977,
+          "raw_hex": "0160",
+          "trace_entry": 6825
+        },
+        {
+          "at_ms": 1009,
+          "raw_hex": "0160",
+          "trace_entry": 6827
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "71d1000000000000",
+        "decoded_field_count": 5,
+        "response_table": "0xd1",
+        "body_hex": "000000000000",
+        "decoded": {
+          "byte01.eop_switch": false,
+          "byte01.6": false,
+          "byte01.5": false,
+          "byte01.4": false,
+          "byte01.3": false,
+          "byte01.scs": false,
+          "byte01.sstand": false,
+          "byte01.nlsw": false,
+          "byte02.7": false,
+          "byte02.6": false,
+          "byte02.5": false,
+          "byte02.4": false,
+          "byte02.3": false,
+          "byte02.2": false,
+          "byte02.1": false,
+          "byte02.0": false,
+          "byte03.7": false,
+          "byte03.6": false,
+          "byte03.gear_position_switch_n": false,
+          "byte03.4": false,
+          "byte03.3": false,
+          "byte03.2": false,
+          "byte03.1": false,
+          "byte03.0": false,
+          "byte04.7": false,
+          "byte04.6": false,
+          "byte04.5": false,
+          "byte04.4": false,
+          "byte04.3": false,
+          "byte04.2": false,
+          "byte04.1": false,
+          "byte04.0": false,
+          "byte05.7": false,
+          "byte05.6": false,
+          "byte05.5": false,
+          "byte05.4": false,
+          "byte05.3": false,
+          "byte05.2": false,
+          "byte05.1": false,
+          "byte05.0": false,
+          "byte06.7": false,
+          "byte06.6": false,
+          "byte06.5": false,
+          "byte06.4": false,
+          "byte06.3": false,
+          "byte06.2": false,
+          "byte06.1": false,
+          "byte06.0": false
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6874",
+      "transaction_entry": 6874,
+      "previous_app_result": "failed",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "720571d147",
+      "payload_hex": "71d1",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "01686000608006",
+          "trace_entry": 6840
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "0160020b71d1000000",
+          "trace_entry": 6841
+        },
+        {
+          "at_ms": 25,
+          "raw_hex": "0160000000b1",
+          "trace_entry": 6843
+        },
+        {
+          "at_ms": 137,
+          "raw_hex": "0160",
+          "trace_entry": 6846
+        },
+        {
+          "at_ms": 585,
+          "raw_hex": "0160",
+          "trace_entry": 6855
+        },
+        {
+          "at_ms": 641,
+          "raw_hex": "0160",
+          "trace_entry": 6857
+        },
+        {
+          "at_ms": 697,
+          "raw_hex": "0160",
+          "trace_entry": 6859
+        },
+        {
+          "at_ms": 809,
+          "raw_hex": "0160",
+          "trace_entry": 6862
+        },
+        {
+          "at_ms": 865,
+          "raw_hex": "0160",
+          "trace_entry": 6864
+        },
+        {
+          "at_ms": 921,
+          "raw_hex": "0160",
+          "trace_entry": 6866
+        },
+        {
+          "at_ms": 977,
+          "raw_hex": "0160",
+          "trace_entry": 6868
+        },
+        {
+          "at_ms": 1009,
+          "raw_hex": "0160",
+          "trace_entry": 6870
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "71d1000000000000",
+        "decoded_field_count": 5,
+        "response_table": "0xd1",
+        "body_hex": "000000000000",
+        "decoded": {
+          "byte01.eop_switch": false,
+          "byte01.6": false,
+          "byte01.5": false,
+          "byte01.4": false,
+          "byte01.3": false,
+          "byte01.scs": false,
+          "byte01.sstand": false,
+          "byte01.nlsw": false,
+          "byte02.7": false,
+          "byte02.6": false,
+          "byte02.5": false,
+          "byte02.4": false,
+          "byte02.3": false,
+          "byte02.2": false,
+          "byte02.1": false,
+          "byte02.0": false,
+          "byte03.7": false,
+          "byte03.6": false,
+          "byte03.gear_position_switch_n": false,
+          "byte03.4": false,
+          "byte03.3": false,
+          "byte03.2": false,
+          "byte03.1": false,
+          "byte03.0": false,
+          "byte04.7": false,
+          "byte04.6": false,
+          "byte04.5": false,
+          "byte04.4": false,
+          "byte04.3": false,
+          "byte04.2": false,
+          "byte04.1": false,
+          "byte04.0": false,
+          "byte05.7": false,
+          "byte05.6": false,
+          "byte05.5": false,
+          "byte05.4": false,
+          "byte05.3": false,
+          "byte05.2": false,
+          "byte05.1": false,
+          "byte05.0": false,
+          "byte06.7": false,
+          "byte06.6": false,
+          "byte06.5": false,
+          "byte06.4": false,
+          "byte06.3": false,
+          "byte06.2": false,
+          "byte06.1": false,
+          "byte06.0": false
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6894",
+      "transaction_entry": 6894,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6885
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 6887
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 6889
+        },
+        {
+          "at_ms": 50,
+          "raw_hex": "0160",
+          "trace_entry": 6891
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6913",
+      "transaction_entry": 6913,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6904
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf80",
+          "trace_entry": 6906
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "01600026",
+          "trace_entry": 6908
+        },
+        {
+          "at_ms": 50,
+          "raw_hex": "0160",
+          "trace_entry": 6910
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6934",
+      "transaction_entry": 6934,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6923
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 6925
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 6927
+        },
+        {
+          "at_ms": 50,
+          "raw_hex": "0160",
+          "trace_entry": 6929
+        },
+        {
+          "at_ms": 58,
+          "raw_hex": "0160",
+          "trace_entry": 6931
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6954",
+      "transaction_entry": 6954,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6944
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 6946
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 6948
+        },
+        {
+          "at_ms": 50,
+          "raw_hex": "0160",
+          "trace_entry": 6950
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6972",
+      "transaction_entry": 6972,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6964
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 6966
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 6968
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-6991",
+      "transaction_entry": 6991,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 6982
+        },
+        {
+          "at_ms": 9,
+          "raw_hex": "016002",
+          "trace_entry": 6984
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "0160087120bf800026",
+          "trace_entry": 6986
+        },
+        {
+          "at_ms": 42,
+          "raw_hex": "0160",
+          "trace_entry": 6988
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-7009",
+      "transaction_entry": 7009,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 7001
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 7003
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 7005
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-7027",
+      "transaction_entry": 7027,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 7019
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "016002087120bf8000",
+          "trace_entry": 7021
+        },
+        {
+          "at_ms": 26,
+          "raw_hex": "016026",
+          "trace_entry": 7023
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-7046",
+      "transaction_entry": 7046,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 7,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 7037
+        },
+        {
+          "at_ms": 10,
+          "raw_hex": "016002",
+          "trace_entry": 7039
+        },
+        {
+          "at_ms": 18,
+          "raw_hex": "0160087120bf800026",
+          "trace_entry": 7041
+        },
+        {
+          "at_ms": 50,
+          "raw_hex": "0160",
+          "trace_entry": 7043
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-7063",
+      "transaction_entry": 7063,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 6,
+      "rx_schedule": [
+        {
+          "at_ms": 6,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 7056
+        },
+        {
+          "at_ms": 17,
+          "raw_hex": "016002087120bf800026",
+          "trace_entry": 7058
+        },
+        {
+          "at_ms": 42,
+          "raw_hex": "0160",
+          "trace_entry": 7060
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    },
+    {
+      "name": "phone-1.1.3-transaction-7079",
+      "transaction_entry": 7079,
+      "previous_app_result": "valid",
+      "echo_mode": "AUTO",
+      "target": 114,
+      "tx_hex": "72057120f8",
+      "payload_hex": "7120",
+      "timeout_ms": 1000,
+      "tx_completion_ms": 7,
+      "rx_schedule": [
+        {
+          "at_ms": 8,
+          "raw_hex": "016060006000f0",
+          "trace_entry": 7073
+        },
+        {
+          "at_ms": 19,
+          "raw_hex": "016002087120bf800026",
+          "trace_entry": 7075
+        }
+      ],
+      "expect": {
+        "success": true,
+        "writes": 1,
+        "payload_hex": "7120bf8000",
+        "decoded_field_count": 3,
+        "response_table": "0x20",
+        "body_hex": "bf8000",
+        "decoded": {
+          "o2_sensor_voltage_1": 3.7248745098039215,
+          "o2_stft_1": 0.9978980392156862,
+          "o2_heater_voltage_1": 0.0
+        }
+      }
+    }
+  ]
+}
