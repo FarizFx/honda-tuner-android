@@ -1,3 +1,57 @@
+# Honda Tuner 1.1.6 verified Linux APK delivered - 16 November 2026
+
+The user resumed the build with 'udah nih bro, udah jalan runnernya'. The existing
+prepared source was pushed once; its single push-triggered Actions run succeeded.
+All required code, server build, asset verification and local delivery are complete.
+
+Built source: e410957d0c0eeb8811f5b6f026f7cee665a5bcb1
+Successful run: https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648
+Actual runner: Linux 5 / ID32
+Draft prerelease: https://github.com/FarizFx/honda-tuner-android/releases/tag/untagged-075c4938459d03ec5a68
+APK: dist/HondaTuner-1.1.6-debug.apk (1017693 bytes)
+SHA-256: e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179
+Signer SHA-256: 5d2c94c478d466ffec7757e65289a7493507120c8959ceb0b2081fa3d5bcf7b7
+Same signer as verified 1.1.5: False
+Installation: Simpan CSV/log yang diperlukan, uninstall 1.1.5, lalu pasang 1.1.6. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.
+
+231 JVM regressions, 312 reference vectors / 5,616 values and 16 recorded vectors /
+166 values passed on the exact built source. SDK compilation, cryptographic APK
+signature and lint (0 errors / 35 warnings) passed on the server.
+All seven release digests, sidecar, ZIP CRC, 56 source hashes, actual
+HUD/application/FTDI classes, catalog/license and certificate versus 1.1.5 were
+verified locally without an Android toolchain. All 190 baseline fingerprints remain intact.
+
+The latest 1.1.5 log reports RX status -1 after valid four-group / 29-field live
+data, one complete round at 220.5 ms and successful ECU ID 0102450F01 (two catalog
+matches). Its excerpt ends mid-entry 84883 before the failed control probe; the
+physical cause is unproven. 1.1.6 suppresses redundant RX probes for 100 ms after
+valid FTDI activity and tolerates one inconclusive -1, with three misses at least
+50 ms apart without new USB activity remaining fatal. Short/malformed status,
+I/O/TX failures and ECU UART/overrun/target/length/checksum/echo checks stay strict.
+Latency stays 1 ms and reply quiet 24 ms. Status-only logs are aggregated;
+Salin akhir log keeps the header and latest entries. Simpan .txt keeps full trace.
+
+1.1.6 includes configurable LCD/HUD and landscape, primary and three auxiliary
+sensors, colors/digit size/mirror/RPM bar/focused polling. Whole-session Min / Avg /
+Max include valid zero, outlive the 600-sample chart limit and reset on disconnect.
+Rotation, pauses and re-detection preserve records; n= is removed. Actual refresh
+uses monotonic completion intervals in ms; target 0 adds no scheduling delay.
+Graphs label zero without artificial negative RPM/TPS/voltage. VSS remains RAW,
+only when provided by the ECU schema; recorded table 0x17 has no VSS. Preview
+values are synthetic. Physical 1.1.6 phone/ECU behavior still requires user retest.
+
+Authoritative checkout: honda_tuner_android/build/github-repo. Mirror:
+honda_tuner_android. Private delivery proof and helpers: build/ui-1.1.6/server-delivery.
+The exact built source archive remains dist/source-1.1.6-e410957.zip; delivery
+metadata is updated separately. Prior versioned APKs/ZIPs/baselines are preserved.
+Use direct terminal Git/gh; never prepare_repo.py or Python wrappers for Git.
+Build APKs only on Linux servers; never install/run an Android SDK/Gradle toolchain
+on this laptop, register a laptop runner or change runner credentials/configuration.
+Existing JDK may run offline JVM checks when code changes need them. No ECU write
+or device installation was performed. Current CI reports are exact server originals.
+
+Earlier notes below are historical.
+
 # Honda Tuner 1.1.6 RX-status repair and dashboard source ready
 
 The user supplied the requested NEW 1.1.5 error log on this thread

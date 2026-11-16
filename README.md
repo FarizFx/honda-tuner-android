@@ -3,12 +3,12 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**Source v1.1.6-debug / versionCode 8 sudah disiapkan. APK 1.1.6 belum dibangun.**
-Build ditahan sesuai permintaan pengguna setelah laporan error; seluruh runner
-Linux yang terdaftar sedang offline. APK terakhir yang terverifikasi tetap
-`dist/HondaTuner-1.1.5-debug.apk` dari
-[Actions 43793080151](https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151).
-Laporan CI yang disertakan masih merupakan hasil asli build 1.1.5.
+**v1.1.6-debug / versionCode 8 sudah dibangun dan terverifikasi.**
+[Build Actions 1.1.6](https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648) berhasil pada server Linux
+5 / ID32. APK: `dist/HondaTuner-1.1.6-debug.apk`.
+Simpan CSV/log yang diperlukan, uninstall 1.1.5, lalu pasang 1.1.6. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.
+Laporan CI yang disertakan merupakan hasil asli build 1.1.6; APK, laporan,
+dan source 1.1.5 serta versi sebelumnya tetap disimpan dalam baseline/arsip.
 
 **Speedometer LCD** membuka layar instrumen dengan angka segmen, bar RPM, dan
 tiga sensor pendamping. **Atur HUD** menyimpan pilihan sensor, warna, ukuran
@@ -63,9 +63,10 @@ Perbaikan GET_STATUS dan parser ID dari 1.1.5 juga tetap disertakan; kedua
 kecocokan Vario 150 dalam katalog tidak dihilangkan.
 
 **231 tes regresi JVM**, **312 vektor referensi / 5.616 nilai**, dan
-**16 vektor rekaman / 166 nilai** lulus pada source core 1.1.6.
-Pemeriksaan XML, YAML, dan sintaks alat dilakukan tanpa SDK Android lokal.
-Kompilasi Android, lint, signature, dan pengujian HP/ECU 1.1.6 masih menunggu build.
+**16 vektor rekaman / 166 nilai** lulus pada server untuk source core 1.1.6.
+Kompilasi SDK Android, lint (0 error / 35 warning), signature, ZIP,
+ketujuh digest aset, kelas HUD/USB, katalog, dan hash source APK terverifikasi.
+Pengujian langsung HP/ECU 1.1.6 masih memerlukan retest pengguna.
 Baseline 1.1.5 dan versi sebelumnya dipertahankan. Bukti pembaruan:
 [evidence/dashboard_1_1_6.json](evidence/dashboard_1_1_6.json).
 Audit perbaikan sebelumnya: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).

@@ -1,11 +1,11 @@
 {
-  "recorded_at_utc": "2026-11-16T04:18:35.223878+00:00",
+  "recorded_at_utc": "2026-11-16T05:07:00.063740+00:00",
   "version_name": "1.1.6-debug",
   "version_code": 8,
-  "stage": "source prepared locally; build deferred by user; all Linux runners offline",
-  "source_pushed": false,
-  "github_actions_run": null,
-  "apk_built": false,
+  "stage": "source pushed; Linux server build verified; APK delivered locally",
+  "source_pushed": true,
+  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
+  "apk_built": true,
   "user_requests": [
     "Configurable LCD speedometer/HUD and landscape",
     "Conditional real VSS display without inventing a km/h scale",
@@ -134,56 +134,36 @@
     "structural_result": "passed",
     "java_source_files": 26,
     "yaml_parser_validation": true,
-    "android_sdk_compilation": false,
-    "android_lint_verified": false,
+    "android_sdk_compilation": true,
+    "android_lint_verified": true,
     "physical_android_usb_or_ecu_test": false,
-    "preserved_baseline_files_verified": 190
+    "preserved_baseline_files_verified": 190,
+    "android_lint_errors": 0,
+    "android_lint_warnings": 35,
+    "apk_signature_verified": true,
+    "ci_source_hash_checks": 56
   },
   "build": {
-    "deferred_by_user": true,
+    "deferred_by_user": false,
+    "deferred_build_resumed_by_user": true,
     "new_run_queued": false,
+    "github_actions_status": "success",
     "laptop_used_for_apk_build": false,
-    "runner_inventory_recorded_at_utc": "2026-11-16T03:58:38.729429+00:00",
-    "existing_linux_runners": [
-      {
-        "id": 28,
-        "name": "1",
-        "os": "Linux",
-        "status": "offline"
-      },
-      {
-        "id": 29,
-        "name": "2",
-        "os": "Linux",
-        "status": "offline"
-      },
-      {
-        "id": 30,
-        "name": "3",
-        "os": "Linux",
-        "status": "offline"
-      },
-      {
-        "id": 31,
-        "name": "4",
-        "os": "Linux",
-        "status": "offline"
-      },
-      {
-        "id": 27,
-        "name": "KC",
-        "os": "Linux",
-        "status": "offline"
-      },
-      {
-        "id": 26,
-        "name": "KillerCoda",
-        "os": "Linux",
-        "status": "offline"
-      }
-    ]
+    "runner_name": "5",
+    "runner_id": 32,
+    "runner_os": "Linux"
   },
   "latest_verified_apk": {
+    "version_name": "1.1.6-debug",
+    "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
+    "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
+    "relative_path": "dist/HondaTuner-1.1.6-debug.apk",
+    "sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179",
+    "same_signer_as_previous": false,
+    "installation_note": "Simpan CSV/log yang diperlukan, uninstall 1.1.5, lalu pasang 1.1.6. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi."
+  },
+  "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
+  "previous_verified_apk": {
     "version_name": "1.1.5-debug",
     "source_commit": "443d36cc52ca282faeaadaebb2264682bb6602d1",
     "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151",

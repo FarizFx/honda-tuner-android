@@ -1,18 +1,18 @@
 {
   "result": "passed",
-  "apk_sha256": "aa979fe4f316ec4aceda863f449860380ce36046fa045440d2d3b284f604668a",
-  "apk_bytes": 999321,
+  "apk_sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179",
+  "apk_bytes": 1017693,
   "android_sdk_compilation": true,
   "apk_signature_verified": true,
   "zip_integrity_verified": true,
   "application_id": "id.hondatuner.android",
   "minimum_android_api": 26,
   "target_android_api": 35,
-  "version_code": 7,
-  "version_name": "1.1.5-debug",
+  "version_code": 8,
+  "version_name": "1.1.6-debug",
   "variant": "debug",
-  "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: C=US, O=Android, CN=Android Debug\nSigner #1 certificate SHA-256 digest: 0539cdb817a2ae5e81c94dc27c0d30890eea1cbf224cc079dd2d7ef3b5b192dd\nSigner #1 certificate SHA-1 digest: af026cfc7e422a6b576cd71262350a30a1ecb981\nSigner #1 certificate MD5 digest: c5fed4492def9050003c11bf378c8c59\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: 4f79d124fce33ac4bbb9cbab43b51097f2a09b07821d596cbbe8e4e8ccac01f4\nSigner #1 public key SHA-1 digest: 00664c0f20cbc4729bfc546e089994bfe6675b0a\nSigner #1 public key MD5 digest: 2a73b7170d822e2227bd544ca68ee929\n",
-  "manifest_badging": "package: name='id.hondatuner.android' versionCode='7' versionName='1.1.5-debug' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'\nminSdkVersion:'26'\ntargetSdkVersion:'35'\napplication-label:'Honda Tuner'\napplication-icon-160:'res/drawable/ic_launcher.xml'\napplication: label='Honda Tuner' icon='res/drawable/ic_launcher.xml'\napplication-debuggable\nlaunchable-activity: name='id.hondatuner.android.MainActivity'  label='' icon=''\nfeature-group: label=''\n  uses-feature: name='android.hardware.usb.host'\n  uses-feature: name='android.hardware.faketouch'\n  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'\nmain\nsupports-screens: 'small' 'normal' 'large' 'xlarge'\nsupports-any-density: 'true'\nlocales: '--_--'\ndensities: '160'\n",
+  "signature_verification": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: C=US, O=Android, CN=Android Debug\nSigner #1 certificate SHA-256 digest: 5d2c94c478d466ffec7757e65289a7493507120c8959ceb0b2081fa3d5bcf7b7\nSigner #1 certificate SHA-1 digest: 0dbef6f869a4bb457b2812769607b1fe54a3a998\nSigner #1 certificate MD5 digest: 88408da10ac1534c141944280db6267c\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: 76204a658cfe8bea6c4007d15ca39a735abeaa41b5a224090903c532de0f9641\nSigner #1 public key SHA-1 digest: c539fdcaf63ef2942bb4ac9248a4cefd70f9dd1d\nSigner #1 public key MD5 digest: 7218bcac7f993795f7c6e5c56b6ddd23\n",
+  "manifest_badging": "package: name='id.hondatuner.android' versionCode='8' versionName='1.1.6-debug' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'\nminSdkVersion:'26'\ntargetSdkVersion:'35'\napplication-label:'Honda Tuner'\napplication-icon-160:'res/drawable/ic_launcher.xml'\napplication: label='Honda Tuner' icon='res/drawable/ic_launcher.xml'\napplication-debuggable\nlaunchable-activity: name='id.hondatuner.android.MainActivity'  label='' icon=''\nfeature-group: label=''\n  uses-feature: name='android.hardware.usb.host'\n  uses-feature: name='android.hardware.faketouch'\n  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'\nmain\nsupports-screens: 'small' 'normal' 'large' 'xlarge'\nsupports-any-density: 'true'\nlocales: '--_--'\ndensities: '160'\n",
   "physical_android_usb_or_ecu_test": false,
   "ftdi_driver_library": "usb-serial-for-android 3.12.0",
   "ftdi_driver_classes_verified": [
@@ -20,9 +20,22 @@
     "Lcom/hoho/android/usbserial/driver/FtdiSerialDriver;"
   ],
   "ftdi_driver_license_verified": true,
-  "github_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151",
-  "source_commit": "443d36cc52ca282faeaadaebb2264682bb6602d1",
+  "application_classes_verified": [
+    "Lid/hondatuner/android/MainActivity;",
+    "Lid/hondatuner/android/SensorGraph;",
+    "Lid/hondatuner/android/SpeedometerView;",
+    "Lid/hondatuner/android/usb/FtdiChannel;",
+    "Lid/hondatuner/core/HudLayout;",
+    "Lid/hondatuner/core/LcdDashboard;",
+    "Lid/hondatuner/core/RefreshTiming;",
+    "Lid/hondatuner/core/SensorScale;",
+    "Lid/hondatuner/core/SensorSelection;",
+    "Lid/hondatuner/core/TelemetryHistory;"
+  ],
+  "ecu_catalog_matches_source": true,
+  "github_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
+  "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
   "android_lint_report_verified": true,
   "android_lint_errors": 0,
-  "android_lint_warnings": 36
+  "android_lint_warnings": 35
 }
