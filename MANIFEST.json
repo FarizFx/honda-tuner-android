@@ -29,8 +29,8 @@
       "bytes": 10226
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "7bd876eaba996ade38c0a2088ea636ad963ca7e25a1610cfc6cd8e2c674ea517",
-      "bytes": 3333
+      "sha256": "620802ee2c2ea793111fa756afa22beb6e6cd5c8ee94ad51c8b312dca40a6c90",
+      "bytes": 3885
     },
     "app/build.gradle": {
       "sha256": "35ca8d4690bf8d72dacd8868bef74d6586759e59a94b6588c1bf75ca0964f2e4",
@@ -157,8 +157,8 @@
       "bytes": 2862
     },
     "evidence/build_status.json": {
-      "sha256": "de6a112d1ee2b7111a8675697506ae00f895db02bac8cfe389904d842e843db9",
-      "bytes": 2754
+      "sha256": "0ac9d3e3dc7176e16e57c93ce6ab197a0eb7d208c1bd226e2813370ba04de1bf",
+      "bytes": 2875
     },
     "evidence/connection_debug_audit.json": {
       "sha256": "c366d6f6f20f6c4cc735336fbf073a9d646accbf4d7f38458e26fc1f297b273e",
@@ -177,16 +177,16 @@
       "bytes": 15187
     },
     "evidence/delivery_verification.json": {
-      "sha256": "796208b9ffbf3471b115a0053bab496b680daece74645ace430845bebc38ec9c",
-      "bytes": 3601
+      "sha256": "7f24143b5ac31b0698e4258a0b67ebc77ad65497cca4c1b4d364951bdc9efc3c",
+      "bytes": 3722
     },
     "evidence/ftdi_driver_reference.json": {
       "sha256": "173295ef1fdcf6554c5eafdc01803206dbab4b3db5c3864daf1c2bfb3914892b",
       "bytes": 4182
     },
     "evidence/github_delivery.json": {
-      "sha256": "796208b9ffbf3471b115a0053bab496b680daece74645ace430845bebc38ec9c",
-      "bytes": 3601
+      "sha256": "7f24143b5ac31b0698e4258a0b67ebc77ad65497cca4c1b4d364951bdc9efc3c",
+      "bytes": 3722
     },
     "evidence/lite_transport_reference.json": {
       "sha256": "f447e814ffcafaa3518ba07cba03246281e25415c4f35312024d990bdacf4591",

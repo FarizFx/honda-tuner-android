@@ -91,5 +91,6 @@
   "installation_note": "Pasang 1.1.5 sebagai pembaruan 1.1.4; sertifikat debug sama.",
   "source_mirror_files_verified": 75,
   "physical_ecu_success_verified": false,
-  "prior_failed_run_id": 43792852031
+  "prior_failed_run_id": 43792852031,
+  "post_build_metadata_push_status": "pending: Git HTTP 403; application source already pushed and server APK verified"
 }

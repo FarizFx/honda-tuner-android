@@ -64,5 +64,6 @@
     "run_id": 43792852031,
     "conclusion": "failure",
     "reason": "Comparator import absent; restored before final build"
-  }
+  },
+  "post_build_metadata_push_status": "pending: Git HTTP 403; application source already pushed and server APK verified"
 }

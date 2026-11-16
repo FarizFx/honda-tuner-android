@@ -1,3 +1,11 @@
+Delivery metadata push is pending: three direct Git attempts, including the
+existing gh credential helper, returned HTTP 403. The application source at
+443d36cc52ca282faeaadaebb2264682bb6602d1 is already on origin/main and produced
+the successful verified 1.1.5 APK. Local main additionally contains the delivery
+receipts/docs; do not rebuild the APK just to upload those records. No token,
+credential, runner or security settings were changed. Retry the documentation
+push when the Git route permits it. Local APK and exact CI reports are delivered.
+
 # Honda Tuner 1.1.5 verified server APK delivered - 16 November 2026
 
 Actual latest user log and requests were recovered from local history of
