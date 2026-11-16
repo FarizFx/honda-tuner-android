@@ -90,6 +90,7 @@ public final class CoreTest {
         passed += DiagnosticTraceTest.runAll();
         passed += SensorSelectionTest.runAll();
         passed += DashboardTest.runAll();
+        passed += HudGeometryTest.runAll();
         System.out.println("PASS: " + passed + " core regression tests");
     }
     private static void run(String name, Checked test) throws Exception { test.run(); passed++; System.out.println("OK " + name); }

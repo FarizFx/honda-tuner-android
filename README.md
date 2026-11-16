@@ -3,12 +3,32 @@
 Diagnostik ECU Honda lewat adaptor FT232R/FT232RL K-Line dan USB OTG.
 Minimum Android 8.0 (API 26) dengan USB host.
 
-**v1.1.6-debug / versionCode 8 sudah dibangun dan terverifikasi.**
-[Build Actions 1.1.6](https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648) berhasil pada server Linux
-5 / ID32. APK: `dist/HondaTuner-1.1.6-debug.apk`.
-Simpan CSV/log yang diperlukan, uninstall 1.1.5, lalu pasang 1.1.6. Sertifikat debug berbeda; uninstall menghapus data privat dan pengaturan aplikasi.
-Laporan CI yang disertakan merupakan hasil asli build 1.1.6; APK, laporan,
-dan source 1.1.5 serta versi sebelumnya tetap disimpan dalam baseline/arsip.
+**Source v1.1.7-debug / versionCode 9 sudah disiapkan; build Android sedang disiapkan.**
+APK terakhir yang terverifikasi tetap `dist/HondaTuner-1.1.6-debug.apk` dari
+[Actions 43807510648](https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648).
+Laporan CI saat ini merupakan hasil asli build 1.1.6. Source, APK, dan laporan
+versi lama disimpan dalam baseline/arsip; baseline 1.1.6 juga sudah dipertahankan.
+
+**Edit tata letak** membuka kanvas HUD. Pilih kotak lalu seret untuk memindahkan;
+tarik salah satu dari empat titik sudut untuk mengubah lebar dan tinggi.
+Kotak utama, tiga sensor pendamping, bar RPM, judul, status koneksi, refresh,
+dan info VSS dapat diatur secara terpisah. Kotak boleh bertumpuk; **⋯ Kotak →
+Pilih kotak** menjangkau elemen yang tertutup dan membawanya ke depan.
+Menu yang sama dapat mengganti sensor pada kotak yang dipilih, mereset satu
+kotak, atau mereset tata letak orientasi yang sedang dibuka.
+
+**Simpan** menyimpan posisi, ukuran, lapisan, dan perubahan sensor dari editor.
+**Batal** atau Back HP mengembalikan tata letak dan sensor sebelum editor dibuka.
+Posisi portrait dan landscape disimpan terpisah serta mengikuti ukuran kanvas.
+Editor memakai tampilan tegak; cermin HUD kembali berlaku setelah selesai.
+Pilihan sensor/warna di form Atur HUD diterapkan saat tombol Edit tata letak
+membuka editor; Batal di editor membatalkan perubahan selama di kanvas.
+
+Mode speedometer memakai layar penuh. Ketuk layar untuk memunculkan kontrol
+Live, Jeda/Mulai, Atur HUD, dan Edit tata letak; kontrol melayang dan otomatis
+hilang setelah empat detik. Kotak tetap diam ketika menu muncul. Back saat
+melihat speedometer kembali ke Live tanpa memutus USB. Tata letak tetap dapat
+diedit saat belum terhubung; nilai yang belum terbaca tetap berupa tanda pisah.
 
 **Speedometer LCD** membuka layar instrumen dengan angka segmen, bar RPM, dan
 tiga sensor pendamping. **Atur HUD** menyimpan pilihan sensor, warna, ukuran
@@ -62,11 +82,12 @@ header versi/error dan entri terakhir, sementara **Simpan .txt** tetap lengkap.
 Perbaikan GET_STATUS dan parser ID dari 1.1.5 juga tetap disertakan; kedua
 kecocokan Vario 150 dalam katalog tidak dihilangkan.
 
-**231 tes regresi JVM**, **312 vektor referensi / 5.616 nilai**, dan
-**16 vektor rekaman / 166 nilai** lulus pada server untuk source core 1.1.6.
-Kompilasi SDK Android, lint (0 error / 35 warning), signature, ZIP,
-ketujuh digest aset, kelas HUD/USB, katalog, dan hash source APK terverifikasi.
-Pengujian langsung HP/ECU 1.1.6 masih memerlukan retest pengguna.
+**243 tes regresi JVM**, **312 vektor referensi / 5.616 nilai**, dan
+**16 vektor rekaman / 166 nilai** lulus lokal pada source core 1.1.7.
+Tes baru mencakup batas gerak, empat sudut resize, penyimpanan lapisan,
+orientasi terpisah, layout rusak, slot tersembunyi, dan gambar kotak yang di-resize.
+Kompilasi SDK, lint, dan signature 1.1.7 memerlukan build server.
+Pengujian sentuhan langsung pada HP/ECU 1.1.7 masih memerlukan retest pengguna.
 Baseline 1.1.5 dan versi sebelumnya dipertahankan. Bukti pembaruan:
 [evidence/dashboard_1_1_6.json](evidence/dashboard_1_1_6.json).
 Audit perbaikan sebelumnya: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).

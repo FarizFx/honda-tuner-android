@@ -64,6 +64,28 @@ jendela tenang tidak dapat diprediksi oleh parser dari rekaman sebelumnya.
     unit tetap RAW sampai skala km/h terverifikasi. Pada tabel 0x17 rekaman ini,
     VSS belum tersedia dan angka utama default adalah RPM.
 
+16. Pada 1.1.7, buka LCD dan periksa layar penuh tanpa baris tombol tetap.
+    Ketuk layar: kontrol melayang muncul tanpa mengubah ukuran kotak, lalu
+    hilang setelah empat detik. Coba Atur HUD → Edit tata letak dan tombol
+    Edit tata letak langsung. Semua kotak dapat diedit tanpa koneksi ECU.
+17. Seret kotak utama, setiap sensor, bar RPM, judul, status, refresh, dan info
+    VSS. Tarik keempat sudut untuk resize; sisi berlawanan tetap di tempat.
+    Kotak tetap berada di dalam kanvas dan isi mengikuti ukuran. Uji angka
+    panjang, nilai 0, nilai negatif, ukuran font sistem, dan notch HP.
+18. Tumpuk kotak, pilih melalui ⋯ Kotak → Pilih kotak, lalu seret/resize kotak
+    yang tadinya tertutup. Periksa kotak pilihan dibawa ke lapisan depan.
+    Ganti sensor kotak, geser, lalu Batal: posisi dan sensor harus kembali.
+    Ulangi dengan Simpan; tutup dan buka aplikasi untuk memeriksa penyimpanan.
+19. Atur posisi berbeda untuk portrait dan landscape. Rotasi saat editor dan
+    live berjalan; draft serta rekor harus bertahan tanpa putus USB. Reset satu
+    kotak tidak menghapus kotak lain; reset orientasi tidak menghapus orientasi
+    lainnya. Batal harus dapat mengembalikan kondisi sebelum reset.
+20. Coba HUD cermin: editor tampil tegak agar mudah disentuh; setelah selesai
+    tampilan kembali dicerminkan dengan posisi tersimpan. Back pertama saat
+    editor membatalkan draft; Back berikutnya kembali ke Live tanpa putus USB.
+    Gerakan batal, jari kedua, dialog sensor, dan kembali dari background tidak
+    boleh membuat kotak melompat atau kontrol melayang menetap di layar.
+
 Jika error masih muncul pada APK terbaru, sertakan header versi APK dan 80–120
 baris sekitar error paling akhir, terutama USB SESSION, stack trace, FTDI control,
 dan TRANSACTION. Gunakan Error terakhir → Salin akhir log untuk bagian akhir

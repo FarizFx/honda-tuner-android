@@ -24,9 +24,14 @@ public final class DashboardPreview {
         draw(new File(directory, "lcd-portrait.png"), 600, 1000, false, false);
         draw(new File(directory, "lcd-zero.png"), 1600, 720, true, false);
         draw(new File(directory, "lcd-mirrored.png"), 1600, 720, false, true);
-        System.out.println("Rendered four previews using the shared LCD renderer.");
+        draw(new File(directory, "lcd-custom-landscape.png"), 1600, 720, false, false, true);
+        draw(new File(directory, "lcd-custom-portrait.png"), 600, 1000, false, false, true);
+        System.out.println("Rendered six synthetic previews using the shared LCD renderer.");
     }
     private static void draw(File file, int width, int height, boolean zero, boolean mirrored) throws Exception {
+        draw(file, width, height, zero, mirrored, false);
+    }
+    private static void draw(File file, int width, int height, boolean zero, boolean mirrored, boolean custom) throws Exception {
         TelemetryHistory history = new TelemetryHistory(600);
         history.reset(Arrays.asList("vss", "engine_speed", "tp_sensor_angle", "battery_voltage", "ect_sensor_temperature"));
         Map<String, Object> values = new LinkedHashMap<>();
@@ -38,6 +43,19 @@ public final class DashboardPreview {
         }
         HudLayout layout = new HudLayout(zero ? "engine_speed" : "vss", Arrays.asList("tp_sensor_angle", "battery_voltage", "ect_sensor_temperature"),
                 0, 1f, mirrored, ! (width < height), true, true, 15000);
+        if (custom) {
+            boolean wide = width >= height;
+            HudGeometry geometry = new HudGeometry().with("primary", wide, new HudGeometry.Box(.02f, .23f, wide ? .57f : .96f, wide ? .69f : .32f))
+                    .with("rpm", wide, new HudGeometry.Box(.02f, .12f, .96f, wide ? .075f : .065f));
+            if (wide) {
+                geometry = geometry.with("aux0", true, new HudGeometry.Box(.62f,.23f,.36f,.20f))
+                        .with("aux1", true, new HudGeometry.Box(.62f,.47f,.36f,.20f)).with("aux2", true, new HudGeometry.Box(.62f,.71f,.36f,.20f));
+            } else {
+                geometry = geometry.with("aux0", false, new HudGeometry.Box(.02f,.59f,.47f,.17f))
+                        .with("aux1", false, new HudGeometry.Box(.51f,.59f,.47f,.17f)).with("aux2", false, new HudGeometry.Box(.02f,.79f,.96f,.13f));
+            }
+            layout = layout.withGeometry(geometry);
+        }
         List<LcdDashboard.Reading> auxiliary = new ArrayList<>();
         for (String field : layout.auxiliary) auxiliary.add(new LcdDashboard.Reading(field, values.get(field), history.statistics(field)));
         LcdDashboard.Data data = new LcdDashboard.Data(new LcdDashboard.Reading(layout.primary, values.get(layout.primary), history.statistics(layout.primary)),

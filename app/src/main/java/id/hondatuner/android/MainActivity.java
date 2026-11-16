@@ -38,6 +38,7 @@ import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -72,6 +73,7 @@ import id.hondatuner.core.HondaClient;
 import id.hondatuner.core.KLineTransport;
 import id.hondatuner.core.LiveProfile;
 import id.hondatuner.core.HudLayout;
+import id.hondatuner.core.HudGeometry;
 import id.hondatuner.core.LcdDashboard;
 import id.hondatuner.core.RefreshTiming;
 import id.hondatuner.core.SensorInfo;
@@ -130,14 +132,18 @@ public final class MainActivity extends Activity {
     private LinearLayout connectionPanel;
     private GridLayout grid;
     private SensorGraph graph;
-    private FrameLayout rootFrame;
-    private LinearLayout normalScreen, hudScreen;
+    private FrameLayout rootFrame, hudScreen;
+    private LinearLayout normalScreen, hudControls, hudEditControls;
+    private TextView hudEditHint;
     private SpeedometerView speedometer;
     private HudLayout hudLayout;
+    private HudLayout hudBeforeEdit;
     private Button showHud, rotate, hudPause;
     private boolean hudMode;
     private int orientationBeforeHud = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+    private int systemUiBeforeHud;
     private android.window.OnBackInvokedCallback hudBackCallback;
+    private final Runnable hideHudControls = () -> { if (hudControls != null) hudControls.setVisibility(View.GONE); };
 
     private static final class Failure {
         final String reason, trace, source;
@@ -280,14 +286,27 @@ public final class MainActivity extends Activity {
         });
         showState(controller.snapshot());
         if (savedInstanceState != null && savedInstanceState.getBoolean("hud_mode")) setHudMode(true);
+        if (savedInstanceState != null && hudMode && savedInstanceState.getBoolean("hud_editing")) {
+            beginHudLayoutEdit();
+            ArrayList<String> auxiliary = savedInstanceState.getStringArrayList("hud_edit_auxiliary");
+            String primary = savedInstanceState.getString("hud_edit_primary", hudLayout.primary);
+            if (auxiliary != null) hudLayout = new HudLayout(primary, auxiliary, hudLayout.theme, hudLayout.digitScale,
+                    hudLayout.mirrored, hudLayout.landscape, hudLayout.focused, hudLayout.rpmBar, hudLayout.rpmLimit, hudLayout.geometry);
+            refreshHud();
+            speedometer.beginEdit(HudGeometry.decode(savedInstanceState.getString("hud_edit_portrait"), savedInstanceState.getString("hud_edit_landscape")));
+            String selected = savedInstanceState.getString("hud_edit_selected");
+            if (selected != null && LcdDashboard.blocks(hudLayout).contains(selected)) speedometer.selectBlock(selected);
+        }
     }
     @Override protected void onStart() {
         super.onStart(); foreground = true; log.info("LIFECYCLE", "Foreground"); refreshAdapters();
         speedometer.setKeepScreenOn(hudMode);
+        if (hudMode) applyHudSystemBars();
         finishPermission(); main.removeCallbacks(refreshScreen); main.post(refreshScreen);
     }
     @Override protected void onStop() {
         foreground = false; main.removeCallbacks(refreshScreen);
+        main.removeCallbacks(hideHudControls); hideHudControls.run();
         speedometer.setKeepScreenOn(false);
         // A permission dialog owns no UART. Consume its pending result on return.
         // Active ECU communication always ends when the screen leaves the foreground.
@@ -304,6 +323,14 @@ public final class MainActivity extends Activity {
         state.putBoolean("archived_trace", archivedTrace); state.putBoolean("export_in_flight", awaitingExport);
         state.putString("export_name", pendingExportName); state.putString("export_file", pendingExportFile);
         state.putBoolean("hud_mode", hudMode);
+        state.putBoolean("hud_editing", speedometer.isEditing());
+        if (speedometer.isEditing()) {
+            state.putString("hud_edit_portrait", speedometer.editedGeometry().encode(false));
+            state.putString("hud_edit_landscape", speedometer.editedGeometry().encode(true));
+            state.putString("hud_edit_selected", speedometer.selectedBlock());
+            state.putString("hud_edit_primary", hudLayout.primary);
+            state.putStringArrayList("hud_edit_auxiliary", new ArrayList<>(hudLayout.auxiliary));
+        }
         super.onSaveInstanceState(state);
     }
     @Override protected void onDestroy() {
@@ -325,7 +352,11 @@ public final class MainActivity extends Activity {
         log.info("LIFECYCLE", "Rotasi layar; sesi USB dan statistik dipertahankan.");
     }
     @Override public void onBackPressed() {
-        if (hudMode) setHudMode(false); else super.onBackPressed();
+        if (hudMode) hudBack(); else super.onBackPressed();
+    }
+    @Override public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && hudMode) applyHudSystemBars();
     }
     private static UsbDevice usbDevice(Intent intent) {
         if (Build.VERSION.SDK_INT >= 33) return intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice.class);
@@ -489,32 +520,135 @@ public final class MainActivity extends Activity {
                 preferences.getInt("hud_theme", defaults.theme), preferences.getFloat("hud_scale", 1f),
                 preferences.getBoolean("hud_mirror", false), preferences.getBoolean("hud_landscape", true),
                 preferences.getBoolean("hud_focus", true), preferences.getBoolean("hud_rpm_bar", true),
-                preferences.getInt("hud_rpm_limit", defaults.rpmLimit));
+                preferences.getInt("hud_rpm_limit", defaults.rpmLimit),
+                HudGeometry.decode(preferences.getString("hud_boxes_portrait", null), preferences.getString("hud_boxes_landscape", null)));
     }
     private void buildHud() {
-        hudScreen = column(); hudScreen.setBackgroundColor(Color.rgb(5, 14, 16)); hudScreen.setVisibility(View.GONE);
+        hudScreen = new FrameLayout(this); hudScreen.setBackgroundColor(Color.rgb(5, 14, 16)); hudScreen.setVisibility(View.GONE);
         hudScreen.setOnApplyWindowInsetsListener((view, insets) -> {
-            view.setPadding(dp(6) + insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
-                    dp(6) + insets.getSystemWindowInsetRight(), dp(4) + insets.getSystemWindowInsetBottom()); return insets;
+            int left = insets.getSystemWindowInsetLeft(), top = insets.getSystemWindowInsetTop(),
+                    right = insets.getSystemWindowInsetRight(), bottom = insets.getSystemWindowInsetBottom();
+            if (Build.VERSION.SDK_INT >= 28 && insets.getDisplayCutout() != null) {
+                left = Math.max(left, insets.getDisplayCutout().getSafeInsetLeft()); top = Math.max(top, insets.getDisplayCutout().getSafeInsetTop());
+                right = Math.max(right, insets.getDisplayCutout().getSafeInsetRight()); bottom = Math.max(bottom, insets.getDisplayCutout().getSafeInsetBottom());
+            }
+            view.setPadding(dp(6) + left, top, dp(6) + right, dp(4) + bottom); return insets;
         });
+        speedometer = new SpeedometerView(this); hudScreen.addView(speedometer, new FrameLayout.LayoutParams(-1, -1));
+        hudControls = panel(); hudControls.setVisibility(View.GONE);
         LinearLayout controls = row(); Button back = button("‹ Live", false), settings = button("Atur HUD", false);
         hudPause = button("Mulai live", true);
-        controls.addView(back, weight()); controls.addView(settings, weight()); controls.addView(hudPause, weight());
-        hudScreen.addView(controls); speedometer = new SpeedometerView(this);
-        hudScreen.addView(speedometer, new LinearLayout.LayoutParams(-1, 0, 1));
+        controls.addView(back, weight()); controls.addView(hudPause, weight()); hudControls.addView(controls);
+        LinearLayout editRow = row(); Button editLayout = button("Edit tata letak", true);
+        editRow.addView(settings, weight()); editRow.addView(editLayout, weight()); hudControls.addView(editRow);
+        FrameLayout.LayoutParams menuPosition = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
+        menuPosition.setMargins(dp(8), dp(8), dp(8), dp(8)); hudScreen.addView(hudControls, menuPosition);
+        hudEditControls = column(); hudEditControls.setPadding(dp(6), dp(4), dp(6), dp(3)); hudEditControls.setBackground(background(SURFACE));
+        LinearLayout tools = row(); Button save = button("Simpan", true), cancel = button("Batal", false), options = button("⋯ Kotak", false);
+        tools.addView(save, weight()); tools.addView(cancel, weight()); tools.addView(options, weight()); hudEditControls.addView(tools);
+        hudEditHint = text("Pilih kotak, geser, atau tarik titik sudut untuk mengubah ukuran.", 11, INK, false); hudEditHint.setPadding(dp(6), 0, dp(6), 0);
+        hudEditHint.setLines(2);
+        hudEditControls.addView(hudEditHint); hudEditControls.setVisibility(View.GONE);
+        hudScreen.addView(hudEditControls, new FrameLayout.LayoutParams(-1, -2, Gravity.TOP));
+        hudEditControls.addOnLayoutChangeListener((view, l, t, r, b, oldL, oldT, oldR, oldB) -> updateHudEditorMargin());
         rootFrame.addView(hudScreen, new FrameLayout.LayoutParams(-1, -1));
-        back.setOnClickListener(view -> setHudMode(false)); settings.setOnClickListener(view -> editHud());
-        hudPause.setOnClickListener(view -> { if (controller != null) controller.toggleLive(); }); refreshHud();
+        back.setOnClickListener(view -> setHudMode(false)); settings.setOnClickListener(view -> { hideHudControls.run(); editHud(); });
+        editLayout.setOnClickListener(view -> beginHudLayoutEdit());
+        hudPause.setOnClickListener(view -> { if (controller != null) controller.toggleLive(); hideHudControls.run(); });
+        save.setOnClickListener(view -> finishHudLayoutEdit(true)); cancel.setOnClickListener(view -> finishHudLayoutEdit(false));
+        options.setOnClickListener(this::hudEditorOptions);
+        speedometer.setOnClickListener(view -> { if (!speedometer.isEditing()) toggleHudControls(); });
+        speedometer.setEditorListener(selected -> hudEditHint.setText(selected == null ? "Pilih kotak untuk menggeser atau mengubah ukurannya."
+                : LcdDashboard.blockLabel(selected, hudLayout) + " · Geser kotak / tarik titik sudut"));
+        refreshHud();
+    }
+    private void toggleHudControls() {
+        main.removeCallbacks(hideHudControls);
+        boolean showing = hudControls.getVisibility() != View.VISIBLE;
+        hudControls.setVisibility(showing ? View.VISIBLE : View.GONE);
+        if (showing) main.postDelayed(hideHudControls, 4000);
+    }
+    private void beginHudLayoutEdit() {
+        if (!hudMode) setHudMode(true);
+        if (speedometer.isEditing()) return;
+        main.removeCallbacks(hideHudControls); hideHudControls.run();
+        hudBeforeEdit = hudLayout; speedometer.beginEdit(hudLayout.geometry); hudEditControls.setVisibility(View.VISIBLE);
+        hudEditControls.post(this::updateHudEditorMargin);
+    }
+    private void updateHudEditorMargin() {
+        FrameLayout.LayoutParams position = (FrameLayout.LayoutParams) speedometer.getLayoutParams();
+        int margin = speedometer.isEditing() ? hudEditControls.getHeight() : 0;
+        if (position.topMargin != margin) { position.topMargin = margin; speedometer.setLayoutParams(position); }
+    }
+    private void finishHudLayoutEdit(boolean save) {
+        if (!speedometer.isEditing()) return;
+        HudGeometry geometry = speedometer.finishEdit(save);
+        if (save) {
+            hudLayout = hudLayout.withGeometry(geometry);
+            saveHudLayout();
+        } else if (hudBeforeEdit != null) hudLayout = hudBeforeEdit;
+        hudBeforeEdit = null;
+        hudEditControls.setVisibility(View.GONE); updateHudEditorMargin(); timing.reset(); syncSensorPolling(); refreshHud();
+        toast(save ? "Posisi dan ukuran HUD disimpan." : "Perubahan tata letak dibatalkan.");
+    }
+    private void hudEditorOptions(View anchor) {
+        PopupMenu menu = new PopupMenu(this, anchor); String selected = speedometer.selectedBlock();
+        menu.getMenu().add(0, 1, 0, "Ganti sensor kotak ini").setEnabled(selected != null && (HudGeometry.PRIMARY.equals(selected) || selected.startsWith("aux")));
+        menu.getMenu().add(0, 2, 1, "Pilih kotak");
+        menu.getMenu().add(0, 3, 2, "Reset kotak ini").setEnabled(selected != null);
+        menu.getMenu().add(0, 4, 3, "Reset tata letak orientasi ini");
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) editHudBlockSensor();
+            else if (item.getItemId() == 2) {
+                List<String> ids = LcdDashboard.blocks(hudLayout), labels = new ArrayList<>();
+                for (String id : ids) labels.add(LcdDashboard.blockLabel(id, hudLayout));
+                new AlertDialog.Builder(this).setTitle("Pilih kotak").setItems(labels.toArray(new String[0]), (dialog, which) -> speedometer.selectBlock(ids.get(which))).show();
+            } else if (item.getItemId() == 3) speedometer.resetSelected();
+            else speedometer.resetPlacement();
+            return true;
+        }); menu.show();
+    }
+    private void editHudBlockSensor() {
+        String id = speedometer.selectedBlock(); if (id == null) return;
+        boolean primary = HudGeometry.PRIMARY.equals(id); int slot = primary ? -1 : Integer.parseInt(id.substring(3));
+        List<String> fields = hudFields(), labels = new ArrayList<>(); if (!primary) fields.add(0, "");
+        for (String field : fields) labels.add(hudFieldLabel(field));
+        String current = primary ? hudLayout.primary : hudLayout.auxiliary.get(slot);
+        new AlertDialog.Builder(this).setTitle(LcdDashboard.blockLabel(id, hudLayout))
+                .setSingleChoiceItems(labels.toArray(new String[0]), fields.indexOf(current), (dialog, which) -> {
+                    List<String> auxiliary = new ArrayList<>(hudLayout.auxiliary); String mainField = hudLayout.primary;
+                    if (primary) mainField = fields.get(which); else auxiliary.set(slot, fields.get(which));
+                    hudLayout = new HudLayout(mainField, auxiliary, hudLayout.theme, hudLayout.digitScale, hudLayout.mirrored,
+                            hudLayout.landscape, hudLayout.focused, hudLayout.rpmBar, hudLayout.rpmLimit, hudLayout.geometry);
+                    timing.reset(); syncSensorPolling(); refreshHud();
+                    speedometer.selectBlock(primary || !fields.get(which).isEmpty() ? id : HudGeometry.PRIMARY); dialog.dismiss();
+                }).setNegativeButton("Tutup", null).show();
+    }
+    private void hudBack() { if (speedometer.isEditing()) finishHudLayoutEdit(false); else setHudMode(false); }
+    private void applyHudSystemBars() {
+        if (Build.VERSION.SDK_INT >= 30) {
+            android.view.WindowInsetsController bars = getWindow().getInsetsController();
+            if (bars != null) {
+                if (hudMode) { bars.setSystemBarsBehavior(android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE); bars.hide(android.view.WindowInsets.Type.systemBars()); }
+                else bars.show(android.view.WindowInsets.Type.systemBars());
+            }
+        } else {
+            getWindow().getDecorView().setSystemUiVisibility(hudMode ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION : systemUiBeforeHud);
+        }
     }
     private void setHudMode(boolean enabled) {
         if (hudMode == enabled) return;
-        if (enabled) orientationBeforeHud = getRequestedOrientation();
+        if (enabled) { orientationBeforeHud = getRequestedOrientation(); systemUiBeforeHud = getWindow().getDecorView().getSystemUiVisibility(); }
+        else if (speedometer.isEditing()) finishHudLayoutEdit(false);
         hudMode = enabled; normalScreen.setVisibility(enabled ? View.GONE : View.VISIBLE);
         hudScreen.setVisibility(enabled ? View.VISIBLE : View.GONE); speedometer.setKeepScreenOn(enabled && foreground);
+        main.removeCallbacks(hideHudControls); hideHudControls.run(); applyHudSystemBars();
         (enabled ? hudScreen : normalScreen).requestApplyInsets();
         if (Build.VERSION.SDK_INT >= 33) {
             if (enabled) {
-                if (hudBackCallback == null) hudBackCallback = () -> setHudMode(false);
+                if (hudBackCallback == null) hudBackCallback = this::hudBack;
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT, hudBackCallback);
             } else if (hudBackCallback != null) getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(hudBackCallback);
         }
@@ -524,6 +658,9 @@ public final class MainActivity extends Activity {
         log.info("HUD", enabled ? "LCD dibuka; fokus=" + hudLayout.focused + ", utama=" + hudLayout.primary : "Kembali ke Live; pilihan pembacaan Live dipulihkan.");
         if (!enabled) refreshVisibleReadings();
         refreshHud(); refreshLiveNote(); showControls();
+        if (enabled && !preferences.getBoolean("hud_tap_tip_seen", false)) {
+            toast("Ketuk layar untuk kontrol dan Edit tata letak."); preferences.edit().putBoolean("hud_tap_tip_seen", true).apply();
+        }
     }
     private List<String> hudFields() {
         List<String> fields = new ArrayList<>(graphFields);
@@ -548,9 +685,17 @@ public final class MainActivity extends Activity {
         CheckBox box = new CheckBox(this); box.setText(label); box.setTextColor(INK); box.setTextSize(13);
         box.setChecked(checked); form.addView(box); return box;
     }
+    private void saveHudLayout() {
+        SharedPreferences.Editor edit = preferences.edit().putString("hud_primary", hudLayout.primary).putInt("hud_theme", hudLayout.theme)
+                .putFloat("hud_scale", hudLayout.digitScale).putBoolean("hud_mirror", hudLayout.mirrored)
+                .putBoolean("hud_landscape", hudLayout.landscape).putBoolean("hud_focus", hudLayout.focused)
+                .putBoolean("hud_rpm_bar", hudLayout.rpmBar).putInt("hud_rpm_limit", hudLayout.rpmLimit)
+                .putString("hud_boxes_portrait", hudLayout.geometry.encode(false)).putString("hud_boxes_landscape", hudLayout.geometry.encode(true));
+        for (int i = 0; i < 3; i++) edit.putString("hud_aux_" + i, hudLayout.auxiliary.get(i)); edit.apply();
+    }
     private void editHud() {
         ScrollView scroll = new ScrollView(this); LinearLayout form = column(); form.setPadding(dp(14), dp(8), dp(14), dp(8)); scroll.addView(form);
-        form.addView(text("Pilih sensor dan tampilan LCD. Pengaturan tersimpan. Speed/VSS tampil jika tabel ECU menyediakannya; skala km/h belum terverifikasi sehingga nilainya memakai raw.", 12, MUTED, false));
+        form.addView(text("Pilih sensor dan tampilan LCD. Edit tata letak membuka kanvas: geser setiap kotak dan tarik titik sudut untuk mengubah ukuran. Pilihan di form ini diterapkan saat membuka editor. Speed/VSS mengikuti dukungan ECU dan tetap RAW sampai skala km/h terverifikasi.", 12, MUTED, false));
         List<String> fields = hudFields(), optional = new ArrayList<>(fields); optional.add(0, "");
         Spinner primary = hudChoice(form, "Angka utama", fields, hudLayout.primary);
         Spinner[] auxiliary = new Spinner[3];
@@ -568,20 +713,18 @@ public final class MainActivity extends Activity {
         CheckBox rpm = hudCheck(form, "Tampilkan bar RPM", hudLayout.rpmBar);
         CheckBox focused = hudCheck(form, "Baca hanya grup sensor HUD", hudLayout.focused);
         form.addView(text("Fokus HUD mengurangi transaksi. Saat kembali ke Live, pilihan pembacaan Live dipulihkan. Min / Avg / Max menghitung sampel valid sepanjang sesi, termasuk nilai 0; putus koneksi mereset statistik.", 11, MUTED, false));
-        new AlertDialog.Builder(this).setTitle("Atur speedometer / HUD").setView(scroll).setNegativeButton("Batal", null)
-                .setPositiveButton("Simpan", (dialog, which) -> {
+        Runnable applyChoices = () -> {
                     List<String> slots = new ArrayList<>(); for (Spinner spinner : auxiliary) slots.add(optional.get(spinner.getSelectedItemPosition()));
                     hudLayout = new HudLayout(fields.get(primary.getSelectedItemPosition()), slots, theme.getSelectedItemPosition(),
                             new float[]{.85f, 1f, 1.15f}[size.getSelectedItemPosition()], mirror.isChecked(), landscape.isChecked(),
-                            focused.isChecked(), rpm.isChecked(), limits[rpmLimit.getSelectedItemPosition()]);
-                    SharedPreferences.Editor edit = preferences.edit().putString("hud_primary", hudLayout.primary).putInt("hud_theme", hudLayout.theme)
-                            .putFloat("hud_scale", hudLayout.digitScale).putBoolean("hud_mirror", hudLayout.mirrored)
-                            .putBoolean("hud_landscape", hudLayout.landscape).putBoolean("hud_focus", hudLayout.focused)
-                            .putBoolean("hud_rpm_bar", hudLayout.rpmBar).putInt("hud_rpm_limit", hudLayout.rpmLimit);
-                    for (int i = 0; i < 3; i++) edit.putString("hud_aux_" + i, hudLayout.auxiliary.get(i)); edit.apply();
+                            focused.isChecked(), rpm.isChecked(), limits[rpmLimit.getSelectedItemPosition()], hudLayout.geometry);
+                    saveHudLayout();
                     if (hudMode) setRequestedOrientation(hudLayout.landscape ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE : ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
                     timing.reset(); syncSensorPolling(); refreshHud();
-                }).show();
+                };
+        new AlertDialog.Builder(this).setTitle("Atur speedometer / HUD").setView(scroll).setNegativeButton("Batal", null)
+                .setPositiveButton("Simpan", (dialog, which) -> applyChoices.run())
+                .setNeutralButton("Edit tata letak", (dialog, which) -> { applyChoices.run(); beginHudLayoutEdit(); }).show();
     }
     private void refreshHud() {
         if (speedometer == null || hudLayout == null) return;
@@ -771,7 +914,7 @@ public final class MainActivity extends Activity {
     }
     private void buildCards(List<String> fields) {
         cards.clear(); grid.removeAllViews(); history.includeFields(fields); lastSample = null; timing.reset();
-        hudLayout = readHudLayout(fields);
+        if (!speedometer.isEditing()) hudLayout = readHudLayout(fields);
         List<String> ordered = sensorSelection.order(fields);
         for (String name : ordered) cards.put(name, new SensorCard(name));
         graphFields.clear(); List<String> labels = new ArrayList<>();

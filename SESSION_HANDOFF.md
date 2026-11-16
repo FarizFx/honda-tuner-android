@@ -1,3 +1,46 @@
+# Honda Tuner 1.1.7 free HUD layout editor prepared - 16 November 2026
+
+The user requested per-box drag and resize, continuing the complaint about fixed
+HUD controls. 1.1.7 / versionCode 9 source now supports moving/resizing primary,
+three auxiliary cards, RPM bar, brand, status, refresh and VSS info. Four corner
+handles, stacking order, selection of covered boxes, per-card sensor choice,
+Save/Cancel, reset of a box/current orientation, separate portrait/landscape
+placement and draft restoration are implemented. The editor is unmirrored;
+normal HUD mirror is restored on exit. Speedometer is fullscreen; tap opens
+controls over the canvas and they hide after 4 s. Back cancels the editor first,
+then returns to Live without USB disconnect. The editor works without an ECU.
+No fabricated km/h, GPS or new sensor mapping is added. VSS remains RAW. The
+existing FTDI repair and all protocol/validation/session records are retained.
+
+243 regressions (146 core, 21 transport, 13 controller health, 22 UART, 24 Lite
+and 17 packet fixtures), 312 reference vectors / 5,616 values and 16 recorded
+vectors / 166 values passed locally on exact final core hashes. 12 new tests
+cover bounds, corners, persistence, layers, hidden slots, orientations, draft
+immutability, polling and resized drawing. Final structural checks passed.
+Six previews use synthetic readings and the actual shared renderer. Android
+SDK compilation, lint and signing still require the Linux server build.
+373 immutable baseline/archive fingerprints remain preserved, including full
+1.1.6 source/APK/reports copied in both dist/baseline-1.1.6 folders.
+
+Authoritative checkout: honda_tuner_android/build/github-repo. Mirror:
+honda_tuner_android. Private receipts/previews/local reports: build/ui-1.1.7.
+Existing code/push/Actions/local APK delivery authorization persists. Linux
+runner 6 / ID33 was online and idle at the last read; do not alter its config.
+Commit/push the prepared source once, monitor its single push-triggered run,
+download all seven assets and verify hashes, actual geometry/classes/catalog,
+source hashes and signer versus 1.1.6. Synchronize verified artifacts/metadata
+and deliver the versioned APK. Latest verified APK remains 1.1.6 from run
+43807510648, SHA-256 e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179.
+
+Use terminal Git/gh directly; never Python wrappers for Git or prepare_repo.py.
+APK builds are server-only: never install/run an Android SDK/Gradle toolchain
+or register a runner on this laptop. Preserve runner credentials/registrations
+and historical ZIPs/versioned APKs/baselines. Existing JDK may run offline JVM
+checks. CI reports currently included are exact 1.1.6 originals; never label
+them 1.1.7. Physical touch/phone/USB/ECU behavior remains for user retest.
+
+Earlier notes below are historical.
+
 # Honda Tuner 1.1.6 verified Linux APK delivered - 16 November 2026
 
 The user resumed the build with 'udah nih bro, udah jalan runnernya'. The existing

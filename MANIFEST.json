@@ -21,19 +21,19 @@
       "bytes": 1324
     },
     "PHYSICAL_TEST.md": {
-      "sha256": "c6aa25f84f7f6b5d5aa62adf8cf4b3f5b5f4d60ebe5d47bdb28a5c843b5f2f5e",
-      "bytes": 5100
+      "sha256": "cfc905c54ad68cece0b76efcbb0c2864f4e8e9cd45c85a8eeb6f696bd771c2b7",
+      "bytes": 6707
     },
     "README.md": {
-      "sha256": "7a7c7a8837aaf51718cc113ac58338d9dc65a468c43387a6a352dc53aec92df2",
-      "bytes": 12468
+      "sha256": "f2260b8232850ea8d895758f59054f48bb00e782462b9ee0baff457f53ce94b3",
+      "bytes": 13811
     },
     "SESSION_HANDOFF.md": {
-      "sha256": "d8041074617ddb76b92cf7eeac329ff9f3bd3f3cfa6b2f2dd061a8830a87d2e3",
-      "bytes": 13536
+      "sha256": "ee1c7f6c83365d2a0b2a31171468c1be0738db267a40917b98e647d4bbd2340a",
+      "bytes": 16361
     },
     "app/build.gradle": {
-      "sha256": "15f7a3553f6c039a08df4cd197d16d5f1d99e86c400b81e7c29a2d1bb10abf12",
+      "sha256": "2a322933710c4156d6b37afbdfc0cdbc5bbeac3efd1526c540e91c2af8dca4c3",
       "bytes": 632
     },
     "app/src/main/AndroidManifest.xml": {
@@ -49,16 +49,16 @@
       "bytes": 1105
     },
     "app/src/main/java/id/hondatuner/android/MainActivity.java": {
-      "sha256": "17f5057c76d42d799c42126a31af13e412f121fa2b3c2ee14f27465e2305bb16",
-      "bytes": 75385
+      "sha256": "a5d4fe6ba0326757607c40ea92e6564434750b747c89f39b6d9d8dc8a05c90f7",
+      "bytes": 86414
     },
     "app/src/main/java/id/hondatuner/android/SensorGraph.java": {
       "sha256": "3ddab508cc3154f8b7bb1cf573128e6e0e798f02fb237570b0cf5095459b348c",
       "bytes": 4203
     },
     "app/src/main/java/id/hondatuner/android/SpeedometerView.java": {
-      "sha256": "ce9b76cea7da785cdd2cf1cb74ba2db31eed1e8233d1f89adf2d82f6155e60f9",
-      "bytes": 2195
+      "sha256": "cbd5394468cea18cca034f9f45a04e0c123887f9e9527014a9a8fe53d73283d1",
+      "bytes": 9344
     },
     "app/src/main/java/id/hondatuner/android/usb/FtdiChannel.java": {
       "sha256": "733600bdd465b0bf352cf786bc3e9446672aff4e28436341260d479a53864045",
@@ -96,17 +96,21 @@
       "sha256": "d81b1986cd969e210dd929ded141750fcad1d1b793bb63d53d8597b5bb8fd945",
       "bytes": 9276
     },
+    "app/src/main/java/id/hondatuner/core/HudGeometry.java": {
+      "sha256": "0cae7c0df717c51fec1f6a6d3cde7296700f6f743a332bbe988b00a9032fbe4d",
+      "bytes": 8478
+    },
     "app/src/main/java/id/hondatuner/core/HudLayout.java": {
-      "sha256": "8f0f11feb3b99ee79f8432132d7e5d0a6647e8d16108e8f5bbfe9a452a5b566a",
-      "bytes": 2539
+      "sha256": "1a62f85295f4c73f53081ed851f8e177a28222b6049bd0d2c35c4f5195d13986",
+      "bytes": 3187
     },
     "app/src/main/java/id/hondatuner/core/KLineTransport.java": {
       "sha256": "7b5325d131ff93f0a7ee13aaae0f874eea315303c3e29585f6f3095ecf00ec3f",
       "bytes": 22629
     },
     "app/src/main/java/id/hondatuner/core/LcdDashboard.java": {
-      "sha256": "79e8340a0fba419789c58379e91d00a44a69bdf07785280c970bf53e7298ffc7",
-      "bytes": 10603
+      "sha256": "4ec9203259a5761e734c6a85f8ed46a1557a67b2115519b22f89eefa46e631ea",
+      "bytes": 12327
     },
     "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": {
       "sha256": "ba246f895981c384c9f579b11effbcd3b569998d6adb7ee11f8f432513e4f18f",
@@ -212,6 +216,10 @@
       "sha256": "d704b0dc998bac4975b9354d5f85e271609c22ad6cd28c7c56048ffad5f5c077",
       "bytes": 4747
     },
+    "evidence/hud_editor_1_1_7.json": {
+      "sha256": "bb946832b75b1a53f816ffb67c2a4c4ad8881c6a839e967c1d2242bec969df01",
+      "bytes": 7047
+    },
     "evidence/lite_transport_reference.json": {
       "sha256": "f447e814ffcafaa3518ba07cba03246281e25415c4f35312024d990bdacf4591",
       "bytes": 35885
@@ -257,12 +265,12 @@
       "bytes": 18925
     },
     "tests/java/id/hondatuner/core/CoreTest.java": {
-      "sha256": "4ec5628f4202eadf2c5e104821174b3accf7e1515401c3a8d4d9731e3a9747a0",
-      "bytes": 61402
+      "sha256": "005b74509cc7ff0421e8bd47727b7e63b1705b4b43328608d4f2aadc838606eb",
+      "bytes": 61446
     },
     "tests/java/id/hondatuner/core/DashboardPreview.java": {
-      "sha256": "6285b2285653d227e830c656e845fb7751ab2bde7a961e8f79e966afc573c1ee",
-      "bytes": 4287
+      "sha256": "019baef2afcb575b84f8432a00dcb06dc7e4a987d2a9fa82b20e09b64b6ee6ff",
+      "bytes": 5606
     },
     "tests/java/id/hondatuner/core/DashboardTest.java": {
       "sha256": "127096b7144d6b25a1b006ff5ca4757db1441aee04cad56c61396f4de8d8ae1b",
@@ -279,6 +287,10 @@
     "tests/java/id/hondatuner/core/FtdiUartTest.java": {
       "sha256": "0bef9000b22e58d5b58b0bc3a7e7c92760c5ed8c91b7ac465ed8026ef6eb2cf9",
       "bytes": 37916
+    },
+    "tests/java/id/hondatuner/core/HudGeometryTest.java": {
+      "sha256": "3f59caba260b9bc799f5e45764d7dff06e78822262625c8ebdab62beacf4211b",
+      "bytes": 10556
     },
     "tests/java/id/hondatuner/core/SensorSelectionTest.java": {
       "sha256": "14a87cd1eab76c207b25079decaf940bcc3c79800119fdbcca7d3c52c58a4bfe",
@@ -305,8 +317,8 @@
       "bytes": 216640
     },
     "tools/package_apk.py": {
-      "sha256": "a0bfa10911de3c893ed322511cc954962a555e7204511b0db8e06f136ad9b8a2",
-      "bytes": 8836
+      "sha256": "fe1ee63ecf2078594f2b8d6feab40d63b9366083f5d48a0dafcc02ad919ca3c8",
+      "bytes": 8924
     },
     "tools/prepare_repo.py": {
       "sha256": "fbcfe898b84392a0e7ca47cfaabd4a663d190ca157558522883127821b246331",
@@ -333,20 +345,19 @@
       "bytes": 5815
     }
   },
-  "scope": "1.1.6 FTDI RX status retries, LCD/HUD, session statistics, measured refresh and zero chart axes",
-  "version_name": "1.1.6-debug",
-  "version_code": 8,
-  "source_status": "pushed; verified Linux server APK delivered",
+  "version_name": "1.1.7-debug",
+  "version_code": 9,
+  "scope": "Free HUD box placement/resize and fullscreen transient controls",
+  "source_status": "prepared; server build pending",
   "source_mirror_synced": true,
-  "android_sdk_compilation": true,
-  "apk_included": true,
-  "github_actions_run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
-  "pushed_source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
-  "built_source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
-  "physical_ecu_success_verified": false,
-  "core_regressions": 231,
+  "android_sdk_compilation": false,
+  "apk_included": false,
   "included_original_ci_report_version": "1.1.6-debug",
-  "apk_relative_path": "dist/HondaTuner-1.1.6-debug.apk",
-  "apk_sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179",
-  "source_archive_relative_path": "dist/source-1.1.6-e410957.zip"
+  "latest_verified_apk": {
+    "version_name": "1.1.6-debug",
+    "source_commit": "e410957d0c0eeb8811f5b6f026f7cee665a5bcb1",
+    "run": "https://github.com/FarizFx/honda-tuner-android/actions/runs/43807510648",
+    "relative_path": "dist/HondaTuner-1.1.6-debug.apk",
+    "sha256": "e313a16f08f634ab882992ad782205348dd539b7f005ff7658e035bed04c1179"
+  }
 }

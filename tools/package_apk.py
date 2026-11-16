@@ -109,6 +109,7 @@ def main():
             "Lid/hondatuner/android/MainActivity;", "Lid/hondatuner/android/SensorGraph;",
             "Lid/hondatuner/android/SpeedometerView;", "Lid/hondatuner/android/usb/FtdiChannel;",
             "Lid/hondatuner/core/HudLayout;", "Lid/hondatuner/core/LcdDashboard;",
+            "Lid/hondatuner/core/HudGeometry;", "Lid/hondatuner/core/HudGeometry$Box;",
             "Lid/hondatuner/core/RefreshTiming;", "Lid/hondatuner/core/SensorScale;",
             "Lid/hondatuner/core/TelemetryHistory;", "Lid/hondatuner/core/SensorSelection;",
         }

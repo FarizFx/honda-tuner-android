@@ -42,52 +42,69 @@ public final class LcdDashboard {
     private LcdDashboard() {}
 
     public static void render(Painter output, int width, int height, HudLayout layout, Data data) {
+        render(output, width, height, layout, data, width >= height);
+    }
+    public static void render(Painter output, int width, int height, HudLayout layout, Data data, boolean wide) {
         if (width < 1 || height < 1) return;
         output.box(0, 0, width, height, 0, BACKGROUND);
-        boolean wide = width >= height;
-        float designWidth = wide ? 1000 : 600, designHeight = wide ? 500 : 900;
-        float scale = Math.min(width / designWidth, height / designHeight);
-        Painter p = new Scaled(output, (width - designWidth * scale) / 2,
-                (height - designHeight * scale) / 2, scale);
         int accent = HudLayout.COLORS[layout.theme], muted = alpha(accent, 160);
-        p.text("HONDA / TUNER", 30, 35, 19, accent, 0);
-        String status = !data.connected ? "TERPUTUS" : data.live ? "LIVE" : "JEDA";
-        p.box(designWidth - 168, 12, designWidth - 30, 45, 5, alpha(accent, 24));
-        p.text(status, designWidth - 99, 35, 17, accent, 1);
-        if (layout.rpmBar) rpmBar(p, 32, 61, designWidth - 64, data, layout, accent);
-        int auxiliary = data.auxiliary.size();
-        float cardTop = layout.rpmBar ? 100 : 67;
-        float cardBottom = auxiliary == 0 ? designHeight - 65 : wide ? 325 : 390;
-        frame(p, 28, cardTop, designWidth - 28, cardBottom, accent);
-        String label = SensorInfo.compactLabel(data.primary.field);
-        fitted(p, label, 46, cardTop + 28, designWidth - 92, 16, muted, 0);
-        float numberTop = cardTop + 43, numberBottom = cardBottom - 69;
-        digits(p, data.connected ? data.primary.value : "—", 46, numberTop, designWidth - 160,
-                numberBottom - numberTop, layout.digitScale, accent);
-        p.text(data.primary.unit, designWidth - 82, numberBottom - 8, 19, muted, 1);
-        stats(p, data.primary.statistics, 45, cardBottom - 51, designWidth - 90, accent, 20);
-        for (int i = 0; i < auxiliary; i++) {
-            float tileWidth = wide ? (designWidth - 56 - 8 * (auxiliary - 1)) / auxiliary : designWidth - 56;
-            float x = wide ? 28 + i * (tileWidth + 8) : 28;
-            float y = wide ? 341 : 412 + i * 133;
-            float tileHeight = wide ? 113 : 118;
-            tile(p, data.auxiliary.get(i), x, y, tileWidth, tileHeight, data.connected, accent);
+        List<String> visible = blocks(layout);
+        for (String id : layout.geometry.order(visible, wide)) {
+            HudGeometry.Box box = layout.geometry.box(id, wide, visible);
+            float pixelWidth = box.width * width, pixelHeight = box.height * height;
+            boolean primary = HudGeometry.PRIMARY.equals(id), auxiliary = id.startsWith("aux");
+            float designHeight = primary ? 250 : auxiliary ? 130 : HudGeometry.RPM.equals(id) ? 46 : 32;
+            float minimumWidth = primary ? 250 : auxiliary ? 190 : HudGeometry.RPM.equals(id) ? 260 : 1;
+            float designWidth = Math.max(minimumWidth, pixelWidth / pixelHeight * designHeight);
+            float scale = Math.min(pixelWidth / designWidth, pixelHeight / designHeight);
+            Painter p = new Scaled(output, box.x * width + (pixelWidth - designWidth * scale) / 2,
+                    box.y * height + (pixelHeight - designHeight * scale) / 2, scale);
+            if (primary || auxiliary) frame(output, box.x * width, box.y * height, box.right() * width, box.bottom() * height, accent);
+            if (primary) {
+                String label = SensorInfo.compactLabel(data.primary.field);
+                if (data.connected && data.ageMillis >= 1500) label += String.format(Locale.getDefault(), " / USIA %.1f s", data.ageMillis / 1000.0);
+                fitted(p, label, 14, 26, designWidth - 28, 16, muted, 0);
+                digits(p, data.connected ? data.primary.value : "—", 14, 40, designWidth - 94, 140, layout.digitScale, accent);
+                fitted(p, data.primary.unit, designWidth - 14, 175, 70, 18, muted, 2);
+                stats(p, data.primary.statistics, 14, 205, designWidth - 28, accent, 20);
+            } else if (auxiliary) {
+                int slot = Integer.parseInt(id.substring(3)), reading = 0;
+                for (int i = 0; i < slot; i++) if (!layout.auxiliary.get(i).isEmpty()) reading++;
+                if (reading < data.auxiliary.size()) tile(p, data.auxiliary.get(reading), 0, 0, designWidth, designHeight, data.connected, accent);
+            } else if (HudGeometry.RPM.equals(id)) {
+                rpmBar(p, 0, 8, designWidth, data, layout, accent);
+            } else if (HudGeometry.STATUS.equals(id)) {
+                p.box(0, 0, designWidth, 32, 5, alpha(accent, 24));
+                fitted(p, !data.connected ? "TERPUTUS" : data.live ? "LIVE" : "JEDA", designWidth / 2, 24, designWidth - 8, 17, accent, 1);
+            } else if (HudGeometry.BRAND.equals(id)) {
+                fitted(p, "HONDA / TUNER", 0, 25, designWidth, 19, accent, 0);
+            } else if (HudGeometry.REFRESH.equals(id)) {
+                String timing;
+                if (!data.connected) timing = "REFRESH — ms";
+                else if (!data.live) timing = "JEDA / SAMPEL TERAKHIR";
+                else if (data.actualMillis != null) timing = String.format(Locale.getDefault(), "REFRESH %.1f ms", data.actualMillis);
+                else if (data.readingMillis != null) timing = String.format(Locale.getDefault(), "PUTARAN %.1f ms", data.readingMillis);
+                else timing = "MENUNGGU SAMPEL";
+                fitted(p, timing, 0, 24, designWidth, 15, muted, 0);
+            } else {
+                fitted(p, data.primary.field.equals("vss") ? "VSS / RAW" : data.speedStatus, designWidth, 24, designWidth, 13, muted, 2);
+            }
         }
-        String timing;
-        if (!data.connected) timing = "REFRESH — ms";
-        else if (!data.live) timing = "JEDA / SAMPEL TERAKHIR";
-        else if (data.actualMillis != null) timing = String.format(Locale.getDefault(),
-                "REFRESH %.1f ms / %.2f Hz", data.actualMillis, 1000 / data.actualMillis);
-        else if (data.readingMillis != null) timing = String.format(Locale.getDefault(), "PUTARAN %.1f ms", data.readingMillis);
-        else timing = "MENUNGGU SAMPEL";
-        float footer = designHeight - 23;
-        fitted(p, timing, 30, footer, designWidth * .65f - 30, 15, muted, 0);
-        String speed = data.primary.field.equals("vss") ? "VSS / RAW" : data.speedStatus;
-        fitted(p, speed, designWidth - 30, footer, designWidth * .35f - 35, 13, muted, 2);
-        if (data.connected && data.ageMillis >= 1500) {
-            p.text(String.format(Locale.getDefault(), "USIA SAMPEL %.1f s", data.ageMillis / 1000.0),
-                    designWidth / 2, cardTop + 28, 14, muted, 1);
-        }
+    }
+    public static List<String> blocks(HudLayout layout) {
+        List<String> ids = new ArrayList<>(); ids.add(HudGeometry.BRAND); ids.add(HudGeometry.STATUS);
+        if (layout.rpmBar) ids.add(HudGeometry.RPM);
+        ids.add(HudGeometry.PRIMARY);
+        for (int i = 0; i < layout.auxiliary.size(); i++) if (!layout.auxiliary.get(i).isEmpty()) ids.add(HudGeometry.auxiliary(i));
+        ids.add(HudGeometry.REFRESH); ids.add(HudGeometry.SPEED); return Collections.unmodifiableList(ids);
+    }
+    public static String blockLabel(String id, HudLayout layout) {
+        if (HudGeometry.PRIMARY.equals(id)) return "Angka utama · " + SensorInfo.compactLabel(layout.primary);
+        if (id.startsWith("aux")) return "Sensor " + (Integer.parseInt(id.substring(3)) + 1) + " · " + SensorInfo.compactLabel(layout.auxiliary.get(Integer.parseInt(id.substring(3))));
+        if (HudGeometry.RPM.equals(id)) return "Bar RPM";
+        if (HudGeometry.BRAND.equals(id)) return "Judul aplikasi";
+        if (HudGeometry.STATUS.equals(id)) return "Status koneksi";
+        return HudGeometry.REFRESH.equals(id) ? "Refresh aktual" : "Info kecepatan / VSS";
     }
     private static void frame(Painter p, float left, float top, float right, float bottom, int color) {
         p.box(left, top, right, bottom, 12, alpha(color, 65));
@@ -106,7 +123,6 @@ public final class LcdDashboard {
     }
     private static void tile(Painter p, Reading reading, float x, float y, float width, float height,
                              boolean connected, int color) {
-        frame(p, x, y, x + width, y + height, color);
         fitted(p, SensorInfo.compactLabel(reading.field), x + 13, y + 22, width - 26, 16, alpha(color, 155), 0);
         String value = connected ? reading.value : "—";
         fitted(p, value, x + 13, y + 62, width - 75, 34, color, 0);

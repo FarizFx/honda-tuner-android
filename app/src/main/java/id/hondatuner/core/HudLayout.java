@@ -15,9 +15,14 @@ public final class HudLayout {
     public final int theme, rpmLimit;
     public final float digitScale;
     public final boolean mirrored, landscape, focused, rpmBar;
+    public final HudGeometry geometry;
 
     public HudLayout(String primary, List<String> auxiliary, int theme, float digitScale,
                      boolean mirrored, boolean landscape, boolean focused, boolean rpmBar, int rpmLimit) {
+        this(primary, auxiliary, theme, digitScale, mirrored, landscape, focused, rpmBar, rpmLimit, new HudGeometry());
+    }
+    public HudLayout(String primary, List<String> auxiliary, int theme, float digitScale,
+                     boolean mirrored, boolean landscape, boolean focused, boolean rpmBar, int rpmLimit, HudGeometry geometry) {
         this.primary = primary == null || primary.isEmpty() ? "engine_speed" : primary;
         List<String> slots = new ArrayList<>();
         for (int i = 0; i < 3; i++) slots.add(i < auxiliary.size() && auxiliary.get(i) != null ? auxiliary.get(i) : "");
@@ -26,6 +31,10 @@ public final class HudLayout {
         this.digitScale = Float.isFinite(digitScale) ? Math.max(.75f, Math.min(1.25f, digitScale)) : 1f;
         this.mirrored = mirrored; this.landscape = landscape; this.focused = focused;
         this.rpmBar = rpmBar; this.rpmLimit = Math.max(1000, Math.min(30000, rpmLimit));
+        this.geometry = geometry == null ? new HudGeometry() : geometry;
+    }
+    public HudLayout withGeometry(HudGeometry geometry) {
+        return new HudLayout(primary, auxiliary, theme, digitScale, mirrored, landscape, focused, rpmBar, rpmLimit, geometry);
     }
     public static HudLayout defaults(Collection<String> fields) {
         String primary = fields.contains("vss") ? "vss" : "engine_speed";

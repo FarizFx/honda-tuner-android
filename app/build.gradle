@@ -8,8 +8,8 @@ android {
         applicationId 'id.hondatuner.android'
         minSdk 26
         targetSdk 35
-        versionCode 8
-        versionName '1.1.6-debug'
+        versionCode 9
+        versionName '1.1.7-debug'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
