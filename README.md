@@ -32,8 +32,11 @@ Katalog berisi **245 definisi / 244 ID unik**; ID tersebut cocok dengan dua
 Vario 150 (K59F-A01 dan K59A-A11), dan keduanya tetap ditampilkan.
 
 **200 tes regresi lokal**, **312 vektor referensi / 5.616 nilai**, dan
-**16 vektor rekaman / 166 nilai** lulus. Source disiapkan untuk build Actions
-di server Linux; APK 1.1.5 belum tersedia pada tahap ini. APK/laporan 1.1.4
+**16 vektor rekaman / 166 nilai** lulus. [Build Actions 1.1.5](https://github.com/FarizFx/honda-tuner-android/actions/runs/43793080151)
+berhasil pada server Linux 4. Kompilasi SDK, signature dan ZIP APK lulus;
+lint: 0 error / 36 warning. APK: `dist/HondaTuner-1.1.5-debug.apk`.
+Pasang 1.1.5 sebagai pembaruan 1.1.4; sertifikat debug sama.
+APK/laporan 1.1.4
 dipertahankan di `dist/baseline-1.1.4`; semua versi sebelumnya juga dipertahankan.
 Bukti: [evidence/phone_1_1_4_audit.json](evidence/phone_1_1_4_audit.json).
 Perbandingan transport sebelumnya: [evidence/lite_transport_reference.json](evidence/lite_transport_reference.json).

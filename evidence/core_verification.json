@@ -3,11 +3,12 @@
   "java_home": "/home/ubuntu/actions-runner/_work/_tool/Java_Temurin-Hotspot_jdk/17.0.21-9/x64",
   "java_version": "openjdk version \"17.0.21\" 2026-10-20\nOpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)\nOpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)",
   "java_release": 8,
-  "core_regression_tests": 141,
+  "core_regression_tests": 200,
   "regression_suites": {
-    "CoreTest": 83,
+    "CoreTest": 103,
     "TransportTest": 21,
-    "ControllerHealthTest": 13
+    "ControllerHealthTest": 13,
+    "UartReplyTest": 22
   },
   "lite_transport_fixtures": 24,
   "lite_transport_fixture_results": [
@@ -229,34 +230,216 @@
     }
   ],
   "lite_transport_fixture_sha256": "7dd622a1b0abbcdc9df92c03de3210bf7083afda242e2048e9b44e768a42aa7e",
+  "phone_packet_replay_fixtures": 17,
+  "phone_packet_replay_results": [
+    {
+      "name": "phone-1.1.3-transaction-6522",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "7205711701",
+      "elapsed_ms": 65,
+      "payload_hex": "711700001200ffffffff88467a0000628e00000000",
+      "decoded_field_count": 13,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6540",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 41,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6739",
+      "success": false,
+      "writes": 2,
+      "tx_hex": "720571d048",
+      "elapsed_ms": 2012,
+      "payload_hex": "",
+      "decoded_field_count": 0,
+      "error": "id.hondatuner.core.ProtocolException: RX ditolak: Balasan bukan untuk target Honda saat ini. UART=LSR 0x68 dalam 1000 ms."
+    },
+    {
+      "name": "phone-1.1.3-transaction-6782",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "720571d048",
+      "elapsed_ms": 65,
+      "payload_hex": "71d000000000000000000000000000000000000000ffff",
+      "decoded_field_count": 8,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6831",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "720571d147",
+      "elapsed_ms": 50,
+      "payload_hex": "71d1000000000000",
+      "decoded_field_count": 5,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6874",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "720571d147",
+      "elapsed_ms": 49,
+      "payload_hex": "71d1000000000000",
+      "decoded_field_count": 5,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6894",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6913",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6934",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6954",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6972",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-6991",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 41,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-7009",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-7027",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 50,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-7046",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 42,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-7063",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 41,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    },
+    {
+      "name": "phone-1.1.3-transaction-7079",
+      "success": true,
+      "writes": 1,
+      "tx_hex": "72057120f8",
+      "elapsed_ms": 43,
+      "payload_hex": "7120bf8000",
+      "decoded_field_count": 3,
+      "error": null
+    }
+  ],
+  "phone_packet_fixture_sha256": "17a3b1ffe1156776431bf26cf37c7869a591c7792a9c8ed75107dafae4697156",
+  "phone_recording_trace_sha256": "5f39533b8d4a3bf417a25bad3360541d6cfc37c99d7200075d5aa23f798a1566",
+  "phone_decoder_vectors": 16,
+  "phone_decoder_field_values": 166,
   "reference_decoder_vectors": 312,
   "reference_field_values": 5616,
-  "elapsed_seconds": 4.914,
+  "elapsed_seconds": 6.157,
   "source_sha256": {
-    "app/src/main/java/id/hondatuner/core/ByteChannel.java": "33ce1193efc77a5f5240826877a240f357ea8763b047cd4d179fd384a00770ef",
+    "app/src/main/java/id/hondatuner/core/ByteChannel.java": "dedec7fcb7a7e28924c899a92c91386af201a7db6451b90e5aa00874f5681621",
     "app/src/main/java/id/hondatuner/core/CancelSignal.java": "2128bf532f7f5e29707e25db18eb6febe364f12be600c89c7ae55ca1d9f1a057",
-    "app/src/main/java/id/hondatuner/core/DiagnosticController.java": "d1b35de0c806a5c8e9d214a04acf2273025d072e140aefa2af1dd37ff1df2421",
+    "app/src/main/java/id/hondatuner/core/DiagnosticController.java": "3cc877ca7271a46e90277f17e69b621eaee071afc972d9d010a7e0c1a099884e",
     "app/src/main/java/id/hondatuner/core/DiagnosticLog.java": "7efb78cce9447a001e3b1de55e1301b48a6426049ee86d846bdae3ad68e54897",
     "app/src/main/java/id/hondatuner/core/DtcDescriptions.java": "baefd0cb0071747b05c773de5bd45109181f31b8f93ebc33f1e08081dbc89506",
-    "app/src/main/java/id/hondatuner/core/FtdiCodec.java": "beea9ad8acf7fbda42d349a99f0578f75b0a941de9cd875044ab82714f28c4a3",
-    "app/src/main/java/id/hondatuner/core/FtdiUart.java": "90f39bd6e3bfb8101cf51b8d6b605ec92166ecccc3b2e09e384d8d417378efe8",
-    "app/src/main/java/id/hondatuner/core/HondaClient.java": "f3fc8178b7066eaaf9dc230c20b2cddfef3d4047305b1c034d869db69f7c7e79",
-    "app/src/main/java/id/hondatuner/core/KLineTransport.java": "847d7ad8c56c995202076c5a7c6ffceca21058499b432cadb46c3eedf08a50ec",
-    "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": "261d39f9935c943e7fb3b06815556ffb1dc3abe6afd630a394fe48888daae594",
-    "app/src/main/java/id/hondatuner/core/LiveProfile.java": "57fd687a26ad9607b87b0cc388812a921968d9d9add0d856a4fede91f6d779f1",
+    "app/src/main/java/id/hondatuner/core/FtdiCodec.java": "b5619f1b2a264e7e766540b4d1e13d2f1f66253eb3cf7ef5080f1c41e23f16ba",
+    "app/src/main/java/id/hondatuner/core/FtdiUart.java": "f375ed93308911b910060219f09fa9af1cef83226519de9d96326c2f5eb03afd",
+    "app/src/main/java/id/hondatuner/core/HondaClient.java": "d81b1986cd969e210dd929ded141750fcad1d1b793bb63d53d8597b5bb8fd945",
+    "app/src/main/java/id/hondatuner/core/KLineTransport.java": "7b5325d131ff93f0a7ee13aaae0f874eea315303c3e29585f6f3095ecf00ec3f",
+    "app/src/main/java/id/hondatuner/core/LiveAcquisition.java": "9db4f6afa9afecdacec7b4997fbab29546deaf9b9cdfa1ae2062458deec6f6d9",
+    "app/src/main/java/id/hondatuner/core/LiveProfile.java": "5eb7b969bbd356ab15447105e066c75f5fdadf9b1dc03287a0cd9176cc71896b",
     "app/src/main/java/id/hondatuner/core/ProtocolException.java": "36a2da307ad95a4244b86672ec0ad35e8088c09de0225911179ca0905e336e95",
     "app/src/main/java/id/hondatuner/core/SensorDecoder.java": "1eda1bbad2de07f08754b54edddd664a78fba880c4c095c5aeaf720630a892e8",
     "app/src/main/java/id/hondatuner/core/SensorInfo.java": "70efa04e464fce60653d44940548f3c3926d5783cad1350f033cdac745e5e2e0",
     "app/src/main/java/id/hondatuner/core/SensorSchemas.java": "88c253380f4da28e0396eefdfa8d691aade8849c26733048e0169c6dc68bb6e1",
+    "app/src/main/java/id/hondatuner/core/SensorSelection.java": "f149a4dbf9236a4af74e1cf8ddad9e3ca85b1577f330f69f9ce90fd12aaa4913",
     "app/src/main/java/id/hondatuner/core/TelemetryHistory.java": "a00fa4fe80152f60f4d2c2b068d165162acbf37e400f9fa93a123c6321363962",
     "app/src/main/java/id/hondatuner/core/TransportException.java": "150ebc83f1500135b9f79de681523b16c25e4f4e4febc49013e34168e5ec8b96",
     "tests/java/id/hondatuner/core/ControllerHealthTest.java": "cbf468adfe88522533614ce91fa58e0adbd48c2c10335389670c711af6c128d6",
-    "tests/java/id/hondatuner/core/CoreTest.java": "dcb0018222f37932f8b71058ff75e8e57822f986b62fc702a21a065ef33b669b",
+    "tests/java/id/hondatuner/core/CoreTest.java": "b7ae96bc82ceef038c4d14aaeb6ca8245e457bf5318c3dd68e54be65d06d71ec",
     "tests/java/id/hondatuner/core/DecodeCli.java": "48fce49c32797d8e81bb76a6b30969ede20d9cc6027b75c269e5eab713500be6",
-    "tests/java/id/hondatuner/core/FtdiUartTest.java": "d6564f1034c14f177e712f9cc58d6a3c10e8af9c572c922bd8a23e2e14e92560",
-    "tests/java/id/hondatuner/core/TransportTest.java": "54381f65be4b873e2aa5571ea19ab021e64b2eaad21d05478e7803b0b7520c4d"
+    "tests/java/id/hondatuner/core/FtdiUartTest.java": "0f26f71fcf167f9f767993562171de2d2a18dfc0ca4ccef81319b184dd38f85c",
+    "tests/java/id/hondatuner/core/SensorSelectionTest.java": "14a87cd1eab76c207b25079decaf940bcc3c79800119fdbcca7d3c52c58a4bfe",
+    "tests/java/id/hondatuner/core/TransportTest.java": "dd8a6e8997b33ce89eb0ebbbe602da051662bbe82119e80fd91072f45d25caf5",
+    "tests/java/id/hondatuner/core/UartReplyTest.java": "a47396fa00333530ac16068847076379975901e44d95485c513690c51e4901ea"
   },
   "android_sdk_compilation": false,
   "physical_android_usb_or_ecu_test": false,
-  "fixtures_are_vehicle_recordings": false
+  "all_fixtures_are_vehicle_recordings": false,
+  "phone_fixtures_are_recorded_usb_packets": true,
+  "replay_clock_is_simulated": true
 }
